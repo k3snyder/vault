@@ -1,0 +1,263 @@
+/* CLIContainer.css - Styles for CLI mode container */
+.cli-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--cli-bg, #1e1e1e);
+  color: var(--cli-text, #d4d4d4);
+  font-family: 'SF Mono', Monaco, Consolas, 'Courier New', monospace;
+}
+
+/* Loading state */
+.cli-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 16px;
+}
+
+.cli-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--spinner-bg, rgba(255, 255, 255, 0.1));
+  border-top-color: var(--spinner-color, #3b82f6);
+  border-radius: 50%;
+  animation: cli-spin 1s linear infinite;
+}
+
+@keyframes cli-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.cli-loading-text {
+  font-size: 14px;
+  color: var(--loading-text, #888);
+}
+
+/* Terminal container */
+.cli-terminal-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Ghostty terminal will be embedded here */
+.cli-terminal-container .ghostty-terminal {
+  width: 100%;
+  height: 100%;
+}
+
+/* Error state */
+.cli-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 16px;
+  padding: 32px;
+  text-align: center;
+}
+
+.cli-error-icon {
+  font-size: 48px;
+}
+
+.cli-error-message {
+  font-size: 16px;
+  color: var(--error-text, #f87171);
+  max-width: 500px;
+  line-height: 1.5;
+}
+
+.cli-error-retry {
+  padding: 8px 16px;
+  background: var(--retry-bg, #3b82f6);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.cli-error-retry:hover {
+  background: var(--retry-hover-bg, #2563eb);
+}
+
+/* Error help section */
+.cli-error-help {
+  margin-top: 24px;
+  padding: 20px;
+  background: var(--help-bg, rgba(0, 0, 0, 0.05));
+  border-radius: 8px;
+  text-align: left;
+  max-width: 500px;
+}
+
+.cli-error-help h4 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.cli-error-help ol {
+  margin: 0 0 16px 0;
+  padding-left: 24px;
+}
+
+.cli-error-help li {
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.cli-error-help a {
+  color: var(--link-color, #3b82f6);
+  text-decoration: none;
+}
+
+.cli-error-help a:hover {
+  text-decoration: underline;
+}
+
+.cli-error-note {
+  margin: 0;
+  font-size: 14px;
+  color: var(--note-text, #666);
+  font-style: italic;
+}
+
+/* Dark theme adjustments - use [data-theme="dark"] to follow app theme setting */
+[data-theme="dark"] .cli-container {
+  background: var(--dark-cli-bg, #0d1117);
+  color: var(--dark-cli-text, #c9d1d9);
+}
+
+[data-theme="dark"] .cli-loading-spinner {
+  border-color: var(--dark-spinner-bg, rgba(255, 255, 255, 0.1));
+  border-top-color: var(--dark-spinner-color, #58a6ff);
+}
+
+[data-theme="dark"] .cli-loading-text {
+  color: var(--dark-loading-text, #8b949e);
+}
+
+[data-theme="dark"] .cli-error-message {
+  color: var(--dark-error-text, #f85149);
+}
+
+[data-theme="dark"] .cli-error-help {
+  background: var(--dark-help-bg, rgba(255, 255, 255, 0.05));
+}
+
+[data-theme="dark"] .cli-error-help a {
+  color: var(--dark-link-color, #58a6ff);
+}
+
+[data-theme="dark"] .cli-error-note {
+  color: var(--dark-note-text, #8b949e);
+}
+
+/* Status display */
+.cli-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 24px;
+  padding: 32px;
+  text-align: center;
+}
+
+.cli-status-icon {
+  font-size: 64px;
+}
+
+.cli-status-message h3 {
+  margin: 0 0 12px 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--status-title, #1a1a1a);
+}
+
+.cli-status-message p {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  color: var(--status-text, #4a4a4a);
+  line-height: 1.5;
+}
+
+.cli-status-note {
+  font-size: 14px !important;
+  color: var(--status-note, #666) !important;
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+}
+
+.cli-status-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.cli-action-btn {
+  padding: 10px 20px;
+  background: var(--action-bg, #3b82f6);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cli-action-btn:hover {
+  background: var(--action-hover-bg, #2563eb);
+  transform: translateY(-1px);
+}
+
+.cli-action-btn.secondary {
+  background: var(--action-secondary-bg, #e5e7eb);
+  color: var(--action-secondary-text, #374151);
+}
+
+.cli-action-btn.secondary:hover {
+  background: var(--action-secondary-hover-bg, #d1d5db);
+}
+
+/* Dark theme for status - use [data-theme="dark"] to follow app theme setting */
+[data-theme="dark"] .cli-status-message h3 {
+  color: var(--dark-status-title, #f9fafb);
+}
+
+[data-theme="dark"] .cli-status-message p {
+  color: var(--dark-status-text, #d1d5db);
+}
+
+[data-theme="dark"] .cli-status-note {
+  color: var(--dark-status-note, #9ca3af) !important;
+}
+
+[data-theme="dark"] .cli-action-btn.secondary {
+  background: var(--dark-action-secondary-bg, #374151);
+  color: var(--dark-action-secondary-text, #f3f4f6);
+}
+
+[data-theme="dark"] .cli-action-btn.secondary:hover {
+  background: var(--dark-action-secondary-hover-bg, #4b5563);
+}
+
+/* Ensure proper sizing within the chat panel */
+#chat-panel-container .cli-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}

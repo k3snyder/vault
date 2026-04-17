@@ -1,0 +1,61 @@
+# Dependencies
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Tauri
+src-tauri/target/
+src-tauri/WixTools/
+
+# Rust MCP servers
+mcp-servers/*/target/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+*.tsbuildinfo
+
+
+CLAUDE.md
+AGENTS.md
+.claude
+release
+.docs
+
+vault.code-workspace
+release/
+test
+tests
+pacas-config.json
+src-tauri/gen

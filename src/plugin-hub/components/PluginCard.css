@@ -1,0 +1,310 @@
+.plugin-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    transition: all 0.15s ease;
+    position: relative;
+}
+
+.plugin-card:hover {
+    border-color: var(--border-default);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
+}
+
+.plugin-card.expanded {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 1px var(--accent-primary);
+}
+
+.plugin-card-header {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.plugin-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.plugin-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.plugin-card-title h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.plugin-version {
+    font-size: 12px;
+    color: var(--text-secondary);
+    background: var(--bg-subtle);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.plugin-card-description {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.plugin-card-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--text-tertiary);
+}
+
+.plugin-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: 8px;
+}
+
+.plugin-toggle {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
+}
+
+.plugin-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.plugin-toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--toggle-bg-off, #3a3a3a);
+    transition: 0.3s;
+    border-radius: 22px;
+}
+
+.plugin-toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+.plugin-toggle input:checked + .plugin-toggle-slider {
+    background-color: var(--accent-primary);
+}
+
+.plugin-toggle input:checked + .plugin-toggle-slider:before {
+    transform: translateX(18px);
+}
+
+.plugin-action-button {
+    background: transparent;
+    border: 1px solid transparent;
+    padding: 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    transition: all 0.15s ease;
+}
+
+.plugin-action-button:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.plugin-action-button.primary {
+    background: var(--accent-primary);
+    color: white;
+    padding: 6px 12px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.plugin-action-button.primary:hover {
+    background: var(--accent-primary-hover);
+}
+
+.plugin-card-expand {
+    background: transparent;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: transform 0.2s ease;
+}
+
+.plugin-card-expand.rotated {
+    transform: rotate(180deg);
+}
+
+.plugin-card-details {
+    padding: 0 16px 16px 16px;
+    border-top: 1px solid var(--plugin-card-border);
+    animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.plugin-detail-section {
+    margin-top: 16px;
+}
+
+.plugin-detail-section h4 {
+    margin: 0 0 8px 0;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-tertiary);
+}
+
+.plugin-permissions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.permission-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.permission-badge.low-risk {
+    background: rgba(76, 175, 80, 0.1);
+    color: #4caf50;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.permission-badge.medium-risk {
+    background: rgba(255, 152, 0, 0.1);
+    color: #ff9800;
+    border: 1px solid rgba(255, 152, 0, 0.2);
+}
+
+.permission-badge.high-risk {
+    background: rgba(244, 67, 54, 0.1);
+    color: #f44336;
+    border: 1px solid rgba(244, 67, 54, 0.2);
+}
+
+.plugin-resources {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.resource-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.resource-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.resource-value {
+    font-family: 'SF Mono', 'Monaco', monospace;
+    color: var(--text-tertiary);
+}
+
+.resource-bar {
+    height: 4px;
+    background: var(--bg-subtle);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.resource-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.resource-bar-fill.low {
+    background: #4caf50;
+}
+
+.resource-bar-fill.medium {
+    background: #ff9800;
+}
+
+.resource-bar-fill.high {
+    background: #f44336;
+}
+
+.plugin-readme {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text-secondary);
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* Plugin Card Variables now defined in PluginHub.css */
+
+/* Freemium badge - gradient from green (free) to gold (premium) */
+.badge-freemium {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(251, 191, 36, 0.2));
+    color: #22c55e;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-radius: 4px;
+    margin-left: 8px;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}

@@ -1,0 +1,592 @@
+/**
+ * WYSIWYG Markdown Editor Styles
+ *
+ * Styles for the WYSIWYG markdown editor that provide rich text appearance
+ * while editing markdown. Uses CSS variables from tokens/variables.css for
+ * consistent theming across light and dark modes.
+ *
+ * Class naming convention: .cm-wysiwyg-* for all WYSIWYG-specific styles
+ */
+
+/* ============================================================================
+   Inline Formatting
+   ============================================================================ */
+
+.cm-wysiwyg-bold {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.cm-wysiwyg-italic {
+  font-style: italic;
+  color: var(--text-primary);
+}
+
+.cm-wysiwyg-strikethrough {
+  text-decoration: line-through;
+  text-decoration-color: var(--text-tertiary);
+  color: var(--text-secondary);
+}
+
+.cm-wysiwyg-code {
+  font-family: var(--mono-font-stack, 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace);
+  font-size: 0.9em;
+  background-color: var(--md-code-bg, var(--bg-secondary));
+  color: var(--md-code-color, var(--syntax-keyword));
+  padding: 0.125em 0.375em;
+  border-radius: 4px;
+  border: 1px solid var(--border-card);
+}
+
+.cm-wysiwyg-highlight {
+  background-color: #ffeb3b;
+  color: #000000;
+  padding: 0.0625em 0.25em;
+  border-radius: 2px;
+  font-weight: 500;
+}
+
+/* Dark theme highlight - slightly muted yellow for less eye strain */
+[data-theme="dark"] .cm-wysiwyg-highlight {
+  background-color: rgba(255, 235, 59, 0.85);
+  color: #000000;
+}
+
+.cm-wysiwyg-link {
+  color: var(--link-color, var(--primary-600));
+  text-decoration: underline;
+  text-decoration-color: var(--link-color, var(--primary-600));
+  text-underline-offset: 2px;
+  cursor: pointer;
+  transition: color var(--motion-micro) var(--ease-default);
+}
+
+.cm-wysiwyg-link:hover {
+  color: var(--link-hover, var(--primary-700));
+  text-decoration-color: var(--link-hover, var(--primary-700));
+}
+
+/* ============================================================================
+   Headings
+
+   Sizes based on vault-mobile reference:
+   H1: 1.8em, H2: 1.5em, H3: 1.25em, H4: 1.1em, H5: 1em, H6: 0.9em
+   ============================================================================ */
+
+.cm-wysiwyg-h1,
+.cm-wysiwyg-h2,
+.cm-wysiwyg-h3,
+.cm-wysiwyg-h4,
+.cm-wysiwyg-h5,
+.cm-wysiwyg-h6 {
+  font-family: var(--editor-font-family, 'Inter', sans-serif);
+  color: var(--md-heading-color, var(--text-primary));
+  line-height: var(--line-height-tight, 1.2);
+  margin: 0;
+  padding: 0;
+}
+
+.cm-wysiwyg-h1 {
+  font-size: 1.8em;
+  font-weight: var(--font-weight-bold, 700);
+  letter-spacing: -0.025em;
+}
+
+.cm-wysiwyg-h2 {
+  font-size: 1.5em;
+  font-weight: var(--font-weight-semibold, 600);
+  letter-spacing: -0.02em;
+}
+
+.cm-wysiwyg-h3 {
+  font-size: 1.25em;
+  font-weight: var(--font-weight-semibold, 600);
+  letter-spacing: -0.015em;
+}
+
+.cm-wysiwyg-h4 {
+  font-size: 1.1em;
+  font-weight: var(--font-weight-semibold, 600);
+  letter-spacing: -0.01em;
+}
+
+.cm-wysiwyg-h5 {
+  font-size: 1em;
+  font-weight: var(--font-weight-semibold, 600);
+  letter-spacing: -0.005em;
+}
+
+.cm-wysiwyg-h6 {
+  font-size: 0.9em;
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--md-heading-muted, var(--text-secondary));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ============================================================================
+   Block Elements
+   ============================================================================ */
+
+/* Blockquote styling */
+.cm-wysiwyg-blockquote {
+  color: var(--md-quote-color, var(--text-secondary));
+  background-color: var(--md-quote-bg, var(--accent-bg));
+  border-left: 4px solid var(--md-quote-border, var(--accent-primary));
+  padding: 0.5em 1em;
+  margin: 0;
+  border-radius: 0 4px 4px 0;
+  font-style: italic;
+}
+
+/* Dark theme blockquote adjustments */
+[data-theme="dark"] .cm-wysiwyg-blockquote {
+  background-color: var(--md-quote-bg, rgba(59, 130, 246, 0.1));
+}
+
+/* List bullet marker styling */
+.cm-wysiwyg-list-bullet {
+  color: var(--md-list-bullet, var(--text-secondary));
+  font-weight: var(--font-weight-medium, 500);
+  user-select: none;
+}
+
+/* Numbered list marker styling */
+.cm-wysiwyg-list-number {
+  color: var(--md-list-bullet, var(--text-secondary));
+  font-weight: var(--font-weight-medium, 500);
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+/* ============================================================================
+   Markdown Syntax Markers (Hidden in WYSIWYG mode)
+
+   These classes hide the markdown syntax characters (**, ~~, ==, etc.)
+   while preserving the formatted appearance of the content.
+   ============================================================================ */
+
+.cm-wysiwyg-marker {
+  color: var(--syntax-marker, var(--primary-400));
+  font-size: 0;
+  width: 0;
+  display: inline-block;
+  overflow: hidden;
+}
+
+/* Show markers on hover or when line is active (editing) */
+.cm-activeLine .cm-wysiwyg-marker,
+.cm-line:focus-within .cm-wysiwyg-marker {
+  font-size: inherit;
+  width: auto;
+  color: var(--syntax-marker, var(--primary-400));
+  opacity: 0.6;
+}
+
+/* ============================================================================
+   Combined Formatting Support
+
+   Handle nested formatting like **_bold italic_** or ~~**strikethrough bold**~~
+   ============================================================================ */
+
+.cm-wysiwyg-bold.cm-wysiwyg-italic {
+  font-weight: 700;
+  font-style: italic;
+}
+
+.cm-wysiwyg-strikethrough.cm-wysiwyg-bold {
+  font-weight: 700;
+  text-decoration: line-through;
+}
+
+.cm-wysiwyg-strikethrough.cm-wysiwyg-italic {
+  font-style: italic;
+  text-decoration: line-through;
+}
+
+/* ============================================================================
+   High Contrast Mode Support
+   ============================================================================ */
+
+@media (prefers-contrast: high) {
+  .cm-wysiwyg-bold {
+    font-weight: 800;
+  }
+
+  .cm-wysiwyg-link {
+    text-decoration-thickness: 2px;
+  }
+
+  .cm-wysiwyg-blockquote {
+    border-left-width: 6px;
+  }
+
+  .cm-wysiwyg-code {
+    border-width: 2px;
+  }
+}
+
+/* ============================================================================
+   Reduced Motion Support
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .cm-wysiwyg-link {
+    transition: none;
+  }
+}
+
+/* ============================================================================
+   Print Styles
+   ============================================================================ */
+
+@media print {
+  .cm-wysiwyg-link {
+    color: var(--text-primary);
+    text-decoration: underline;
+  }
+
+  .cm-wysiwyg-highlight {
+    background-color: #fff;
+    border: 1px solid #000;
+    padding: 0 2px;
+  }
+
+  .cm-wysiwyg-code {
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+  }
+
+  .cm-wysiwyg-blockquote {
+    border-left-color: #666;
+    background-color: #f9f9f9;
+  }
+}
+
+/* ============================================================================
+   Slash Command Menu
+   ============================================================================ */
+
+.cm-slash-menu {
+  position: absolute;
+  background: var(--bg-primary, #ffffff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 220px;
+  max-width: 280px;
+  max-height: 320px;
+  overflow-y: auto;
+  z-index: 1000;
+  padding: 4px;
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+  font-size: 14px;
+}
+
+/* Dark theme */
+[data-theme="dark"] .cm-slash-menu {
+  background: var(--bg-primary, #1f1f1f);
+  border-color: var(--border-color, #3f3f3f);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Menu header (optional, for "Commands" label) */
+.cm-slash-menu-header {
+  padding: 6px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-tertiary, #9ca3af);
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  margin-bottom: 4px;
+}
+
+[data-theme="dark"] .cm-slash-menu-header {
+  color: var(--text-tertiary, #6b7280);
+  border-bottom-color: var(--border-color, #3f3f3f);
+}
+
+/* Menu item */
+.cm-slash-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 0.1s ease;
+}
+
+.cm-slash-menu-item:hover {
+  background: var(--bg-hover, #f3f4f6);
+}
+
+[data-theme="dark"] .cm-slash-menu-item:hover {
+  background: var(--bg-hover, #2f2f2f);
+}
+
+.cm-slash-menu-item.selected {
+  background: var(--bg-active, #e5e7eb);
+}
+
+[data-theme="dark"] .cm-slash-menu-item.selected {
+  background: var(--bg-active, #3f3f3f);
+}
+
+/* Item icon */
+.cm-slash-menu-item-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--text-secondary, #6b7280);
+  background: var(--bg-secondary, #f9fafb);
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .cm-slash-menu-item-icon {
+  background: var(--bg-secondary, #2a2a2a);
+  color: var(--text-secondary, #9ca3af);
+}
+
+.cm-slash-menu-item.selected .cm-slash-menu-item-icon {
+  background: var(--primary-100, #dbeafe);
+  color: var(--primary-600, #2563eb);
+}
+
+[data-theme="dark"] .cm-slash-menu-item.selected .cm-slash-menu-item-icon {
+  background: var(--primary-900, #1e3a5f);
+  color: var(--primary-400, #60a5fa);
+}
+
+/* Item content */
+.cm-slash-menu-item-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.cm-slash-menu-item-label {
+  font-weight: 500;
+  color: var(--text-primary, #171717);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+[data-theme="dark"] .cm-slash-menu-item-label {
+  color: var(--text-primary, #fafafa);
+}
+
+.cm-slash-menu-item-hint {
+  font-size: 12px;
+  color: var(--text-tertiary, #9ca3af);
+  margin-top: 2px;
+}
+
+[data-theme="dark"] .cm-slash-menu-item-hint {
+  color: var(--text-tertiary, #6b7280);
+}
+
+/* Empty state */
+.cm-slash-menu-empty {
+  padding: 16px;
+  text-align: center;
+  color: var(--text-tertiary, #9ca3af);
+  font-size: 13px;
+}
+
+/* Scrollbar styling */
+.cm-slash-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cm-slash-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.cm-slash-menu::-webkit-scrollbar-thumb {
+  background: var(--border-color, #d1d5db);
+  border-radius: 3px;
+}
+
+.cm-slash-menu::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary, #9ca3af);
+}
+
+[data-theme="dark"] .cm-slash-menu::-webkit-scrollbar-thumb {
+  background: var(--border-color, #4b5563);
+}
+
+[data-theme="dark"] .cm-slash-menu::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary, #6b7280);
+}
+
+/* ============================================================================
+   Floating Toolbar
+   ============================================================================ */
+
+.cm-floating-toolbar {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 6px;
+  background: var(--bg-primary, #ffffff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+  animation: cm-toolbar-fade-in 0.15s ease-out;
+}
+
+@keyframes cm-toolbar-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dark theme */
+[data-theme="dark"] .cm-floating-toolbar {
+  background: var(--bg-primary, #1f1f1f);
+  border-color: var(--border-color, #3f3f3f);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Toolbar button */
+.cm-floating-toolbar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary, #171717);
+  transition: background-color 0.1s ease, color 0.1s ease;
+}
+
+[data-theme="dark"] .cm-floating-toolbar-btn {
+  color: var(--text-primary, #fafafa);
+}
+
+.cm-floating-toolbar-btn:hover {
+  background: var(--bg-hover, #f3f4f6);
+}
+
+[data-theme="dark"] .cm-floating-toolbar-btn:hover {
+  background: var(--bg-hover, #2f2f2f);
+}
+
+.cm-floating-toolbar-btn.active {
+  background: var(--primary-100, #dbeafe);
+  color: var(--primary-600, #2563eb);
+}
+
+[data-theme="dark"] .cm-floating-toolbar-btn.active {
+  background: var(--primary-900, #1e3a5f);
+  color: var(--primary-400, #60a5fa);
+}
+
+/* Specific button styles */
+.cm-floating-toolbar-btn[data-action="bold"] {
+  font-weight: 700;
+}
+
+.cm-floating-toolbar-btn[data-action="italic"] {
+  font-style: italic;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+.cm-floating-toolbar-btn[data-action="strikethrough"] {
+  text-decoration: line-through;
+}
+
+.cm-floating-toolbar-btn[data-action="code"] {
+  font-family: var(--mono-font-stack, 'SF Mono', Monaco, monospace);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Separator between button groups */
+.cm-floating-toolbar-separator {
+  width: 1px;
+  height: 20px;
+  background: var(--border-color, #e5e7eb);
+  margin: 0 4px;
+}
+
+[data-theme="dark"] .cm-floating-toolbar-separator {
+  background: var(--border-color, #3f3f3f);
+}
+
+/* Tooltip on hover */
+.cm-floating-toolbar-btn[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  background: var(--bg-tertiary, #1f2937);
+  color: var(--text-inverse, #ffffff);
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 1001;
+}
+
+[data-theme="dark"] .cm-floating-toolbar-btn[title]:hover::after {
+  background: var(--bg-tertiary, #374151);
+}
+
+/* Link input (when adding/editing links) */
+.cm-floating-toolbar-link-input {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+}
+
+.cm-floating-toolbar-link-input input {
+  width: 180px;
+  padding: 4px 8px;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 4px;
+  font-size: 13px;
+  background: var(--bg-secondary, #f9fafb);
+  color: var(--text-primary, #171717);
+  outline: none;
+}
+
+.cm-floating-toolbar-link-input input:focus {
+  border-color: var(--primary-500, #3b82f6);
+  box-shadow: 0 0 0 2px var(--primary-100, #dbeafe);
+}
+
+[data-theme="dark"] .cm-floating-toolbar-link-input input {
+  background: var(--bg-secondary, #2a2a2a);
+  border-color: var(--border-color, #3f3f3f);
+  color: var(--text-primary, #fafafa);
+}
+
+[data-theme="dark"] .cm-floating-toolbar-link-input input:focus {
+  border-color: var(--primary-500, #3b82f6);
+  box-shadow: 0 0 0 2px var(--primary-900, #1e3a5f);
+}

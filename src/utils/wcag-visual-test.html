@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WCAG AAA Visual Test - Vault Color System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      padding: 2rem;
+      background: #f5f5f5;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: #171717;
+    }
+
+    .subtitle {
+      font-size: 1rem;
+      color: #737373;
+      margin-bottom: 2rem;
+    }
+
+    .controls {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .control-group {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .control-group:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      font-weight: 600;
+      min-width: 120px;
+      color: #404040;
+    }
+
+    select, button {
+      padding: 0.5rem 1rem;
+      border: 1px solid #e5e5e5;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      background: white;
+      cursor: pointer;
+    }
+
+    button {
+      background: #3b82f6;
+      color: white;
+      border-color: #3b82f6;
+      font-weight: 600;
+    }
+
+    button:hover {
+      background: #2563eb;
+      border-color: #2563eb;
+    }
+
+    .section {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      color: #171717;
+      border-bottom: 2px solid #e5e5e5;
+      padding-bottom: 0.5rem;
+    }
+
+    .test-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .test-card {
+      border: 2px solid #e5e5e5;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .test-preview {
+      padding: 2rem;
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .test-text {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .test-small {
+      font-size: 0.875rem;
+    }
+
+    .test-large {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .test-info {
+      padding: 1rem;
+      background: #fafafa;
+      border-top: 1px solid #e5e5e5;
+      font-size: 0.75rem;
+      line-height: 1.4;
+    }
+
+    .test-info-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.25rem;
+    }
+
+    .test-info-label {
+      font-weight: 600;
+      color: #737373;
+    }
+
+    .test-info-value {
+      font-family: 'Monaco', 'Courier New', monospace;
+      color: #404040;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 0.75rem;
+    }
+
+    .status-aaa-plus {
+      background: #22c55e;
+      color: white;
+    }
+
+    .status-aaa {
+      background: #4ade80;
+      color: #14532d;
+    }
+
+    .status-aa {
+      background: #fbbf24;
+      color: #78350f;
+    }
+
+    .status-fail {
+      background: #ef4444;
+      color: white;
+    }
+
+    .fill-tokens {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .fill-token-card {
+      border: 1px solid #e5e5e5;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .fill-token-preview {
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      position: relative;
+    }
+
+    .fill-token-preview::before {
+      content: 'Hover Me';
+      position: absolute;
+      opacity: 0.5;
+    }
+
+    .fill-token-info {
+      padding: 0.75rem;
+      background: #fafafa;
+      font-size: 0.75rem;
+    }
+
+    /* Dark theme styles */
+    body.dark-theme {
+      background: #0a0a0a;
+      color: #fafafa;
+    }
+
+    body.dark-theme h1 {
+      color: #F5F5F7;
+    }
+
+    body.dark-theme .subtitle {
+      color: #A1A1A6;
+    }
+
+    body.dark-theme .controls,
+    body.dark-theme .section {
+      background: #1C1C1E;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
+    body.dark-theme label {
+      color: #A1A1A6;
+    }
+
+    body.dark-theme select {
+      background: #2C2C2E;
+      border-color: rgba(255, 255, 255, 0.08);
+      color: #F5F5F7;
+    }
+
+    body.dark-theme .section-title {
+      color: #F5F5F7;
+      border-bottom-color: rgba(255, 255, 255, 0.08);
+    }
+
+    body.dark-theme .test-card {
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    body.dark-theme .test-info,
+    body.dark-theme .fill-token-info {
+      background: #2C2C2E;
+      border-top-color: rgba(255, 255, 255, 0.08);
+    }
+
+    body.dark-theme .test-info-label {
+      color: #A1A1A6;
+    }
+
+    body.dark-theme .test-info-value {
+      color: #F5F5F7;
+    }
+
+    /* High contrast mode */
+    @media (prefers-contrast: high) {
+      .status-badge {
+        border: 2px solid currentColor;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>WCAG AAA Visual Test</h1>
+    <p class="subtitle">Apple Principles Color Refinement - Manual Verification Tool</p>
+
+    <div class="controls">
+      <div class="control-group">
+        <label for="theme-select">Theme:</label>
+        <select id="theme-select">
+          <option value="light">Light (Standard)</option>
+          <option value="dark">Dark (Standard)</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label for="contrast-select">Contrast:</label>
+        <select id="contrast-select">
+          <option value="standard">Standard</option>
+          <option value="high">High Contrast</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label></label>
+        <button id="run-tests">Run Automated Tests</button>
+      </div>
+    </div>
+
+    <!-- Light High Contrast Tests -->
+    <div class="section" id="light-high-contrast">
+      <h2 class="section-title">Light High Contrast Mode (WCAG AAA)</h2>
+      <div class="test-grid" id="light-hc-grid"></div>
+    </div>
+
+    <!-- Dark High Contrast Tests -->
+    <div class="section" id="dark-high-contrast">
+      <h2 class="section-title">Dark High Contrast Mode (WCAG AAA)</h2>
+      <div class="test-grid" id="dark-hc-grid"></div>
+    </div>
+
+    <!-- Standard Light Mode Tests -->
+    <div class="section" id="standard-light">
+      <h2 class="section-title">Standard Light Mode (WCAG AA)</h2>
+      <div class="test-grid" id="standard-light-grid"></div>
+    </div>
+
+    <!-- Standard Dark Mode Tests -->
+    <div class="section" id="standard-dark">
+      <h2 class="section-title">Standard Dark Mode (WCAG AA)</h2>
+      <div class="test-grid" id="standard-dark-grid"></div>
+    </div>
+
+    <!-- Fill Tokens -->
+    <div class="section" id="fill-tokens">
+      <h2 class="section-title">Fill Tokens (WCAG AA UI - 3:1)</h2>
+      <div class="fill-tokens" id="fill-tokens-grid"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { getContrastRatio } from './contrast-checker.js';
+    import { runAllValidations, formatResultsAsJSON } from './wcag-aaa-validator.js';
+
+    // Test data
+    const testData = {
+      lightHighContrast: [
+        { name: 'Primary Text', fg: '#000000', bg: '#FFFFFF', expected: '21:1' },
+        { name: 'Secondary Text', fg: '#262626', bg: '#FFFFFF', expected: '14:1' },
+        { name: 'Tertiary Text', fg: '#525252', bg: '#FFFFFF', expected: '7.5:1' },
+      ],
+      darkHighContrast: [
+        { name: 'Primary Text', fg: '#FFFFFF', bg: '#1C1C1E', expected: '17:1' },
+        { name: 'Secondary Text', fg: '#E5E5E5', bg: '#1C1C1E', expected: '13:1' },
+        { name: 'Tertiary Text', fg: '#B0B0B0', bg: '#1C1C1E', expected: '7.5:1' },
+      ],
+      standardLight: [
+        { name: 'Primary Text', fg: '#171717', bg: '#FFFFFF', expected: '12.6:1' },
+        { name: 'Secondary Text', fg: '#404040', bg: '#FFFFFF', expected: '9.4:1' },
+        { name: 'Tertiary Text', fg: '#737373', bg: '#FFFFFF', expected: '5.5:1' },
+      ],
+      standardDark: [
+        { name: 'Primary Text', fg: '#F5F5F7', bg: '#1C1C1E', expected: '15.4:1' },
+        { name: 'Secondary Text', fg: '#A1A1A6', bg: '#1C1C1E', expected: '6.3:1' },
+        { name: 'Tertiary Text', fg: '#6E6E73', bg: '#1C1C1E', expected: '4.5:1' },
+      ],
+      fillTokensLight: [
+        { name: 'fillPrimary', rgba: 'rgba(0, 0, 0, 0.05)', bg: '#FFFFFF' },
+        { name: 'fillHover', rgba: 'rgba(0, 0, 0, 0.05)', bg: '#FFFFFF' },
+        { name: 'fillPressed', rgba: 'rgba(0, 0, 0, 0.08)', bg: '#FFFFFF' },
+      ],
+      fillTokensDark: [
+        { name: 'fillPrimary', rgba: 'rgba(255, 255, 255, 0.08)', bg: '#1C1C1E' },
+        { name: 'fillHover', rgba: 'rgba(255, 255, 255, 0.08)', bg: '#1C1C1E' },
+        { name: 'fillPressed', rgba: 'rgba(255, 255, 255, 0.12)', bg: '#1C1C1E' },
+      ],
+    };
+
+    function getWCAGLevel(ratio) {
+      if (ratio >= 15) return { level: 'AAA++', class: 'status-aaa-plus' };
+      if (ratio >= 7.5) return { level: 'AAA', class: 'status-aaa' };
+      if (ratio >= 4.5) return { level: 'AA', class: 'status-aa' };
+      if (ratio >= 3.0) return { level: 'AA UI', class: 'status-aa' };
+      return { level: 'FAIL', class: 'status-fail' };
+    }
+
+    function createTestCard(test) {
+      const ratio = getContrastRatio(test.fg, test.bg);
+      const wcag = getWCAGLevel(ratio);
+
+      return `
+        <div class="test-card">
+          <div class="test-preview" style="background: ${test.bg}; color: ${test.fg};">
+            <div class="test-text">Normal Text (16px)</div>
+            <div class="test-small">Small Text (14px)</div>
+            <div class="test-large">Large Text (20px)</div>
+          </div>
+          <div class="test-info">
+            <div class="test-info-row">
+              <span class="test-info-label">Name:</span>
+              <span class="test-info-value">${test.name}</span>
+            </div>
+            <div class="test-info-row">
+              <span class="test-info-label">Foreground:</span>
+              <span class="test-info-value">${test.fg}</span>
+            </div>
+            <div class="test-info-row">
+              <span class="test-info-label">Background:</span>
+              <span class="test-info-value">${test.bg}</span>
+            </div>
+            <div class="test-info-row">
+              <span class="test-info-label">Ratio:</span>
+              <span class="test-info-value">${ratio.toFixed(2)}:1</span>
+            </div>
+            <div class="test-info-row">
+              <span class="test-info-label">Expected:</span>
+              <span class="test-info-value">${test.expected}</span>
+            </div>
+            <div class="test-info-row">
+              <span class="test-info-label">Level:</span>
+              <span class="status-badge ${wcag.class}">${wcag.level}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function createFillTokenCard(test) {
+      return `
+        <div class="fill-token-card">
+          <div class="fill-token-preview" style="background: ${test.bg};">
+            <div style="background: ${test.rgba}; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+              ${test.name}
+            </div>
+          </div>
+          <div class="fill-token-info">
+            <div style="margin-bottom: 0.25rem;"><strong>${test.name}</strong></div>
+            <div>${test.rgba}</div>
+            <div>on ${test.bg}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Populate grids
+    document.getElementById('light-hc-grid').innerHTML =
+      testData.lightHighContrast.map(createTestCard).join('');
+
+    document.getElementById('dark-hc-grid').innerHTML =
+      testData.darkHighContrast.map(createTestCard).join('');
+
+    document.getElementById('standard-light-grid').innerHTML =
+      testData.standardLight.map(createTestCard).join('');
+
+    document.getElementById('standard-dark-grid').innerHTML =
+      testData.standardDark.map(createTestCard).join('');
+
+    document.getElementById('fill-tokens-grid').innerHTML =
+      [...testData.fillTokensLight, ...testData.fillTokensDark].map(createFillTokenCard).join('');
+
+    // Theme switching
+    document.getElementById('theme-select').addEventListener('change', (e) => {
+      document.body.classList.toggle('dark-theme', e.target.value === 'dark');
+    });
+
+    // Run automated tests
+    document.getElementById('run-tests').addEventListener('click', () => {
+      console.log('Running automated WCAG validation tests...');
+      const results = runAllValidations();
+      console.log(formatResultsAsJSON(results));
+      alert(`Tests complete!\n\nTotal: ${results.summary.total}\nPassed: ${results.summary.passed}\nFailed: ${results.summary.failed}\n\nSee console for detailed results.`);
+    });
+  </script>
+</body>
+</html>

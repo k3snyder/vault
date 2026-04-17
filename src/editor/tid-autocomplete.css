@@ -1,0 +1,93 @@
+/* TID Autocomplete Styles */
+
+/* TID completion items in dropdown */
+.cm-completionLabel-tid {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* TID completion detail (metadata) */
+.cm-completionDetail-tid {
+  font-size: 0.85em;
+  color: var(--text-muted);
+  margin-left: 0.5em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Priority indicators */
+.cm-completionDetail-tid .priority-high,
+.cm-completionDetail-tid .priority-critical {
+  color: var(--color-red);
+  font-weight: 600;
+}
+
+/* Status indicators */
+.cm-completionDetail-tid .status-done {
+  color: var(--color-green);
+}
+
+.cm-completionDetail-tid .status-cancelled {
+  color: var(--text-faint);
+  text-decoration: line-through;
+}
+
+/* Due date highlighting */
+.cm-completionDetail-tid .due-today {
+  color: var(--color-orange);
+  font-weight: 600;
+}
+
+.cm-completionDetail-tid .due-overdue {
+  color: var(--color-red);
+  font-weight: 600;
+}
+
+/* Project name styling */
+.cm-completionDetail-tid .project {
+  color: var(--color-purple);
+  font-style: italic;
+}
+
+/* Tag styling */
+.cm-completionDetail-tid .tag {
+  color: var(--color-blue);
+  font-size: 0.9em;
+}
+
+/* Selected TID completion item */
+.cm-tooltip-autocomplete ul li[aria-selected="true"] .cm-completionLabel-tid {
+  color: var(--text-on-accent);
+}
+
+.cm-tooltip-autocomplete ul li[aria-selected="true"] .cm-completionDetail-tid {
+  color: var(--text-on-accent);
+  opacity: 0.8;
+}
+
+/* TID pattern in editor */
+.cm-tid-pattern {
+  color: var(--color-blue);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  cursor: pointer;
+}
+
+.cm-tid-pattern:hover {
+  text-decoration-style: solid;
+  background-color: var(--background-modifier-hover);
+}
+
+/* Completed TID reference */
+.cm-tid-reference {
+  color: var(--link-color);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.cm-tid-reference:hover {
+  text-decoration: underline;
+  color: var(--link-color-hover);
+}

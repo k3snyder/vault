@@ -1,0 +1,11 @@
+{
+  "apiToken": "YOUR_TOKEN_HERE",
+  "syncOnStartup": true,
+  "autoSync": true,
+  "syncFrequency": 60,
+  "highlightsFolder": "Readwise",
+  "dateFormat": "YYYY-MM-DD",
+  "groupBy": "book",
+  "appendToExisting": true,
+  "includeSupplementals": true
+}

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Plugin - Vault API Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #007ACC;
+            padding-bottom: 10px;
+        }
+        .api-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+        .api-section h2 {
+            color: #007ACC;
+            margin-top: 0;
+        }
+        button {
+            background: #007ACC;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #005a9e;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e8f4f8;
+            border-left: 4px solid #007ACC;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+        }
+        .error {
+            background: #fee;
+            border-left-color: #c00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Plugin API Demo</h1>
+        <p>This demo shows the Vault Plugin API in action. Each button demonstrates a different API method.</p>
+        
+        <div class="api-section">
+            <h2>Vault API</h2>
+            <button onclick="testVaultList()">List Files</button>
+            <button onclick="testVaultRead()">Read File</button>
+            <button onclick="testVaultWrite()">Write File</button>
+            <button onclick="testVaultDelete()">Delete File</button>
+            <div id="vault-result" class="result" style="display:none;"></div>
+        </div>
+        
+        <div class="api-section">
+            <h2>Workspace API</h2>
+            <button onclick="testShowNotice('info')">Show Info Notice</button>
+            <button onclick="testShowNotice('success')">Show Success Notice</button>
+            <button onclick="testShowNotice('warning')">Show Warning Notice</button>
+            <button onclick="testShowNotice('error')">Show Error Notice</button>
+            <button onclick="testGetActiveFile()">Get Active File</button>
+            <button onclick="testOpenFile()">Open File</button>
+            <div id="workspace-result" class="result" style="display:none;"></div>
+        </div>
+        
+        <div class="api-section">
+            <h2>Settings API</h2>
+            <button onclick="testSettingsGet()">Get Setting</button>
+            <button onclick="testSettingsSet()">Set Setting</button>
+            <button onclick="testSettingsGetAll()">Get All Settings</button>
+            <div id="settings-result" class="result" style="display:none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Wait for the API to be ready
+        window.addEventListener('vault-api-ready', function(event) {
+            console.log('Vault API Ready!', event.detail);
+            showResult('vault', 'Vault API v' + event.detail.version + ' loaded successfully!');
+        });
+
+        function showResult(section, text, isError = false) {
+            const resultDiv = document.getElementById(section + '-result');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = text;
+            resultDiv.className = isError ? 'result error' : 'result';
+        }
+
+        // Vault API Tests
+        async function testVaultList() {
+            try {
+                const files = await window.vault.list('/');
+                showResult('vault', 'Files in vault:\n' + files.join('\n'));
+            } catch (error) {
+                showResult('vault', 'Error: ' + error.message, true);
+            }
+        }
+
+        async function testVaultRead() {
+            const path = prompt('Enter file path to read:', 'test.md');
+            if (!path) return;
+            
+            try {
+                const content = await window.vault.read(path);
+                showResult('vault', 'File content:\n' + content);
+            } catch (error) {
+                showResult('vault', 'Error: ' + error.message, true);
+            }
+        }
+
+        async function testVaultWrite() {
+            const path = prompt('Enter file path to write:', 'test-plugin-file.md');
+            if (!path) return;
+            
+            const content = prompt('Enter content:', '# Test File\nCreated by plugin API');
+            if (!content) return;
+            
+            try {
+                await window.vault.write(path, content);
+                showResult('vault', 'File written successfully!');
+            } catch (error) {
+                showResult('vault', 'Error: ' + error.message, true);
+            }
+        }
+
+        async function testVaultDelete() {
+            const path = prompt('Enter file path to delete:', 'test-plugin-file.md');
+            if (!path) return;
+            
+            try {
+                await window.vault.delete(path);
+                showResult('vault', 'File deleted successfully!');
+            } catch (error) {
+                showResult('vault', 'Error: ' + error.message, true);
+            }
+        }
+
+        // Workspace API Tests
+        async function testShowNotice(type) {
+            try {
+                await window.workspace.showNotice(
+                    'This is a ' + type + ' notice from the plugin!',
+                    5000,
+                    type
+                );
+                showResult('workspace', 'Notice shown!');
+            } catch (error) {
+                showResult('workspace', 'Error: ' + error.message, true);
+            }
+        }
+
+        async function testGetActiveFile() {
+            try {
+                const path = await window.workspace.getActiveFile();
+                showResult('workspace', 'Active file: ' + (path || 'None'));
+            } catch (error) {
+                showResult('workspace', 'Error: ' + error.message, true);
+            }
+        }
+
+        async function testOpenFile() {
+            const path = prompt('Enter file path to open:', 'test.md');
+            if (!path) return;
+            
+            try {
+                await window.workspace.openFile(path);
+                showResult('workspace', 'File opened!');
+            } catch (error) {
+                showResult('workspace', 'Error: ' + error.message, true);
+            }
+        }
+
+        // Settings API Tests
+        async function testSettingsGet() {
+            const key = prompt('Enter setting key:', 'plugin.testKey');
+            if (!key) return;
+            
+            try {
+                const value = await window.settings.get(key);
+                showResult('settings', 'Setting value: ' + JSON.stringify(value));
+            } catch (error) {
+                showResult('settings', 'Error: ' + error.message, true);
+            }
+        }
+
+        async function testSettingsSet() {
+            const key = prompt('Enter setting key:', 'plugin.testKey');
+            if (!key) return;
+            
+            const value = prompt('Enter setting value:', 'test value');
+            if (!value) return;
+            
+            try {
+                await window.settings.set(key, value);
+                showResult('settings', 'Setting saved!');
+            } catch (error) {
+                showResult('settings', 'Error: ' + error.message, true);
+            }
+        }
+
+        async function testSettingsGetAll() {
+            try {
+                const settings = await window.settings.getAll();
+                showResult('settings', 'All settings:\n' + JSON.stringify(settings, null, 2));
+            } catch (error) {
+                showResult('settings', 'Error: ' + error.message, true);
+            }
+        }
+
+        // Simulate API availability if not injected yet
+        if (!window.vault) {
+            console.log('Vault API not yet available, creating mock for demo');
+            // In production, this would be injected by the plugin runtime
+        }
+    </script>
+</body>
+</html>

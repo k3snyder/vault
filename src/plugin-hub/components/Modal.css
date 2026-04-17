@@ -1,0 +1,392 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999999; /* Higher than Plugin Hub (999999) */
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.modal-overlay.modal-show {
+    opacity: 1;
+}
+
+.modal-overlay.modal-show .modal {
+    animation: modalSlideIn 0.3s ease;
+}
+
+.modal-overlay.modal-hide {
+    animation: modalFadeOut 0.2s ease forwards;
+}
+
+.modal-overlay.modal-hide .modal {
+    animation: modalSlideOut 0.2s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes modalSlideOut {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+}
+
+@keyframes modalFadeOut {
+    to {
+        opacity: 0;
+    }
+}
+
+.modal {
+    background: var(--bg-primary, #ffffff);  /* Use theme background */
+    border: 1px solid var(--border-default, #d4d4d4);
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    position: relative;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.modal-small {
+    width: 400px;
+    max-width: 90vw;
+}
+
+.modal-medium {
+    width: 600px;
+    max-width: 90vw;
+}
+
+.modal-large {
+    width: 800px;
+    max-width: 90vw;
+}
+
+.modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    z-index: 1;
+}
+
+.modal-close:hover {
+    background: var(--bg-hover, #f0f0f0);
+    color: var(--text-primary, #191919);
+}
+
+.modal-header {
+    padding: 24px 24px 16px 24px;
+    border-bottom: 1px solid var(--border-subtle, #e5e5e5);
+    background: var(--bg-primary, #ffffff);  /* Ensure solid background */
+}
+
+.modal-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary, #191919);
+}
+
+.modal-content {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+    background: var(--bg-primary, #ffffff);  /* Ensure solid background */
+}
+
+.modal-content p {
+    margin: 0 0 16px 0;
+    line-height: 1.5;
+    color: var(--text-secondary, #6b6b6b);
+}
+
+.modal-content p:last-child {
+    margin-bottom: 0;
+}
+
+.modal-footer {
+    padding: 16px 24px 24px 24px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    border-top: 1px solid var(--border-subtle, #e5e5e5);
+    background: var(--bg-primary, #ffffff);  /* Ensure solid background */
+}
+
+.modal-action {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.modal-action-primary {
+    background: var(--accent-subtle, #dbeafe);
+    color: var(--text-primary, #191919);
+    border-color: var(--accent-primary, #0969da);
+}
+
+.modal-action-primary:hover {
+    background: var(--accent-primary, #0969da);
+    color: white;
+}
+
+.modal-action-secondary {
+    background: transparent;
+    color: var(--text-secondary, #6b6b6b);
+    border-color: var(--border-default, #d4d4d4);
+}
+
+.modal-action-secondary:hover {
+    background: var(--bg-hover, #f0f0f0);
+    color: var(--text-primary, #191919);
+}
+
+.modal-action-sync {
+    background: var(--accent-secondary, #e3f2fd);
+    color: var(--accent-primary, #0969da);
+    border-color: var(--accent-primary, #0969da);
+}
+
+.modal-action-sync:hover {
+    background: var(--accent-primary, #0969da);
+    color: white;
+}
+
+.initial-sync-button {
+    width: 100%;
+    margin-top: 8px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.permission-dialog-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.permission-dialog-intro {
+    margin: 0;
+    color: var(--text-secondary);
+}
+
+.permission-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.permission-item {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.permission-item-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.permission-icon {
+    font-size: 16px;
+}
+
+.permission-name {
+    flex: 1;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.permission-level {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.permission-level.low {
+    background: rgba(76, 175, 80, 0.1);
+    color: #4caf50;
+}
+
+.permission-level.medium {
+    background: rgba(255, 152, 0, 0.1);
+    color: #ff9800;
+}
+
+.permission-level.high {
+    background: rgba(244, 67, 54, 0.1);
+    color: #f44336;
+}
+
+.permission-description {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.permission-warning {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: rgba(255, 152, 0, 0.1);
+    border: 1px solid rgba(255, 152, 0, 0.2);
+    border-radius: 8px;
+    color: #ff9800;
+    font-size: 13px;
+}
+
+.plugin-settings-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.setting-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.setting-field label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary, #191919);
+}
+
+.setting-field input[type="text"],
+.setting-field input[type="password"],
+.setting-field input[type="number"],
+.setting-field textarea,
+.setting-field select {
+    background: var(--bg-secondary, #f7f7f7);
+    border: 1px solid var(--border-default, #d4d4d4);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: var(--text-primary, #191919);
+    transition: all 0.2s ease;
+}
+
+.setting-field input[type="text"]:focus,
+.setting-field input[type="password"]:focus,
+.setting-field input[type="number"]:focus,
+.setting-field textarea:focus,
+.setting-field select:focus {
+    outline: none;
+    border-color: var(--accent-primary, #0969da);
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.1);
+}
+
+.setting-toggle-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.setting-toggle-field label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary, #191919);
+}
+
+.setting-toggle-slider {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    background: var(--toggle-bg-off, #d4d4d4);  /* Light gray for off state */
+    border-radius: 24px;
+    transition: background 0.3s;
+    border: 1px solid var(--border-subtle, #e5e5e5);
+}
+
+.setting-toggle-slider:before {
+    content: "";
+    position: absolute;
+    height: 18px;
+    width: 18px;
+    left: 2px;
+    top: 2px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+input[type="checkbox"]:checked + .setting-toggle-slider {
+    background: var(--accent-primary, #0969da);  /* Blue for on state */
+    border-color: var(--accent-primary, #0969da);
+}
+
+input[type="checkbox"]:checked + .setting-toggle-slider:before {
+    transform: translateX(20px);  /* Adjusted for new size */
+}
+
+.setting-field input[type="checkbox"] {
+    display: none;
+}
+
+.setting-description {
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    line-height: 1.4;
+}
+
+.required {
+    color: var(--color-error);
+}
+
+.no-settings {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 20px;
+}
+
+/* Modal Variables now defined in PluginHub.css */

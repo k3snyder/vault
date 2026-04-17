@@ -1,0 +1,300 @@
+/**
+ * Task Widget - Consolidated Styles (Phase 1)
+ * Scope: Only the sidebar TaskWidget UI (header, search, filters, list, items, metadata)
+ * Notes: BEM-friendly class names provided as aliases to legacy selectors for smooth migration.
+ */
+
+/* Container */
+.task-widget,
+.tw-widget {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-primary, #ffffff);
+  overflow: hidden;
+}
+
+/* Header */
+.task-header,
+.tw-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+}
+
+.task-header h3,
+.tw-header__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary, #1a1a1a);
+}
+
+.task-header-controls,
+.tw-header__controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.task-count,
+.tw-header__count {
+  font-size: 12px;
+  color: var(--text-secondary, #666);
+}
+
+.task-dashboard-btn,
+.tw-header__dashboard-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: var(--bg-primary, #ffffff);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+/* Search Bar */
+.task-search-container,
+.tw-search {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+}
+
+.task-search-icon,
+.tw-search__icon {
+  margin-right: 8px;
+  opacity: 0.5;
+}
+
+.task-search-input,
+.tw-search__input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  background: transparent;
+  color: var(--text-primary, #1a1a1a);
+}
+
+.task-search-input::placeholder,
+.tw-search__input::placeholder {
+  color: var(--text-tertiary, #999);
+}
+
+/* Filter Tabs */
+.task-filter-tabs,
+.tw-filters {
+  display: flex;
+  padding: 8px;
+  gap: 4px;
+  overflow-x: auto;
+}
+
+.task-filter-tab,
+.tw-filters__tab {
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  color: var(--text-secondary, #666);
+}
+
+.task-filter-tab.active,
+.tw-filters__tab--active {
+  background: var(--accent-bg, #e3f2fd);
+  color: var(--accent-color, #007acc);
+  border-color: var(--accent-color, #007acc);
+}
+
+/* List */
+.task-list,
+.tw-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+/* Groups */
+.task-project-group,
+.tw-group {
+  margin-bottom: 16px;
+}
+
+.task-project-header,
+.tw-group__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 8px;
+  margin-bottom: 8px;
+}
+
+.task-project-header h4,
+.tw-group__title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary, #666);
+}
+
+.task-project-count,
+.tw-group__count {
+  font-size: 12px;
+  padding: 2px 6px;
+  background: var(--bg-secondary, #f0f0f0);
+  border-radius: 10px;
+  color: var(--text-secondary, #666);
+}
+
+.task-items,
+.tw-group__items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Task item (Card) */
+.task-item,
+.tw-card {
+  display: flex;
+  align-items: flex-start;
+  padding: 8px;
+  border-radius: 6px;
+}
+
+.task-checkbox,
+.tw-card__checkbox {
+  margin-right: 8px;
+  margin-top: 2px;
+  cursor: pointer;
+}
+
+.task-content,
+.tw-card__content {
+  flex: 1;
+  cursor: pointer;
+}
+
+.task-text,
+.tw-card__title {
+  font-size: 14px;
+  color: var(--text-primary, #1a1a1a);
+  margin-bottom: 4px;
+}
+
+.task-text.task-done,
+.tw-card__title--done {
+  text-decoration: line-through;
+  color: var(--text-tertiary, #999);
+}
+
+/* Metadata Row */
+.task-metadata,
+.tw-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.task-metadata > span,
+.tw-meta__pill {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--bg-secondary, #f0f0f0);
+  color: var(--text-secondary, #666);
+}
+
+/* Priority */
+.task-priority-high,
+.tw-meta__priority--high {
+  color: var(--priority-high-text);
+  background: var(--priority-high-bg);
+}
+
+.task-priority-medium,
+.tw-meta__priority--medium {
+  color: var(--priority-medium-text);
+  background: var(--priority-medium-bg);
+}
+
+.task-priority-low,
+.tw-meta__priority--low {
+  color: var(--priority-low-text);
+  background: var(--priority-low-bg);
+}
+
+/* Due date */
+.task-due-date,
+.tw-date { color: var(--text-secondary, #666); }
+.task-due-date.due-today,
+.tw-date--today { color: var(--info-text); background: var(--info-bg); }
+.task-due-date.due-tomorrow,
+.tw-date--tomorrow { color: var(--accent-primary); background: var(--accent-bg); }
+.task-due-date.overdue,
+.tw-date--overdue { color: var(--error-text); background: var(--error-bg); }
+
+/* Tags */
+.task-tag,
+.tw-tag { color: var(--text-secondary, #666); background: var(--bg-tertiary, #e8e8e8); }
+
+/* Highlight nested project tags (#project/name) */
+.task-tag-project {
+  /* Switch to light green for #project/... pills */
+  color: var(--success-text);
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+}
+
+/* Prepend an icon for #project/... pills without changing text content */
+.task-tag-project::before {
+  content: '🗂️ ';
+}
+
+/* Empty state */
+.task-empty-state,
+.tw-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  text-align: center;
+}
+
+.task-empty-icon,
+.tw-empty__icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+.task-empty-message,
+.tw-empty__message { font-size: 14px; color: var(--text-secondary, #666); }
+
+/* Error state */
+.task-error,
+.tw-error { display: flex; flex-direction: column; align-items: center; padding: 32px; text-align: center; }
+.task-error-icon,
+.tw-error__icon { font-size: 48px; margin-bottom: 16px; }
+.task-error-message,
+.tw-error__message { font-size: 14px; font-weight: 600; color: var(--text-primary, #1a1a1a); margin-bottom: 8px; }
+.task-error-detail,
+.tw-error__detail { font-size: 12px; color: var(--text-secondary, #666); margin-bottom: 16px; }
+.task-retry-btn,
+.tw-error__retry { padding: 6px 16px; border-radius: 4px; background: var(--accent-color, #007acc); color: white; font-size: 13px; cursor: pointer; }
+
+/* Subtle hover for items */
+.task-item:hover,
+.tw-card:hover { background: var(--bg-secondary, #f5f5f5); }
+
+/* TID link styling */
+.tid-link {
+  color: var(--accent-color, #007acc);
+  text-decoration: none;
+  border-bottom: 1px dotted currentColor;
+  cursor: pointer;
+}

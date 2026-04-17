@@ -1,0 +1,138 @@
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000000; /* Higher than modals (9999999) to ensure absolute top layer */
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+    max-width: 400px;
+}
+
+.toast {
+    background: #fbfbfa; /* Light grey background matching --bg-secondary */
+    border: 1px solid #e9e9e7; /* Border matching --border-color */
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+    pointer-events: auto;
+    transform: translateX(120%);
+    opacity: 0;
+    transition: none;
+}
+
+.toast.toast-show {
+    animation: slideIn 0.3s ease forwards;
+}
+
+.toast.toast-hide {
+    animation: slideOut 0.3s ease forwards;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+}
+
+.toast-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+.toast-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.toast-message {
+    font-size: 14px;
+    line-height: 1.4;
+    color: #1a1a1a; /* Dark text matching --text-primary */
+}
+
+.toast-close {
+    background: transparent;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: #6b6b6b; /* Secondary text color for close button */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.toast-close:hover {
+    background: #f1f1ef; /* Tertiary background on hover */
+    color: #1a1a1a; /* Primary text on hover */
+}
+
+.toast-success {
+    border-color: #10b981;
+    background: #fbfbfa;
+    border-left: 3px solid #10b981;
+}
+
+.toast-success .toast-icon {
+    color: #10b981;
+}
+
+.toast-error {
+    border-color: #ef4444;
+    background: #fbfbfa;
+    border-left: 3px solid #ef4444;
+}
+
+.toast-error .toast-icon {
+    color: #ef4444;
+}
+
+.toast-warning {
+    border-color: #f59e0b;
+    background: #fbfbfa;
+    border-left: 3px solid #f59e0b;
+}
+
+.toast-warning .toast-icon {
+    color: #f59e0b;
+}
+
+.toast-info {
+    border-color: #3b82f6;
+    background: #fbfbfa;
+    border-left: 3px solid #3b82f6;
+}
+
+.toast-info .toast-icon {
+    color: #3b82f6;
+}
+
+/* Toast Variables now defined in PluginHub.css */

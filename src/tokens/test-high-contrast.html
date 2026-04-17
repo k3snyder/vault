@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>High Contrast Mode Test - Apple Principles Color System</title>
+  <link rel="stylesheet" href="variables.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      padding: 2rem;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    .test-section {
+      margin: 2rem 0;
+      padding: 1rem;
+      border: 1px solid var(--border-input);
+      border-radius: 8px;
+    }
+
+    .test-text-primary {
+      color: var(--text-primary);
+    }
+
+    .test-text-secondary {
+      color: var(--text-secondary);
+    }
+
+    .test-text-tertiary {
+      color: var(--text-tertiary);
+    }
+
+    .test-border-light {
+      border: 2px solid var(--border-light);
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+    }
+
+    .test-border-medium {
+      border: 2px solid var(--border-medium);
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+    }
+
+    .test-border-input {
+      border: 2px solid var(--border-input);
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+    }
+
+    .test-border-focus {
+      border: var(--focus-ring-width, 2px) solid var(--border-input-focus);
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+    }
+
+    .theme-switcher {
+      margin: 1rem 0;
+      padding: 1rem;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      margin: 0.5rem;
+      background: var(--accent-primary);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: var(--accent-hover);
+    }
+
+    .instructions {
+      background: var(--bg-secondary);
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+    }
+
+    .code {
+      font-family: 'Courier New', monospace;
+      background: var(--bg-tertiary);
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>High Contrast Mode Test - Four-Variant System</h1>
+
+  <div class="instructions">
+    <h2>Testing Instructions</h2>
+    <p><strong>To test the four variants:</strong></p>
+    <ol>
+      <li><strong>Light Standard:</strong> Default view (reload page)</li>
+      <li><strong>Dark Standard:</strong> Click "Switch to Dark Theme" button below</li>
+      <li><strong>Light High Contrast:</strong> Open DevTools → Rendering → Emulate CSS media feature <code class="code">prefers-contrast: high</code></li>
+      <li><strong>Dark High Contrast:</strong> Enable high contrast + click "Switch to Dark Theme"</li>
+    </ol>
+    <p><em>Expected Results:</em></p>
+    <ul>
+      <li>High contrast mode should increase text darkness/lightness</li>
+      <li>Borders should become more visible (0.2-0.5 opacity vs 0.08-0.18)</li>
+      <li>Focus borders should be 3px wide instead of 2px</li>
+    </ul>
+  </div>
+
+  <div class="theme-switcher">
+    <button onclick="toggleTheme()">Switch to Dark Theme</button>
+    <span id="current-theme">Current: Light Theme</span>
+  </div>
+
+  <div class="test-section">
+    <h2>Text Contrast Levels (WCAG AAA in High Contrast)</h2>
+    <p class="test-text-primary">Primary Text: Should be #000000 (light) or #FFFFFF (dark) in high contrast</p>
+    <p class="test-text-secondary">Secondary Text: Should be #262626 (light) or #E5E5E5 (dark) in high contrast</p>
+    <p class="test-text-tertiary">Tertiary Text: Should be #525252 (light) or #B0B0B0 (dark) in high contrast - WCAG AAA 7.5:1</p>
+  </div>
+
+  <div class="test-section">
+    <h2>Border Opacity Levels</h2>
+    <div class="test-border-light">Light Border: rgba(0,0,0,0.2) or rgba(255,255,255,0.2) in high contrast</div>
+    <div class="test-border-medium">Medium Border: rgba(0,0,0,0.3) or rgba(255,255,255,0.3) in high contrast</div>
+    <div class="test-border-input">Input Border: rgba(0,0,0,0.3) or rgba(255,255,255,0.3) in high contrast</div>
+    <div class="test-border-focus">Focus Border: rgba(0,0,0,0.5) or rgba(255,255,255,0.5) + 3px width in high contrast</div>
+  </div>
+
+  <div class="test-section">
+    <h2>Focus Ring Test</h2>
+    <p>In high contrast mode, the focus border above should be <strong>3px wide</strong> instead of the standard 2px.</p>
+    <p>Use DevTools to inspect: <code class="code">var(--focus-ring-width)</code> should be 3px</p>
+  </div>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const currentTheme = html.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? '' : 'dark';
+      html.setAttribute('data-theme', newTheme);
+      document.getElementById('current-theme').textContent =
+        newTheme === 'dark' ? 'Current: Dark Theme' : 'Current: Light Theme';
+    }
+
+    // Log computed values for debugging
+    window.addEventListener('load', () => {
+      const root = document.documentElement;
+      const styles = getComputedStyle(root);
+
+      console.log('=== High Contrast Mode Test - Computed Values ===');
+      console.log('Text Primary:', styles.getPropertyValue('--text-primary').trim());
+      console.log('Text Secondary:', styles.getPropertyValue('--text-secondary').trim());
+      console.log('Text Tertiary:', styles.getPropertyValue('--text-tertiary').trim());
+      console.log('Border Light:', styles.getPropertyValue('--border-light').trim());
+      console.log('Border Medium:', styles.getPropertyValue('--border-medium').trim());
+      console.log('Border Input:', styles.getPropertyValue('--border-input').trim());
+      console.log('Border Focus:', styles.getPropertyValue('--border-input-focus').trim());
+      console.log('Focus Ring Width:', styles.getPropertyValue('--focus-ring-width').trim());
+      console.log('Focus Ring Offset:', styles.getPropertyValue('--focus-ring-offset').trim());
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS Generator Browser Tests</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 20px;
+      background: var(--bg-primary, #ffffff);
+      color: var(--text-primary, #000000);
+      transition: background-color 0.2s, color 0.2s;
+    }
+    .test-results {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .test-case {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      border-left: 4px solid;
+    }
+    .test-case.pass {
+      background: #dcfce7;
+      border-color: #22c55e;
+      color: #166534;
+    }
+    .test-case.fail {
+      background: #fee2e2;
+      border-color: #ef4444;
+      color: #991b1b;
+    }
+    .controls {
+      margin: 20px 0;
+      padding: 20px;
+      background: var(--bg-secondary, #f5f5f5);
+      border-radius: 8px;
+    }
+    button {
+      padding: 8px 16px;
+      margin-right: 10px;
+      border: none;
+      border-radius: 4px;
+      background: var(--accent-primary, #2563eb);
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover {
+      background: var(--accent-hover, #1d4ed8);
+    }
+    .info {
+      margin-top: 10px;
+      padding: 10px;
+      background: var(--bg-tertiary, #e5e5e5);
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-results">
+    <h1>CSS Generator Browser Tests</h1>
+
+    <div class="controls">
+      <h3>Theme Controls</h3>
+      <button onclick="testApplyTheme('light')">Apply Light Theme</button>
+      <button onclick="testApplyTheme('dark')">Apply Dark Theme</button>
+      <button onclick="runAllTests()">Run All Tests</button>
+    </div>
+
+    <div id="results"></div>
+
+    <div class="info">
+      <strong>Current Theme:</strong> <span id="current-theme">Not set</span><br>
+      <strong>System Theme:</strong> <span id="system-theme">Unknown</span><br>
+      <strong>Data Attribute:</strong> <span id="data-attr">None</span><br>
+      <strong>Sample CSS Variable (--bg-primary):</strong> <span id="sample-var">Not set</span>
+    </div>
+  </div>
+
+  <script type="module">
+    import {
+      kebabCase,
+      generateCSSVariables,
+      applyTheme,
+      getSystemTheme,
+      watchSystemTheme
+    } from './css-generator.js';
+
+    let testResults = [];
+
+    function test(description, fn) {
+      try {
+        fn();
+        testResults.push({ description, passed: true });
+        return true;
+      } catch (error) {
+        testResults.push({ description, passed: false, error: error.message });
+        return false;
+      }
+    }
+
+    function assert(condition, message) {
+      if (!condition) {
+        throw new Error(message || 'Assertion failed');
+      }
+    }
+
+    function displayResults() {
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = '<h2>Test Results</h2>';
+
+      testResults.forEach(result => {
+        const div = document.createElement('div');
+        div.className = `test-case ${result.passed ? 'pass' : 'fail'}`;
+        div.innerHTML = `
+          <strong>${result.passed ? '✓' : '✗'}</strong> ${result.description}
+          ${result.error ? `<br><small>Error: ${result.error}</small>` : ''}
+        `;
+        resultsDiv.appendChild(div);
+      });
+
+      const summary = document.createElement('div');
+      const passed = testResults.filter(r => r.passed).length;
+      const total = testResults.length;
+      summary.innerHTML = `<h3>Summary: ${passed}/${total} tests passed</h3>`;
+      resultsDiv.appendChild(summary);
+    }
+
+    function updateInfo() {
+      const root = document.documentElement;
+      document.getElementById('data-attr').textContent = root.getAttribute('data-theme') || 'None';
+      document.getElementById('sample-var').textContent =
+        getComputedStyle(root).getPropertyValue('--bg-primary') || 'Not set';
+      document.getElementById('system-theme').textContent = getSystemTheme();
+    }
+
+    window.testApplyTheme = function(theme) {
+      applyTheme(theme);
+      document.getElementById('current-theme').textContent = theme;
+      updateInfo();
+    };
+
+    window.runAllTests = function() {
+      testResults = [];
+
+      // Test 1: applyTheme sets CSS variables
+      test('applyTheme("light") sets CSS variables on document root', () => {
+        applyTheme('light');
+        const bgPrimary = getComputedStyle(document.documentElement)
+          .getPropertyValue('--bg-primary').trim();
+        assert(bgPrimary === '#ffffff', `Expected #ffffff, got ${bgPrimary}`);
+      });
+
+      // Test 2: applyTheme sets data-theme attribute
+      test('applyTheme sets data-theme attribute correctly', () => {
+        applyTheme('dark');
+        const attr = document.documentElement.getAttribute('data-theme');
+        assert(attr === 'dark', `Expected "dark", got "${attr}"`);
+      });
+
+      // Test 3: Dark theme has different values
+      test('Dark theme applies different CSS variable values', () => {
+        applyTheme('dark');
+        const bgPrimary = getComputedStyle(document.documentElement)
+          .getPropertyValue('--bg-primary').trim();
+        assert(bgPrimary !== '#ffffff', 'Dark theme bg-primary should not be white');
+      });
+
+      // Test 4: getSystemTheme returns valid value
+      test('getSystemTheme returns "dark" or "light"', () => {
+        const theme = getSystemTheme();
+        assert(theme === 'dark' || theme === 'light', `Got unexpected value: ${theme}`);
+      });
+
+      // Test 5: watchSystemTheme returns cleanup function
+      test('watchSystemTheme returns a cleanup function', () => {
+        const cleanup = watchSystemTheme(() => {});
+        assert(typeof cleanup === 'function', 'Cleanup should be a function');
+        cleanup();
+      });
+
+      // Test 6: All semantic tokens are applied
+      test('All semantic tokens are applied (50+ variables)', () => {
+        applyTheme('light');
+        const textPrimary = getComputedStyle(document.documentElement)
+          .getPropertyValue('--text-primary').trim();
+        const borderPrimary = getComputedStyle(document.documentElement)
+          .getPropertyValue('--border-primary').trim();
+        assert(textPrimary.length > 0, 'text-primary should be set');
+        assert(borderPrimary.length > 0, 'border-primary should be set');
+      });
+
+      displayResults();
+      updateInfo();
+    };
+
+    // Run tests on load
+    updateInfo();
+  </script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sketch</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body, #root { width: 100%; height: 100%; overflow: hidden; }
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script>
+    window.onerror = function(msg, url, line) {
+      window.parent.postMessage({ type: 'error', message: 'JS Error: ' + msg }, '*');
+    };
+  </script>
+  <script src="excalidraw-bundle.js"></script>
+</body>
+</html>

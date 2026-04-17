@@ -1,0 +1,697 @@
+/**
+ * Design Token System - CSS Custom Properties
+ *
+ * This file defines all color tokens as CSS custom properties (CSS variables) for
+ * consumption by components throughout the application. It implements a three-layer
+ * token architecture:
+ *
+ * Layer 1: Color Scales - Base color palettes with 10-11 steps
+ * Layer 2: Semantic Tokens - Purpose-driven tokens (bg-primary, text-secondary, etc.)
+ * Layer 3: Component Usage - Components reference semantic tokens via var()
+ *
+ * Key Principles:
+ * - Primary color is BLUE (#3b82f6 family), not purple
+ * - All text colors meet WCAG AA contrast requirements (4.5:1 minimum)
+ * - Semantic tokens describe purpose, not appearance
+ * - Dark theme uses [data-theme="dark"] attribute selector
+ *
+ * @version 1.0.0
+ */
+
+/* ============================================================================
+   Layer 1: Color Scales
+   ============================================================================ */
+
+:root {
+  /* Neutral gray scale */
+  --neutral-50: #fafafa;
+  --neutral-100: #f5f5f5;
+  --neutral-200: #e5e5e5;
+  --neutral-300: #d4d4d4;
+  --neutral-400: #a3a3a3;
+  --neutral-500: #737373;  /* WCAG compliant tertiary text (5.5:1 contrast) */
+  --neutral-600: #525252;
+  --neutral-700: #404040;
+  --neutral-800: #262626;
+  --neutral-900: #171717;
+  --neutral-950: #0a0a0a;
+
+  /* Primary brand color scale - BLUE */
+  --primary-50: #eff6ff;
+  --primary-100: #dbeafe;
+  --primary-200: #bfdbfe;
+  --primary-300: #93c5fd;
+  --primary-400: #60a5fa;
+  --primary-500: #3b82f6;  /* Base blue */
+  --primary-600: #2563eb;  /* Primary accent */
+  --primary-700: #1d4ed8;
+  --primary-800: #1e40af;
+  --primary-900: #1e3a8a;
+  --primary-950: #172554;
+
+  /* Success color scale - Green */
+  --success-50: #f0fdf4;
+  --success-100: #dcfce7;
+  --success-200: #bbf7d0;
+  --success-300: #86efac;
+  --success-400: #4ade80;
+  --success-500: #22c55e;
+  --success-600: #16a34a;
+  --success-700: #15803d;
+  --success-800: #166534;
+  --success-900: #14532d;
+  --success-950: #052e16;
+
+  /* Warning color scale - Amber */
+  --warning-50: #fffbeb;
+  --warning-100: #fef3c7;
+  --warning-200: #fde68a;
+  --warning-300: #fcd34d;
+  --warning-400: #fbbf24;
+  --warning-500: #f59e0b;
+  --warning-600: #d97706;
+  --warning-700: #b45309;
+  --warning-800: #92400e;
+  --warning-900: #78350f;
+  --warning-950: #451a03;
+
+  /* Error color scale - Red */
+  --error-50: #fef2f2;
+  --error-100: #fee2e2;
+  --error-200: #fecaca;
+  --error-300: #fca5a5;
+  --error-400: #f87171;
+  --error-500: #ef4444;
+  --error-600: #dc2626;
+  --error-700: #b91c1c;
+  --error-800: #991b1b;
+  --error-900: #7f1d1d;
+  --error-950: #450a0a;
+
+  /* Info color scale - Blue (matches primary) */
+  --info-50: #eff6ff;
+  --info-100: #dbeafe;
+  --info-200: #bfdbfe;
+  --info-300: #93c5fd;
+  --info-400: #60a5fa;
+  --info-500: #3b82f6;
+  --info-600: #2563eb;
+  --info-700: #1d4ed8;
+  --info-800: #1e40af;
+  --info-900: #1e3a8a;
+  --info-950: #172554;
+}
+
+/* ============================================================================
+   Layer 2: Semantic Tokens - Light Theme (Default)
+   ============================================================================ */
+
+:root {
+  /* Background colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: var(--neutral-50);
+  --bg-tertiary: var(--neutral-100);
+  --bg-elevated: #ffffff;
+  --bg-hover: var(--neutral-100);
+  --bg-active: var(--neutral-200);
+
+  /* Text colors */
+  --text-primary: var(--neutral-900);
+  --text-secondary: var(--neutral-700);
+  --text-tertiary: var(--neutral-500);  /* #737373 - WCAG AA compliant */
+  --text-disabled: var(--neutral-400);
+  --text-inverse: #ffffff;
+
+  /* Border colors - legacy tokens reference semantic borders for consistency */
+  --border-primary: var(--border-card);
+  --border-secondary: var(--border-section);
+  --border-focus: var(--primary-600);
+
+  /* Accent colors */
+  --accent-primary: var(--primary-600);
+  --accent-hover: var(--primary-700);
+  --accent-active: var(--primary-800);
+  --accent-bg: var(--primary-50);
+
+  /* Status colors - Success */
+  --success-text: var(--success-700);
+  --success-bg: var(--success-50);
+  --success-border: var(--success-300);
+
+  /* Status colors - Warning */
+  --warning-text: var(--warning-700);
+  --warning-bg: var(--warning-50);
+  --warning-border: var(--warning-300);
+
+  /* Status colors - Error */
+  --error-text: var(--error-700);
+  --error-bg: var(--error-50);
+  --error-border: var(--error-300);
+
+  /* Status colors - Info */
+  --info-text: var(--info-700);
+  --info-bg: var(--info-50);
+  --info-border: var(--info-300);
+
+  /* Editor-specific colors */
+  --editor-bg: #ffffff;
+  --editor-text: var(--neutral-900);
+  --editor-selection: var(--primary-200);
+  --editor-selection-match: rgba(191, 219, 254, 0.4);  /* primary-200 with opacity */
+  --editor-cursor: #000000;
+  --editor-line-number: var(--neutral-600);
+  --editor-line-number-active: var(--neutral-900);
+  --editor-active-line: rgba(59, 130, 246, 0.05);  /* primary-500 with low opacity */
+  --editor-gutter: var(--neutral-50);
+  --editor-matching-bracket: var(--primary-100);
+
+  /* Syntax highlighting - Light theme (GitHub-inspired, NO purple) */
+  --syntax-keyword: #d73a49;      /* Red */
+  --syntax-string: #032f62;       /* Dark blue */
+  --syntax-number: #005cc5;       /* Blue */
+  --syntax-comment: #6a737d;      /* Gray */
+  --syntax-function: #0550ae;     /* Blue (NOT purple) */
+  --syntax-variable: #e36209;     /* Orange */
+  --syntax-type: #22863a;         /* Green */
+  --syntax-operator: #d73a49;     /* Red */
+  --syntax-punctuation: #24292e;  /* Near black */
+  --syntax-tag: #22863a;          /* Green */
+  --syntax-attribute: #0550ae;    /* Blue (NOT purple) */
+  --syntax-bracket: #586e75;      /* Gray-blue */
+  --syntax-marker: #3b82f6;       /* Blue - markdown syntax markers (**, ~~, ==, #, >, `) */
+
+  /* Link colors */
+  --link-color: var(--primary-600);
+  --link-hover: var(--primary-700);
+  --link-visited: var(--primary-800);
+
+  /* WikiLink colors */
+  --wikilink-valid: #2e6da4;      /* Blue */
+  --wikilink-valid-bg: rgba(46, 109, 164, 0.1);
+  --wikilink-broken: var(--error-600);
+  --wikilink-broken-bg: rgba(220, 38, 38, 0.1);
+
+  /* Priority colors - Task widget (light theme) */
+  --priority-high-text: var(--error-700);
+  --priority-high-bg: var(--error-50);
+  --priority-high-border: var(--error-300);
+
+  --priority-medium-text: var(--warning-700);
+  --priority-medium-bg: var(--warning-50);
+  --priority-medium-border: var(--warning-300);
+
+  --priority-low-text: var(--info-700);
+  --priority-low-bg: var(--info-50);
+  --priority-low-border: var(--info-300);
+
+  /* ============================================================================
+     ELEVATION (Semantic Shadows)
+     Purpose-based naming describes component purpose, not arbitrary scale
+     ============================================================================ */
+
+  /* Grounded: Content lives here, no elevation - editor, reading pane */
+  --elevation-grounded: none;
+
+  /* Raised: Floating UI elements - buttons on hover, cards */
+  --elevation-raised: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 1px rgba(0, 0, 0, 0.02);
+
+  /* Floating: Dropdowns, popovers, tooltips */
+  --elevation-floating: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+
+  /* Overlay: Modals, command palette, search overlay */
+  --elevation-overlay: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06);
+
+  /* Dramatic: Onboarding spotlights, critical alerts */
+  --elevation-dramatic: 0 16px 48px rgba(0, 0, 0, 0.16), 0 8px 16px rgba(0, 0, 0, 0.08);
+
+  /* ============================================================================
+     FILL TOKENS (Interactive Backgrounds)
+     Apple's four-level fill hierarchy for consistent interaction states
+     ============================================================================ */
+
+  --fill-primary: rgba(0, 0, 0, 0.05);
+  --fill-secondary: rgba(0, 0, 0, 0.03);
+  --fill-tertiary: rgba(0, 0, 0, 0.02);
+  --fill-quaternary: rgba(0, 0, 0, 0.01);
+  --fill-hover: var(--fill-primary);
+  --fill-selected: var(--fill-primary);
+  --fill-pressed: rgba(0, 0, 0, 0.08);
+  --fill-disabled: var(--fill-tertiary);
+
+  /* ============================================================================
+     BORDER TOKENS (Semantic)
+     Opacity-based borders that communicate meaningful boundaries.
+     Borders should only appear when they serve a functional purpose.
+     ============================================================================ */
+
+  /* Base opacity-based border tokens */
+  --border-invisible: rgba(0, 0, 0, 0.00);  /* No border needed */
+  --border-hint: rgba(0, 0, 0, 0.04);       /* Barely visible separation */
+  --border-subtle: rgba(0, 0, 0, 0.06);     /* Soft dividers */
+
+  /* Semantic border assignments - purpose-driven naming */
+  --border-divider: var(--border-hint);     /* Between list items */
+  --border-section: var(--border-subtle);   /* Between major sections */
+  --border-card: rgba(0, 0, 0, 0.08);       /* Card/panel edges */
+  --border-input: rgba(0, 0, 0, 0.12);      /* Form inputs */
+  --border-input-focus: rgba(0, 0, 0, 0.18); /* Focused inputs */
+
+  /* ============================================================================
+     MOTION SYSTEM (Physics-Based Timing)
+     Duration tokens based on distance traveled, not component importance.
+     Distances: micro (<8px), small (8-32px), medium (32-128px), large (128-512px), xl (>512px)
+     ============================================================================ */
+
+  /* Motion duration tokens - tied to movement distance */
+  --motion-instant: 0ms;        /* Immediate feedback (no animation) */
+  --motion-micro: 100ms;        /* < 8px movement (color changes, opacity) */
+  --motion-small: 150ms;        /* 8-32px movement (button press, small reveals) */
+  --motion-medium: 200ms;       /* 32-128px movement (panel slides, card flips) */
+  --motion-large: 300ms;        /* 128-512px movement (modal entry, page transitions) */
+  --motion-xl: 400ms;           /* > 512px movement (full-screen transitions) */
+
+  /* Easing curve tokens - Apple-inspired timing functions */
+  --ease-default: cubic-bezier(0.25, 0.1, 0.25, 1.0);      /* Smooth, natural feeling */
+  --ease-enter: cubic-bezier(0.0, 0.0, 0.2, 1.0);          /* Elements appearing (decelerate into view) */
+  --ease-exit: cubic-bezier(0.4, 0.0, 1.0, 1.0);           /* Elements leaving (accelerate out of view) */
+  --ease-emphasized: cubic-bezier(0.4, 0.0, 0.2, 1.0);     /* Important state changes, calls attention */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1.0);      /* Playful, bouncy (use sparingly) */
+
+  /* Pre-composed transition tokens - common use cases */
+  --transition-colors: color var(--motion-micro) var(--ease-default),
+                       background-color var(--motion-micro) var(--ease-default),
+                       border-color var(--motion-micro) var(--ease-default);
+  --transition-opacity: opacity var(--motion-small) var(--ease-default);
+  --transition-transform: transform var(--motion-medium) var(--ease-emphasized);
+  --transition-shadow: box-shadow var(--motion-small) var(--ease-default);
+  --transition-dimensions: width var(--motion-medium) var(--ease-emphasized),
+                           height var(--motion-medium) var(--ease-emphasized);
+
+  /* ============================================================================
+     TYPOGRAPHY SCALE (Apple-Inspired Semantic Type System)
+
+     Apple uses 17px as the base body size (not the standard 16px) for improved
+     readability on modern displays. This single-pixel increase significantly
+     enhances legibility during extended reading sessions without compromising
+     information density.
+
+     Semantic Type Scale Mapping:
+     - largeTitle: Page/screen titles, primary navigation headers
+     - title1: Major section headers, modal/panel titles
+     - title2: Card/panel headers, subsection titles
+     - title3: Smaller subsection headers, group labels
+     - headline: Bold/emphasized body text, important callouts
+     - body: Primary reading text (17px base - Apple standard)
+     - callout: Supporting information, secondary content
+     - subheadline: Secondary labels, metadata headers
+     - footnote: Timestamps, auxiliary metadata, helper text
+     - caption1: Small labels, badges, compact UI elements
+     - caption2: Smallest legible text, fine print
+     ============================================================================ */
+
+  /* Semantic font size tokens - Apple iOS/macOS type scale */
+  --type-display: 48px;         /* Hero/marketing content, splash screens */
+  --type-largeTitle: 34px;      /* Screen/page titles, primary navigation */
+  --type-title1: 28px;          /* Major section headers, modal titles */
+  --type-title2: 22px;          /* Card/panel headers, dialog titles */
+  --type-title3: 20px;          /* Subsection headers, group labels */
+  --type-headline: 17px;        /* Bold/emphasized body text */
+  --type-body: 17px;            /* Primary reading text (Apple 17px standard) */
+  --type-callout: 16px;         /* Supporting information, secondary content */
+  --type-subheadline: 15px;     /* Secondary labels, metadata headers */
+  --type-footnote: 13px;        /* Timestamps, auxiliary metadata */
+  --type-caption1: 12px;        /* Small labels, badges, compact UI */
+  --type-caption2: 11px;        /* Smallest legible text, fine print */
+
+  /* Line height tokens - optimized for different content types */
+  --line-height-tight: 1.2;     /* Headings, single-line UI elements */
+  --line-height-snug: 1.4;      /* UI text, short labels, compact layouts */
+  --line-height-normal: 1.5;    /* Default body text, standard readability */
+  --line-height-relaxed: 1.65;  /* Long-form reading, editor content (recommended) */
+  --line-height-loose: 1.8;     /* Maximum readability, accessibility-enhanced text */
+
+  /* Font weight tokens - semantic weight scale */
+  --font-weight-normal: 400;    /* Body text, standard UI labels */
+  --font-weight-medium: 500;    /* UI labels with subtle emphasis */
+  --font-weight-semibold: 600;  /* Subheadings, important labels */
+  --font-weight-bold: 700;      /* Primary headings, strong emphasis */
+
+  /* ============================================================================
+     CONTEXT-AWARE BACKGROUNDS
+     Purpose-driven background colors for different user task contexts.
+
+     These backgrounds serve functional purposes, not aesthetic preferences:
+     - bgWriting: Warm tint (#FDFCFA) reduces eye strain during extended authoring sessions
+     - bgReading: Neutral white (#FFFFFF) optimizes comprehension for technical content
+     - bgPreview: Matches web output context (#FFFFFF) for WYSIWYG accuracy
+
+     Implementation Note: Token definition is in scope; UI toggle mechanism for
+     activating these contexts (via [data-editor-mode] attribute) is future work.
+     ============================================================================ */
+
+  --bg-writing: #FDFCFA;    /* Warm: reduces eye strain for long writing sessions */
+  --bg-reading: #FFFFFF;    /* Neutral: optimal for comprehension and clarity */
+  --bg-preview: #FFFFFF;    /* Matches web output for accurate preview */
+
+  /* ============================================================================
+     TRANSLUCENT BACKGROUNDS
+     Translucent background tokens for native desktop vibrancy effects.
+
+     These backgrounds require backdrop-filter CSS property for full effect.
+     The blur and saturation effects are defined in component CSS, not in tokens.
+     Fallback to solid backgrounds is handled via @supports not (backdrop-filter).
+
+     Alpha values between 0.85-0.92 provide ideal balance of translucency while
+     maintaining text legibility and WCAG AA contrast compliance.
+
+     Usage example in component CSS:
+     .sidebar {
+       background: var(--bg-translucent);
+       backdrop-filter: blur(20px);
+       -webkit-backdrop-filter: blur(20px);
+     }
+
+     @supports not (backdrop-filter: blur(20px)) {
+       .sidebar {
+         background: var(--chrome-primary-bg); // Solid fallback
+       }
+     }
+     ============================================================================ */
+
+  --bg-translucent: rgba(250, 250, 250, 0.85);    /* Translucent chrome surfaces */
+  --bg-translucent-overlay: rgba(255, 255, 255, 0.92); /* Higher opacity for overlays */
+
+  /* ============================================================================
+     Legacy Shadow Aliases (Backward Compatibility)
+     ============================================================================ */
+  --shadow-sm: var(--elevation-raised);
+  --shadow-md: var(--elevation-floating);
+  --shadow-lg: var(--elevation-overlay);
+
+  /* Focus ring */
+  --focus-ring: var(--primary-600);
+  --focus-ring-offset: #ffffff;
+
+  /* Markdown extension colors - Light theme */
+  --md-link-color: var(--primary-600);
+  --md-link-hover-color: var(--primary-700);
+  --md-wikilink-bg: rgba(37, 99, 235, 0.1);  /* primary-600 with opacity */
+  --md-wikilink-hover-bg: rgba(37, 99, 235, 0.2);
+
+  --md-blockref-color: var(--primary-600);  /* Blue instead of purple */
+  --md-blockref-bg: rgba(37, 99, 235, 0.1);
+
+  --md-tag-color: var(--success-700);
+  --md-tag-bg: var(--success-100);
+  --md-tag-hover-bg: var(--success-200);
+
+  --md-embedded-border: var(--border-primary);
+  --md-embedded-bg: var(--bg-secondary);
+  --md-embedded-header-bg: var(--bg-tertiary);
+  --md-embedded-header-color: var(--text-secondary);
+  --md-embedded-content-color: var(--text-primary);
+}
+
+/* ============================================================================
+   Layer 2: Semantic Tokens - Dark Theme
+   ============================================================================ */
+
+[data-theme="dark"] {
+  /* Tell browser this is dark mode for form controls, scrollbars, etc. */
+  color-scheme: dark;
+
+  /* ============================================================================
+     DARK MODE ELEVATION HIERARCHY (Apple Pattern)
+
+     Apple's dark mode uses progressive lightening for elevated surfaces, where
+     each layer becomes progressively lighter as it rises above the base level.
+     This creates clear spatial hierarchy and depth perception.
+
+     Elevation Pattern: Each step lightens by approximately 14-16 hex value
+     - Base (window background):     #1C1C1E (+0)
+     - Sidebars/cards/panels:        #2C2C2E (+16)
+     - Dropdowns/nested panels:      #3A3A3C (+14)
+     - Tooltips/overlays/popovers:   #48484A (+14)
+
+     Blue Undertone Rationale:
+     Apple uses #1C1C1E (with subtle blue undertone) instead of pure neutral
+     #1C1C1C. This blue undertone creates a more "alive" feeling and aligns
+     with Apple's systemBackground color on macOS/iOS dark mode.
+
+     Alternative Pure Neutral Scale (brand flexibility):
+     For brands that prefer pure neutral grays without blue undertone:
+     - Base:      #171717
+     - Secondary: #1F1F1F
+     - Tertiary:  #2A2A2A
+     - Elevated:  #333333
+
+     Component Mapping:
+     - Window background           → --bg-primary
+     - Sidebars, cards, panels     → --bg-secondary
+     - Dropdowns, nested panels    → --bg-tertiary
+     - Tooltips, overlays, popovers → --bg-elevated
+     ============================================================================ */
+
+  /* Background colors - Apple elevation hierarchy with progressive lightening */
+  --bg-primary: #1C1C1E;      /* Apple systemBackground (window/base level) */
+  --bg-secondary: #2C2C2E;    /* Apple secondarySystemBackground (sidebars, cards) */
+  --bg-tertiary: #3A3A3C;     /* Apple tertiarySystemBackground (dropdowns, nested panels) */
+  --bg-elevated: #48484A;     /* Apple quaternarySystemBackground (tooltips, overlays) */
+  --bg-hover: var(--neutral-800);
+  --bg-active: var(--neutral-700);
+
+  /* Text colors (inverted - lighter values) */
+  --text-primary: var(--neutral-50);
+  --text-secondary: var(--neutral-300);
+  --text-tertiary: var(--neutral-400);
+  --text-disabled: var(--neutral-600);
+  --text-inverse: var(--neutral-900);
+
+  /* Border colors - legacy tokens reference semantic borders for consistency */
+  --border-primary: var(--border-card);
+  --border-secondary: var(--border-section);
+  --border-focus: var(--primary-500);
+
+  /* Accent colors (slightly lighter for visibility on dark) */
+  --accent-primary: var(--primary-500);
+  --accent-hover: var(--primary-400);
+  --accent-active: var(--primary-300);
+  --accent-bg: rgba(59, 130, 246, 0.1);  /* primary-500 with low opacity */
+
+  /* Status colors - Success (adjusted for dark backgrounds) */
+  --success-text: var(--success-400);
+  --success-bg: rgba(34, 197, 94, 0.1);
+  --success-border: var(--success-800);
+
+  /* Status colors - Warning */
+  --warning-text: var(--warning-400);
+  --warning-bg: rgba(245, 158, 11, 0.1);
+  --warning-border: var(--warning-800);
+
+  /* Status colors - Error */
+  --error-text: var(--error-400);
+  --error-bg: rgba(239, 68, 68, 0.1);
+  --error-border: var(--error-800);
+
+  /* Status colors - Info */
+  --info-text: var(--info-400);
+  --info-bg: rgba(59, 130, 246, 0.1);
+  --info-border: var(--info-800);
+
+  /* Editor-specific colors (dark theme) */
+  --editor-bg: #1a1a1a;
+  --editor-text: var(--neutral-100);
+  --editor-selection: rgba(96, 165, 250, 0.5);  /* primary-400 with opacity - increased for visibility */
+  --editor-selection-match: rgba(96, 165, 250, 0.25);
+  --editor-cursor: var(--neutral-100);
+  --editor-line-number: var(--neutral-400);  /* Updated from neutral-600 for WCAG AA compliance */
+  --editor-line-number-active: var(--neutral-300);
+  --editor-active-line: rgba(255, 255, 255, 0.05);
+  --editor-gutter: var(--neutral-950);
+  --editor-matching-bracket: rgba(59, 130, 246, 0.3);
+
+  /* Syntax highlighting - Dark theme (VS Code Dark+ inspired, NO purple) */
+  --syntax-keyword: #569cd6;      /* Blue */
+  --syntax-string: #ce9178;       /* Salmon */
+  --syntax-number: #b5cea8;       /* Light green */
+  --syntax-comment: #6a9955;      /* Green */
+  --syntax-function: #dcdcaa;     /* Yellow */
+  --syntax-variable: #9cdcfe;     /* Light blue */
+  --syntax-type: #4ec9b0;         /* Teal */
+  --syntax-operator: #d4d4d4;     /* Light gray */
+  --syntax-punctuation: #d4d4d4;  /* Light gray */
+  --syntax-tag: #569cd6;          /* Blue */
+  --syntax-attribute: #9cdcfe;    /* Light blue */
+  --syntax-bracket: #808080;      /* Gray */
+  --syntax-marker: #60a5fa;       /* Light blue - markdown syntax markers (**, ~~, ==, #, >, `) */
+
+  /* Link colors (lighter for dark backgrounds) */
+  --link-color: var(--primary-400);
+  --link-hover: var(--primary-300);
+  --link-visited: var(--primary-500);
+
+  /* WikiLink colors (dark theme) */
+  --wikilink-valid: #4fc3f7;      /* Light blue */
+  --wikilink-valid-bg: rgba(79, 195, 247, 0.15);
+  --wikilink-broken: var(--error-400);
+  --wikilink-broken-bg: rgba(248, 113, 113, 0.15);
+
+  /* Priority colors - Task widget (dark theme) */
+  --priority-high-text: var(--error-400);
+  --priority-high-bg: rgba(239, 68, 68, 0.1);
+  --priority-high-border: var(--error-800);
+
+  --priority-medium-text: var(--warning-400);
+  --priority-medium-bg: rgba(245, 158, 11, 0.1);
+  --priority-medium-border: var(--warning-800);
+
+  --priority-low-text: var(--info-400);
+  --priority-low-bg: rgba(59, 130, 246, 0.1);
+  --priority-low-border: var(--info-800);
+
+  /* ============================================================================
+     ELEVATION (Semantic Shadows) - Dark Theme
+     Increased intensity (~1.5-2x higher opacity) for visibility on dark backgrounds
+     ============================================================================ */
+
+  --elevation-raised: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.12);
+  --elevation-floating: 0 4px 16px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.2);
+  --elevation-overlay: 0 8px 32px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.25);
+  --elevation-dramatic: 0 16px 56px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.3);
+
+  /* ============================================================================
+     FILL TOKENS (Interactive Backgrounds) - Dark Theme
+     White rgba values with higher opacity for visibility on dark backgrounds
+     ============================================================================ */
+
+  --fill-primary: rgba(255, 255, 255, 0.08);
+  --fill-secondary: rgba(255, 255, 255, 0.05);
+  --fill-tertiary: rgba(255, 255, 255, 0.03);
+  --fill-quaternary: rgba(255, 255, 255, 0.02);
+  --fill-pressed: rgba(255, 255, 255, 0.12);
+
+  /* ============================================================================
+     BORDER TOKENS (Semantic) - Dark Theme
+     White rgba values for visibility on dark backgrounds
+     ============================================================================ */
+
+  /* Base opacity-based border tokens - dark theme */
+  --border-hint: rgba(255, 255, 255, 0.04);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+
+  /* Semantic border assignments - dark theme overrides */
+  --border-card: rgba(255, 255, 255, 0.08);
+  --border-input: rgba(255, 255, 255, 0.12);
+  --border-input-focus: rgba(255, 255, 255, 0.18);
+
+  /* ============================================================================
+     CONTEXT-AWARE BACKGROUNDS - Dark Theme
+     Context backgrounds in dark mode all use Apple's systemBackground (#1C1C1E).
+     The blue undertone creates a more alive feeling than pure neutral (#1C1C1C).
+     Context distinction (writing vs reading) is less relevant in dark mode.
+     ============================================================================ */
+
+  --bg-writing: #1C1C1E;    /* Apple systemBackground with blue undertone */
+  --bg-reading: #1C1C1E;    /* Same as writing - context distinction less relevant in dark mode */
+  --bg-preview: #1C1C1E;    /* Matches dark theme web output */
+
+  /* ============================================================================
+     TRANSLUCENT BACKGROUNDS - Dark Theme
+     Translucent backgrounds for dark mode use darker rgba values.
+     These create vibrancy effects when backdrop-filter is supported.
+     ============================================================================ */
+
+  --bg-translucent: rgba(30, 30, 30, 0.85);       /* Translucent chrome surfaces */
+  --bg-translucent-overlay: rgba(40, 40, 40, 0.92); /* Higher opacity for overlays */
+
+  /* Focus ring (lighter for visibility) */
+  --focus-ring: var(--primary-500);
+  --focus-ring-offset: var(--neutral-950);
+
+  /* Markdown extension colors - Dark theme */
+  --md-link-color: var(--primary-400);
+  --md-link-hover-color: var(--primary-300);
+  --md-wikilink-bg: rgba(96, 165, 250, 0.15);  /* primary-400 with opacity */
+  --md-wikilink-hover-bg: rgba(96, 165, 250, 0.25);
+
+  --md-blockref-color: var(--primary-400);  /* Blue instead of purple */
+  --md-blockref-bg: rgba(96, 165, 250, 0.15);
+
+  --md-tag-color: var(--success-400);
+  --md-tag-bg: rgba(34, 197, 94, 0.15);  /* success-500 with opacity */
+  --md-tag-hover-bg: rgba(34, 197, 94, 0.25);
+
+  --md-embedded-border: var(--border-primary);
+  --md-embedded-bg: var(--bg-secondary);
+  --md-embedded-header-bg: var(--bg-tertiary);
+  --md-embedded-header-color: var(--text-secondary);
+  --md-embedded-content-color: var(--text-primary);
+}
+
+/* ============================================================================
+   Accessibility - High Contrast Mode (Four-Variant System)
+
+   Apple's accessibility framework requires four color variants for complete
+   coverage: light+standard, dark+standard, light+high-contrast, dark+high-contrast.
+
+   High contrast mode increases text contrast to WCAG AAA levels (7.5:1+) and
+   strengthens borders and focus indicators for users with low vision or other
+   visual accessibility needs.
+
+   Variants:
+   1. Light Standard (default :root)
+   2. Dark Standard ([data-theme="dark"])
+   3. Light High Contrast (this section - :root)
+   4. Dark High Contrast (this section - [data-theme="dark"])
+   ============================================================================ */
+
+@media (prefers-contrast: high) {
+  :root {
+    /* Text colors - WCAG AAA compliance (7.5:1+ contrast on white) */
+    --text-primary: #000000;     /* Maximum contrast (21:1) */
+    --text-secondary: #262626;   /* ~14:1 contrast */
+    --text-tertiary: #525252;    /* 7.5:1 contrast (WCAG AAA) */
+
+    /* Border opacity increased for visibility */
+    --border-light: rgba(0, 0, 0, 0.2);      /* Increased from 0.08 */
+    --border-medium: rgba(0, 0, 0, 0.3);     /* Increased from 0.12 */
+    --border-input: rgba(0, 0, 0, 0.3);      /* Increased from 0.12 */
+    --border-input-focus: rgba(0, 0, 0, 0.5); /* Increased from 0.18 */
+
+    /* Enhanced focus indicators for accessibility */
+    --focus-ring-width: 3px;      /* Increased from 2px standard */
+    --focus-ring-offset: 2px;     /* Maintained for consistency */
+  }
+
+  [data-theme="dark"] {
+    /* Text colors - WCAG AAA compliance on dark backgrounds */
+    --text-primary: #FFFFFF;     /* Maximum contrast (~15:1 on #1C1C1E) */
+    --text-secondary: #E5E5E5;   /* ~13:1 contrast */
+    --text-tertiary: #B0B0B0;    /* 7.5:1 contrast (WCAG AAA) */
+
+    /* Border opacity increased for dark mode visibility */
+    --border-light: rgba(255, 255, 255, 0.2);      /* Increased from 0.08 */
+    --border-medium: rgba(255, 255, 255, 0.3);     /* Increased from 0.12 */
+    --border-input: rgba(255, 255, 255, 0.3);      /* Increased from 0.12 */
+    --border-input-focus: rgba(255, 255, 255, 0.5); /* Increased from 0.18 */
+  }
+}
+
+/* ============================================================================
+   Accessibility - Reduced Motion
+   Respect user preference to reduce or disable motion/animations
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    /* Disable all motion by setting durations to 0ms */
+    --motion-instant: 0ms;
+    --motion-micro: 0ms;
+    --motion-small: 0ms;
+    --motion-medium: 0ms;
+    --motion-large: 0ms;
+    --motion-xl: 0ms;
+
+    /* Easing curves remain defined but have no effect with 0ms duration */
+  }
+}

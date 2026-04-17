@@ -1,0 +1,33 @@
+{
+  "name": "@vault/plugin-readwise",
+  "version": "1.0.0",
+  "description": "Readwise integration for Vault",
+  "main": "dist/plugin.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src --ext .ts,.tsx",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": ["vault", "plugin", "readwise", "highlights"],
+  "author": "Vault",
+  "license": "MIT",
+  "dependencies": {
+    "mustache": "^4.2.0",
+    "marked": "^4.3.0"
+  },
+  "devDependencies": {
+    "@types/mustache": "^4.2.5",
+    "@types/marked": "^4.3.2",
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.11",
+    "vitest": "^1.2.1",
+    "@vitest/coverage-v8": "^1.2.1",
+    "eslint": "^8.56.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0"
+  }
+}

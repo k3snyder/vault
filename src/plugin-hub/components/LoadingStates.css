@@ -1,0 +1,195 @@
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.loading-spinner {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+    color: var(--accent-primary);
+}
+
+.loading-spinner-small {
+    width: 16px;
+    height: 16px;
+}
+
+.loading-spinner-medium {
+    width: 24px;
+    height: 24px;
+}
+
+.loading-spinner-large {
+    width: 32px;
+    height: 32px;
+}
+
+.loading-card {
+    background: var(--plugin-card-bg);
+    border: 1px solid var(--plugin-card-border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+}
+
+.loading-card-header {
+    display: flex;
+    gap: 12px;
+}
+
+.loading-card-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.loading-skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--skeleton-base) 25%,
+        var(--skeleton-highlight) 50%,
+        var(--skeleton-base) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+}
+
+.loading-skeleton-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+}
+
+.loading-skeleton-title {
+    height: 20px;
+    width: 60%;
+}
+
+.loading-skeleton-description {
+    height: 16px;
+    width: 100%;
+}
+
+.loading-skeleton-meta {
+    height: 14px;
+    width: 40%;
+}
+
+.loading-grid {
+    display: flex;
+    flex-direction: column;
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    backdrop-filter: blur(4px);
+}
+
+.loading-overlay-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.loading-message {
+    color: var(--text-primary);
+    font-size: 14px;
+    margin: 0;
+}
+
+.error-state,
+.empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    padding: 32px;
+}
+
+.error-state-content,
+.empty-state-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 400px;
+}
+
+.error-icon,
+.empty-icon {
+    color: var(--text-tertiary);
+    margin-bottom: 16px;
+}
+
+.error-icon {
+    color: var(--color-error);
+}
+
+.error-title,
+.empty-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 8px 0;
+}
+
+.error-message,
+.empty-message {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0 0 16px 0;
+    line-height: 1.5;
+}
+
+.error-retry-button,
+.empty-action-button {
+    background: var(--accent-primary);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.error-retry-button:hover,
+.empty-action-button:hover {
+    background: var(--accent-primary-hover);
+}
+
+button.loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Loading States Variables now defined in PluginHub.css */

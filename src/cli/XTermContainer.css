@@ -1,0 +1,192 @@
+/* XTermContainer.css - Styling for embedded xterm.js terminal */
+
+/* Override CSS variables for CLI mode to prevent white backgrounds */
+.chat-panel.cli-mode,
+.right-sidebar-panel.cli-mode {
+    --bg-primary: #1e1e1e !important;
+    --bg-secondary: #252525 !important;
+    background: #1e1e1e !important;
+}
+
+/* Ensure the content container takes full height */
+.chat-content-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* Ensure minimum width for terminal in sidebar */
+.chat-panel.right-sidebar-panel.cli-mode {
+    min-width: 750px;
+    width: 750px;
+    background: #1e1e1e !important;
+}
+
+.xterm-container {
+    width: 100%;
+    height: 100%;
+    background: #1e1e1e !important;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+}
+
+.xterm-screen {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    position: relative;
+    min-height: 0;
+    overflow: hidden;
+    padding: 0; /* No padding - let xterm handle spacing */
+    background: transparent !important;
+}
+
+/* Style xterm's internal scrollbar to be minimal and dark */
+.xterm .xterm-viewport::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.xterm .xterm-viewport::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.xterm .xterm-viewport::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+.xterm .xterm-viewport::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.xterm .xterm-viewport::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+/* Override xterm.js default styles */
+.xterm-container .xterm {
+    height: 100%;
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+.xterm-container .xterm-viewport {
+    background-color: transparent;
+    height: 100% !important;
+    width: 100% !important;
+    /* xterm.js manages its own scrolling internally */
+    overflow-y: scroll !important;
+    overflow-x: hidden !important;
+}
+
+.xterm-container .xterm-screen {
+    height: 100% !important;
+}
+
+/* Ensure proper terminal text rendering */
+.xterm-container .xterm-rows {
+    font-variant-ligatures: none;
+    letter-spacing: normal !important;
+}
+
+/* Fix character cell rendering */
+.xterm-container .xterm-char-measure-element {
+    left: -9999em;
+}
+
+/* Ensure monospace font rendering */
+.xterm-container canvas {
+    image-rendering: auto;
+    font-smooth: auto;
+    -webkit-font-smoothing: auto;
+}
+
+/* Match sidebar styling */
+.xterm-container .xterm-helpers {
+    top: 0;
+}
+
+/* Terminal cursor styling */
+.xterm-container .xterm-cursor-layer {
+    z-index: 2;
+}
+
+/* Error state */
+.xterm-error {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    text-align: center;
+    color: var(--text-primary);
+}
+
+.xterm-error-icon {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+.xterm-error-message {
+    font-size: 16px;
+    line-height: 1.5;
+    margin-bottom: 30px;
+    max-width: 500px;
+    color: var(--text-secondary);
+}
+
+.xterm-error-retry {
+    background: var(--button-primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.xterm-error-retry:hover {
+    background: var(--button-primary-hover);
+}
+
+/* Loading state */
+.xterm-loading {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+}
+
+.xterm-loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--accent-color);
+    border-radius: 50%;
+    animation: xterm-spin 0.8s linear infinite;
+    margin-bottom: 20px;
+}
+
+.xterm-loading-text {
+    font-size: 14px;
+}
+
+@keyframes xterm-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

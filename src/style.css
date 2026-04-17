@@ -1,0 +1,2754 @@
+/* All @import statements must come first (CSS spec requirement) */
+@import './tokens/variables.css';
+@import './editor/editor.css';
+@import './editor/task-extension.css';
+@import './settings/ai-settings.css';
+@import './chat/enhanced-chat.css';
+@import './widgets/widget-sidebar.css';
+@import './widgets/task-widget.css';
+
+/* Self-hosted Inter font - no external requests to Google */
+@font-face {
+  font-family: 'Inter';
+  src: url('./fonts/InterVariable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'InterVariable';
+  src: url('./fonts/InterVariable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Prevent browser/WebKit from auto-applying system dark mode styles.
+   The app manages its own theming via data-theme attribute and CSS variables.
+   This fixes the sidebar appearing dark on macOS when system is in dark mode.
+
+   IMPORTANT: With Tauri's transparent: true window setting, we MUST set an opaque
+   background on html to prevent macOS dark mode from bleeding through. */
+html {
+  color-scheme: light;
+  background-color: var(--bg-primary);
+}
+
+/* When app is in dark mode, update html background and color-scheme */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  background-color: var(--bg-primary);
+}
+
+/* Transparent title bar - add proper spacing and drag regions */
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Right Sidebar for Chat */
+.right-sidebar {
+  width: 0;
+  background: #fafafa; /* Fallback */
+  background: var(--bg-secondary, #fafafa);
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s ease;
+  overflow: hidden;
+  flex-shrink: 0;
+  position: relative;
+  height: 100%;
+}
+
+[data-theme="dark"] .right-sidebar {
+  background: #1C1C1E;
+  background: var(--bg-primary, #1C1C1E);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.right-sidebar.visible {
+  width: 350px;
+  min-width: 250px;
+  max-width: 600px;
+}
+
+/* CLI mode needs more width */
+.right-sidebar.visible.cli-mode {
+  width: 750px;
+  min-width: 750px;
+}
+
+/* Chat resize handle */
+.chat-resize-handle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  cursor: col-resize;
+  background: transparent;
+  z-index: 10;
+  transition: background-color 0.2s;
+  display: none;
+}
+
+.right-sidebar.visible .chat-resize-handle {
+  display: block;
+}
+
+.chat-resize-handle:hover {
+  background-color: rgba(59, 130, 246, 0.3);
+}
+
+.chat-resize-handle.dragging {
+  background-color: rgba(59, 130, 246, 0.5);
+}
+
+/* Prevent text selection while resizing */
+body.resizing-chat {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Chat panel container */
+#chat-panel-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Update app container to be flexbox */
+.app-container {
+  height: 100vh;
+  display: flex;
+}
+
+/* Create a subtle drag region at the very top of the window */
+.app-container::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 78px; /* Skip traffic light area */
+  right: 0;
+  height: 12px; /* Thin strip at very top for dragging */
+  -webkit-app-region: drag;
+  z-index: 9999;
+  pointer-events: auto;
+}
+
+/* Ensure main content area grows */
+.editor-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Chat header layout improvements */
+.chat-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Chat toggle button active state */
+.chat-toggle-btn {
+  position: relative;
+}
+
+.chat-toggle-btn.active {
+  background-color: var(--accent-primary);
+  color: white;
+}
+
+/* Make chat button more prominent */
+.chat-toggle-btn:hover {
+  background-color: var(--bg-tertiary);
+}
+
+/* ===========================================
+   macOS Titlebar Integration (titleBarStyle: Overlay)
+   Traffic lights are overlaid - content flows under them
+   =========================================== */
+
+/* Make top rows draggable (ribbon has icons, editor-header has title) */
+.sidebar-ribbon,
+.editor-header {
+  -webkit-app-region: drag;
+}
+
+/* All interactive elements must opt-out of drag */
+.sidebar-ribbon button,
+.sidebar-ribbon [onclick],
+.editor-header button,
+.editor-header input,
+.editor-header select,
+.editor-header a,
+.editor-header [onclick],
+.editor-header .editor-left-controls,
+.editor-header .editor-left-controls *,
+.editor-header .editor-controls,
+.editor-header .editor-controls *,
+.editor-header .tab-bar-container,
+.editor-header .tab-bar-container *,
+.editor-header .mode-toggle,
+.editor-header .mode-toggle * {
+  -webkit-app-region: no-drag;
+}
+
+/* The file-name in center should remain draggable */
+.editor-header .file-name {
+  -webkit-app-region: drag;
+  cursor: default;
+}
+
+:root {
+  /* Layout dimensions */
+  --sidebar-width: 260px;
+  --header-height: 40px;
+
+  /* Legacy color variable mappings for backwards compatibility during migration */
+  /* TODO: Remove these once all components are fully migrated to token system */
+  --border-color: var(--border-primary);
+  --accent-color: var(--accent-primary);
+  /* --accent-hover is defined in tokens/variables.css, no need to remap */
+  --accent-rgb: 37, 99, 235; /* RGB version of accent-primary (#2563eb) */
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  font-feature-settings: 'liga' 1, 'calt' 1; /* Inter contextual alternates */
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  overflow: hidden;
+}
+
+/* Enable Inter variable font support when available */
+@supports (font-variation-settings: normal) {
+  body {
+    font-family: 'InterVariable', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  
+  #markdown-content {
+    font-family: 'InterVariable', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+}
+
+.app-container {
+  display: flex;
+  height: 100vh;
+}
+
+/* Sidebar
+   IMPORTANT: With Tauri's transparent window, we need an explicit opaque background.
+   The sidebar uses --bg-secondary which resolves to #fafafa in light mode.
+   We also add a fallback color to ensure opacity even if CSS vars aren't loaded yet. */
+.sidebar {
+  width: var(--sidebar-width);
+  min-width: 180px;
+  max-width: 400px;
+  padding-top: var(--header-height);
+  background-color: var(--bg-secondary, #fafafa);
+  border-right: 1px solid rgba(233, 233, 231, 0.6);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  flex-shrink: 0;
+  overflow: visible;
+  z-index: 4;
+}
+
+/* Dark theme sidebar */
+[data-theme="dark"] .sidebar {
+  background-color: var(--bg-secondary, #2C2C2E);
+}
+
+/* Sidebar resize handle */
+.sidebar-resize-handle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  cursor: col-resize;
+  background: transparent;
+  z-index: 10;
+  transition: background-color 0.2s;
+}
+
+.sidebar-resize-handle:hover {
+  background-color: rgba(59, 130, 246, 0.3);
+}
+
+.sidebar-resize-handle.dragging {
+  background-color: rgba(59, 130, 246, 0.5);
+}
+
+body.resizing-sidebar {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.sidebar-header {
+  min-height: 144px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 40px 12px 12px;
+  background-color: var(--bg-secondary, #fafafa);
+  flex: 0 0 auto;
+  position: relative;
+  overflow: visible;
+  z-index: 2;
+}
+
+.sidebar-app-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
+}
+
+.sidebar-nav-button {
+  width: 100%;
+  min-height: 36px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s, opacity 0.15s;
+}
+
+.sidebar-nav-button:hover:not(:disabled) {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.sidebar-nav-button.active {
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--accent-primary);
+}
+
+[data-theme="dark"] .sidebar-nav-button.active {
+  background: rgba(59, 130, 246, 0.18);
+}
+
+.sidebar-nav-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.sidebar-nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-nav-icon svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+}
+
+.sidebar-vault-row {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.sidebar-vault-row #vault-picker-container {
+  flex: 1;
+  min-width: 0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+
+.vault-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+}
+
+.icon-button svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+}
+
+.icon-button:hover {
+  background-color: var(--bg-tertiary);
+}
+
+/* Icon animations for Lucide icons */
+.icon-spin {
+  animation: icon-spin 1s linear infinite;
+}
+
+@keyframes icon-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Vault Menu Dropdown */
+.vault-menu-container {
+  position: relative;
+}
+
+.vault-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 160px;
+  z-index: 1000;
+  margin-top: 4px;
+}
+
+.vault-dropdown.hidden {
+  display: none;
+}
+
+.sort-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 160px;
+  z-index: 1000;
+  margin-top: 4px;
+}
+
+.sort-dropdown.hidden {
+  display: none;
+}
+
+.sort-menu-container {
+  position: relative;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 14px;
+}
+
+.dropdown-item:hover {
+  background-color: var(--bg-secondary);
+}
+
+.dropdown-item:first-child {
+  border-radius: 7px 7px 0 0;
+}
+
+.dropdown-item:last-child {
+  border-radius: 0 0 7px 7px;
+}
+
+.dropdown-icon {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+.dropdown-label {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 4px 0;
+}
+
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000000; /* Higher than plugin modals */
+}
+
+.modal-content {
+  background: var(--bg-primary);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  min-width: 400px;
+  max-width: 500px;
+  border: 1px solid var(--border-color);
+}
+
+.modal-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.modal-body {
+  padding: 20px 24px;
+}
+
+.modal-description {
+  margin: 0 0 16px 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.modal-body label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.modal-body input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 16px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  transition: border-color 0.2s;
+}
+
+.modal-body input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px var(--accent-bg);
+}
+
+.modal-footer {
+  padding: 16px 24px 20px;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.modal-footer .primary-button,
+.modal-footer .secondary-button {
+  margin: 0;
+}
+
+.file-tree-panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-secondary, #fafafa);
+}
+
+[data-theme="dark"] .file-tree-panel {
+  background-color: var(--bg-secondary, #2C2C2E);
+}
+
+.file-tree-header {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 12px;
+  background-color: var(--bg-secondary, #fafafa);
+  flex: 0 0 auto;
+}
+
+[data-theme="dark"] .file-tree-header {
+  background-color: var(--bg-secondary, #2C2C2E);
+}
+
+.file-tree-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-left: 12px;
+}
+
+.file-tree-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.file-tree-action-button,
+.file-tree-sort-button {
+  min-width: 28px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+}
+
+/* File Tree */
+.file-tree {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0;
+  padding-top: 4px;
+  background-color: #fafafa;
+  background-color: var(--bg-secondary, #fafafa);
+  position: relative;
+  z-index: 1;
+}
+
+[data-theme="dark"] .file-tree {
+  background-color: #2C2C2E;
+  background-color: var(--bg-secondary, #2C2C2E);
+}
+
+/* Sidebar Ribbon */
+.sidebar-ribbon {
+  height: var(--header-height);
+  min-height: var(--header-height);
+  max-height: var(--header-height);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 8px 0 78px;
+  background-color: #fafafa;
+  background-color: var(--bg-secondary, #fafafa);
+  gap: 4px;
+  border-bottom: 1px solid var(--border-color);
+  -webkit-app-region: drag;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+}
+
+[data-theme="dark"] .sidebar-ribbon {
+  background-color: #2C2C2E;
+  background-color: var(--bg-secondary, #2C2C2E);
+}
+
+.sidebar-ribbon.hidden {
+  display: none;
+}
+
+.ribbon-button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  -webkit-app-region: no-drag;
+  height: 32px;
+  transition: all 0.15s;
+}
+
+.ribbon-button svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+}
+
+.ribbon-button:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+
+
+.tree-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.tree-action-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tree-action-btn:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.file-tree-content {
+  padding: 8px 16px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 32px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 300px;
+}
+
+.empty-state p {
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  font-size: 16px;
+}
+
+.empty-state .primary-button,
+.empty-state .secondary-button {
+  margin: 4px;
+}
+
+.primary-button,
+.secondary-button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin: 4px;
+}
+
+.primary-button {
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+}
+
+.primary-button:hover {
+  background-color: var(--accent-hover);
+}
+
+.secondary-button {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.secondary-button:hover {
+  background-color: var(--bg-tertiary);
+}
+
+/* File Tree Items */
+.file-tree-content {
+  padding: 8px 0;
+}
+
+.tree-item {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  user-select: none;
+}
+
+.tree-item:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.tree-item.tree-item-pulse {
+  background-color: rgba(59, 130, 246, 0.12);
+}
+
+.tree-icon {
+  margin-right: 8px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.tree-icon svg {
+  color: var(--text-secondary);
+}
+
+.folder-icon svg {
+  color: var(--accent-primary);
+}
+
+.file-icon svg {
+  color: var(--text-tertiary);
+}
+
+/* File type badges for PDF, CSV, etc. */
+.file-type-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 4px;
+  border-radius: 3px;
+  margin-right: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+}
+
+.file-type-badge.pdf {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.file-type-badge.csv {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.file-type-badge.json {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.file-type-badge.sketch {
+  background-color: rgba(249, 115, 22, 0.15);
+  color: #f97316;
+}
+
+.file-type-badge.boxnote {
+  background-color: rgba(99, 102, 241, 0.14);
+  color: #4f46e5;
+}
+
+.file-type-badge.html {
+  background-color: rgba(20, 184, 166, 0.14);
+  color: #0f766e;
+}
+
+.tree-label {
+  flex: 1;
+  color: var(--text-primary);
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Editor */
+.editor-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-primary);
+}
+
+/* Editor wrapper for tabs layout */
+.editor-wrapper {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.editor-header {
+  height: 40px;
+  min-height: 40px;
+  max-height: 40px;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background-color: var(--bg-secondary);
+  flex-shrink: 0;
+}
+
+/* When sidebar is hidden, offset controls for macOS traffic light buttons */
+.editor-container.sidebar-hidden .editor-left-controls {
+  left: 80px;
+}
+
+/* When sidebar is hidden, center the editor content with max-width */
+.editor-container.sidebar-hidden .editor-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.editor-container.sidebar-hidden .editor-wrapper > * {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.file-name {
+  font-weight: 500;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.editor-left-controls {
+  position: absolute;
+  left: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.editor-controls {
+  position: absolute;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.editor-control-btn {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 6px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editor-control-btn:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.editor-control-btn.active {
+  background: var(--accent-primary);
+  color: white;
+  border-color: var(--accent-primary);
+}
+
+.editor-control-btn.active:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+/* PDF Highlight button - yellow to indicate highlight function */
+.pdf-highlight-btn {
+  background: rgba(255, 235, 59, 0.3);
+  border-color: rgba(255, 193, 7, 0.4);
+}
+
+.pdf-highlight-btn:hover {
+  background: rgba(255, 235, 59, 0.5);
+  border-color: rgba(255, 193, 7, 0.6);
+  color: var(--text-primary);
+}
+
+/* Editor Menu Dropdown */
+.editor-menu-container {
+  position: relative;
+}
+
+.editor-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 140px;
+  z-index: 1000;
+  margin-top: 4px;
+  padding: 4px 0;
+}
+
+.editor-dropdown.hidden {
+  display: none;
+}
+
+.editor-dropdown-item {
+  padding: 8px 16px;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: background-color 0.15s;
+  white-space: nowrap;
+}
+
+.editor-dropdown-item:hover {
+  background-color: var(--bg-secondary);
+}
+
+.editor-dropdown-divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 4px 0;
+}
+
+/* Export notifications */
+.export-notification {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  transform: translateX(-50%) translateY(-10px);
+  transition: all 0.3s ease;
+}
+
+.export-notification.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.export-notification.success {
+  background-color: var(--success-600);
+  color: white;
+}
+
+.export-notification.error {
+  background-color: var(--error-500);
+  color: white;
+}
+
+.export-notification.info {
+  background-color: var(--info-600);
+  color: white;
+}
+
+.editor {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  background-color: var(--bg-primary);
+}
+
+/* Editor Status Bar */
+.editor-status-bar {
+  height: 40px;
+  padding: 0 24px;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Group word and character count together */
+.editor-status-bar > span {
+  margin-left: auto;
+}
+
+/* Welcome Screen */
+.welcome-screen {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 48px 0;
+}
+
+.welcome-screen h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+
+.welcome-screen p {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 48px;
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+}
+
+.feature {
+  padding: 24px;
+  background-color: var(--bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.feature h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.feature p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.loading {
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 16px;
+}
+
+/* Vault opened states */
+.vault-opened {
+  padding: 2rem;
+  text-align: center;
+  background: var(--info-bg);
+  border-radius: 8px;
+  border: 1px solid var(--info-border);
+  margin: 1rem;
+}
+
+.vault-opened p {
+  margin: 0.5rem 0;
+  color: var(--info-text);
+}
+
+.vault-path {
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 0.8rem;
+  background: var(--info-bg);
+  padding: 0.5rem;
+  border-radius: 4px;
+  word-break: break-all;
+}
+
+.vault-success {
+  padding: 3rem;
+  text-align: center;
+  background: var(--success-bg);
+  border-radius: 12px;
+  border: 1px solid var(--success-border);
+  margin: 2rem;
+}
+
+.vault-success h1 {
+  color: var(--success-text);
+  margin-bottom: 1rem;
+  font-size: 2.5rem;
+}
+
+.vault-success h2 {
+  color: var(--success-text);
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+}
+
+.vault-success p {
+  color: var(--success-text);
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.vault-success code {
+  background: var(--success-bg);
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 0.9rem;
+}
+
+/* Error states */
+.error-message {
+  padding: 3rem;
+  text-align: center;
+  background: var(--error-bg);
+  border-radius: 12px;
+  border: 1px solid var(--error-border);
+  margin: 2rem;
+}
+
+.error-message h2 {
+  color: var(--error-text);
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+}
+
+.error-message p {
+  color: var(--error-text);
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+}
+
+.error-message button {
+  background: var(--error-600);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.error-message button:hover {
+  background: var(--error-700);
+}
+
+/* Button loading states */
+.primary-button:disabled,
+.secondary-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.primary-button:disabled:hover,
+.secondary-button:disabled:hover {
+  background-color: var(--accent-color);
+  transform: none;
+}
+
+/* File tree styles */
+.empty-vault {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.empty-vault p {
+  margin-bottom: 0.5rem;
+}
+
+.error-state {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--error-text);
+}
+
+.error-state p {
+  margin-bottom: 0.5rem;
+}
+
+.tree-item.file:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.tree-item.folder:hover {
+  background-color: var(--bg-tertiary);
+}
+
+/* Drag & Drop visual states */
+.tree-item.file.dragging {
+  opacity: 0.6;
+}
+
+.tree-item.folder.drag-over {
+  background-color: var(--bg-tertiary);
+  outline: 2px dashed var(--accent-color);
+}
+
+/* Synthetic drag root drop uses container detection; no extra UI rows */
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+.tree-item.file.active {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+/* Expandable folder styles */
+.expand-icon {
+  display: inline-block;
+  width: 16px;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  margin-right: 4px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  transition: transform 0.2s;
+}
+
+.expand-icon:hover {
+  color: var(--text-primary);
+}
+
+.tree-item.folder {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.tree-item.folder .folder-actions {
+  margin-left: auto;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.tree-item.folder:hover .folder-actions {
+  opacity: 1;
+}
+
+.folder-action-btn {
+  background: none;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 3px;
+  transition: background-color 0.2s;
+  margin-left: 4px;
+}
+
+.folder-action-btn:hover {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+/* Markdown editor styles */
+.markdown-editor {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+#markdown-content {
+  flex: 1;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  font-feature-settings: 'liga' 1, 'calt' 1; /* Inter contextual alternates */
+  padding: 0;
+  background: transparent;
+  color: var(--text-primary);
+}
+
+#markdown-content::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* File tree content scrollbar */
+.file-tree::-webkit-scrollbar {
+  width: 6px;
+}
+
+.file-tree::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.file-tree::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.file-tree::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+/* Editor scrollbar */
+.editor::-webkit-scrollbar {
+  width: 8px;
+}
+
+.editor::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.editor::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+.editor::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+/* Context Menu Styles */
+.context-menu {
+  position: fixed;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px var(--shadow-md);
+  z-index: 10000;
+  min-width: 180px;
+  padding: 4px 0;
+  font-size: 14px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.context-menu.hidden {
+  display: none;
+}
+
+.context-menu-item {
+  padding: 8px 16px;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: background-color 0.15s;
+}
+
+.context-menu-item:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.context-menu-item.is-disabled {
+  color: var(--text-tertiary);
+  cursor: default;
+  pointer-events: none;
+}
+
+.context-menu-item.is-disabled:hover {
+  background-color: transparent;
+  color: var(--text-tertiary);
+}
+
+.context-menu-separator {
+  height: 1px;
+  background-color: var(--border-primary);
+  margin: 4px 0;
+}
+
+/* Modal Styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 20000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  position: relative;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  padding: 24px;
+  min-width: 400px;
+  box-shadow: 0 4px 16px var(--shadow-lg);
+}
+
+.modal-content h3 {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.modal-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-primary);
+  border-radius: 4px;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.modal-buttons button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.modal-buttons button:first-child {
+  background: var(--accent-color);
+  color: white;
+}
+
+.modal-buttons button:last-child {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+/* Move Modal Styles */
+.modal-move {
+  min-width: 500px;
+  max-width: 600px;
+  padding: 0;
+}
+
+.modal-move .modal-input {
+  margin: 0;
+  border: none;
+  border-bottom: 1px solid var(--border-primary);
+  border-radius: 0;
+  padding: 16px 20px;
+  font-size: 16px;
+}
+
+.move-folder-list {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.move-folder-item {
+  padding: 10px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.move-folder-item:hover {
+  background-color: var(--bg-secondary);
+}
+
+.move-folder-item.selected {
+  background-color: var(--bg-tertiary);
+}
+
+.move-folder-path {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.move-shortcuts {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border-primary);
+  display: flex;
+  gap: 24px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Copy Notification Styles */
+.copy-notification {
+  background: var(--accent-color);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.copy-notification.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Welcome Landing Page Styles */
+.welcome-landing-page {
+  width: min(680px, 100%);
+  margin: 0 auto;
+  padding: 3rem 2rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.welcome-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1rem;
+}
+
+.welcome-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.welcome-header h1 {
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: -0.025em;
+}
+
+.welcome-header p {
+  max-width: 36rem;
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.welcome-tagline {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: 1.5;
+}
+
+.welcome-logo {
+  width: 84px;
+  height: 84px;
+  max-width: 100%;
+  margin: 0 auto;
+  display: block;
+  opacity: 0.9;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+  transition: opacity 0.3s ease;
+}
+
+.welcome-logo:hover {
+  opacity: 1;
+}
+
+.welcome-vault-picker {
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 0.75rem;
+}
+
+.welcome-vault-picker .vault-picker {
+  display: inline-block;
+  max-width: 100%;
+}
+
+.welcome-vault-picker .vault-picker-button {
+  width: auto;
+  max-width: min(100%, 32rem);
+  min-height: auto;
+  justify-content: center;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.welcome-vault-picker .vault-picker-button:hover,
+.welcome-vault-picker .vault-picker-button:focus-visible,
+.welcome-vault-picker .vault-picker-button[aria-expanded="true"] {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.welcome-vault-picker .vault-name {
+  max-width: none;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1;
+  color: #525252;
+  transition: color 0.2s ease;
+}
+
+.welcome-vault-picker .dropdown-arrow {
+  font-size: 16px;
+  color: #525252;
+  opacity: 1;
+}
+
+.welcome-vault-picker .vault-picker-button:hover .vault-name,
+.welcome-vault-picker .vault-picker-button:focus-visible .vault-name,
+.welcome-vault-picker .vault-picker-button[aria-expanded="true"] .vault-name,
+.welcome-vault-picker .vault-picker-button:hover .dropdown-arrow,
+.welcome-vault-picker .vault-picker-button:focus-visible .dropdown-arrow,
+.welcome-vault-picker .vault-picker-button[aria-expanded="true"] .dropdown-arrow {
+  color: #171717;
+}
+
+.welcome-vault-picker .vault-picker-menu {
+  left: 50%;
+  min-width: 320px;
+  transform: translate(-50%, -4px);
+}
+
+.welcome-vault-picker .vault-picker-menu.open {
+  transform: translate(-50%, 0);
+}
+
+@media (max-width: 900px) {
+  .welcome-landing-page {
+    width: min(640px, 100%);
+    padding: 3rem 1.5rem;
+  }
+
+  .welcome-header h1 {
+    font-size: clamp(2.5rem, 9vw, 3.5rem);
+  }
+
+  .welcome-header p,
+  .welcome-tagline {
+    font-size: 1rem;
+  }
+
+  .welcome-vault-picker {
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  .welcome-vault-picker .vault-picker-button {
+    max-width: min(100%, 24rem);
+  }
+
+  .welcome-vault-picker .vault-name {
+    font-size: 1.25rem;
+  }
+}
+
+.welcome-vault-hint {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-tertiary);
+}
+
+.feature-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.feature-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border-color: var(--accent-primary);
+}
+
+.feature-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.feature-card h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.feature-card h4 {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin: 0 0 1rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.7;
+}
+
+.feature-card p {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.6;
+}
+
+.quick-start {
+  margin-bottom: 3rem;
+}
+
+.quick-start h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 1.5rem 0;
+  text-align: center;
+}
+
+.features-section {
+  margin-bottom: 3rem;
+  margin-top: 3rem;
+}
+
+.features-section h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 1.5rem 0;
+  text-align: center;
+}
+
+.getting-started-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.start-card {
+  background: var(--bg-primary);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.start-card:hover {
+  border-color: var(--accent-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.start-icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.start-card h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.start-card p {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Tab Bar Styles - Obsidian-style flat design */
+.tab-bar {
+  height: 40px;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: flex-end;
+  padding: 0 8px;
+  gap: 2px;
+  -webkit-app-region: no-drag;
+}
+
+.tab-list {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 0;
+}
+
+/* Spacer pushes utility buttons to the right */
+.tab-bar-spacer {
+  flex: 1;
+}
+
+.tab-list::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  gap: 6px;
+  background-color: transparent;
+  border-radius: 6px 6px 0 0;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  min-width: 0;
+  max-width: 220px;
+  transition: background-color 0.15s ease;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.tab:hover:not(.active) {
+  background-color: var(--bg-tertiary);
+}
+
+.tab.active {
+  background-color: var(--bg-primary);
+  border-bottom-color: var(--accent-color, #7c3aed);
+}
+
+.tab.dragging {
+  opacity: 0.5;
+}
+
+/* Tab icon */
+.tab-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+.tab.active .tab-icon {
+  opacity: 0.7;
+}
+
+.tab-icon svg {
+  color: var(--text-secondary);
+}
+
+.tab-title {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab.active .tab-title {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.tab.dirty .tab-title::after {
+  content: ' •';
+  color: var(--text-muted, #888);
+}
+
+.tab-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.15s, background-color 0.15s;
+  flex-shrink: 0;
+}
+
+.tab:hover .tab-close {
+  opacity: 0.5;
+}
+
+.tab.active .tab-close {
+  opacity: 0.6;
+}
+
+.tab-close:hover {
+  opacity: 1 !important;
+  background-color: var(--bg-tertiary);
+}
+
+.tab-close svg {
+  color: var(--text-secondary);
+}
+
+.tab-add-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  transition: background-color 0.15s, color 0.15s;
+  align-self: center;
+  flex-shrink: 0;
+}
+
+.tab-add-button:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.highlights-summary-button,
+.copy-text-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  transition: background-color 0.1s;
+  flex-shrink: 0;
+}
+
+.highlights-summary-button:hover,
+.copy-text-button:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.highlights-summary-button svg,
+.copy-text-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Tab editor containers */
+.tab-editor-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: none;
+}
+
+.tab-editor-container .editor-content {
+  height: 100%;
+}
+
+/* Welcome screen when no tabs are open */
+.welcome-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-primary);
+}
+
+.welcome-content {
+  text-align: center;
+  max-width: 500px;
+}
+
+.welcome-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.welcome-subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+}
+
+.welcome-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.welcome-action {
+  padding: 12px 24px;
+  border: none;
+  background: none;
+  color: var(--accent-color);
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 0.1s;
+  width: 200px;
+}
+
+.welcome-action:hover {
+  background-color: var(--bg-secondary);
+}
+
+.welcome-shortcut {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-left: 8px;
+}
+
+.tasks-hub-container,
+.sketches-hub-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  overflow: auto;
+  background:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.08), transparent 32%),
+    linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  padding: 32px;
+}
+
+.tasks-hub-shell,
+.sketches-hub-shell {
+  width: min(1080px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 0;
+}
+
+.tasks-hub-header h1,
+.sketches-hub-header h1 {
+  margin: 0;
+  font-size: 40px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+
+.tasks-hub-header p,
+.sketches-hub-header p {
+  margin: 8px 0 0;
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
+.tasks-hub-widget-host,
+.sketches-hub-widget-host {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+.task-widget-hub {
+  width: 100%;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 20px;
+  background: var(--bg-primary);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+.task-widget-hub .task-header {
+  justify-content: flex-end;
+  padding: 0 24px 12px;
+}
+
+.task-widget-hub .task-header h3 {
+  display: none;
+}
+
+.task-widget-hub .task-count {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.task-widget-hub .task-search-container {
+  padding: 0 24px 16px;
+}
+
+.task-widget-hub .task-search-input {
+  padding: 14px 16px 14px 40px;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  background: var(--bg-secondary);
+}
+
+.task-widget-hub .task-search-icon {
+  position: absolute;
+  margin-left: 14px;
+}
+
+.task-widget-hub .task-search-container {
+  position: relative;
+}
+
+.task-widget-hub .task-filter-tabs {
+  padding: 0 24px 16px;
+  gap: 8px;
+}
+
+.task-widget-hub .task-filter-tab {
+  border-radius: 999px;
+  background: var(--bg-secondary);
+  border: 1px solid transparent;
+}
+
+.task-widget-hub .task-list {
+  padding: 0 24px 24px;
+}
+
+.task-widget-hub .task-project-group {
+  margin-bottom: 20px;
+}
+
+.task-widget-hub .task-project-header {
+  padding: 0 4px 10px;
+}
+
+.task-widget-hub .task-items {
+  gap: 8px;
+}
+
+.task-widget-hub .task-item {
+  padding: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 14px;
+  background: var(--bg-secondary);
+}
+
+.sketch-hub-panel {
+  width: 100%;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 20px;
+  background: var(--bg-primary);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.sketch-hub-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px;
+}
+
+.sketch-hub-count {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.sketch-hub-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex: 1;
+}
+
+.sketch-hub-create-btn {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.sketch-hub-create-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent-color);
+  background: var(--bg-tertiary);
+}
+
+.sketch-hub-search {
+  position: relative;
+  width: min(320px, 100%);
+}
+
+.sketch-hub-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  pointer-events: none;
+}
+
+.sketch-hub-search-input {
+  width: 100%;
+  padding: 14px 16px 14px 42px;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.sketch-hub-search-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.sketch-hub-list {
+  padding: 0 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  overflow: auto;
+}
+
+.sketch-hub-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 18px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.sketch-hub-row:hover {
+  transform: translateY(-1px);
+  border-color: rgba(59, 130, 246, 0.32);
+  background: var(--bg-tertiary);
+}
+
+.sketch-hub-thumb {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background:
+    linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(14, 165, 233, 0.18));
+  color: var(--text-secondary);
+}
+
+.sketch-hub-row-copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sketch-hub-row-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sketch-hub-row-meta {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.sketch-hub-row-arrow {
+  color: var(--text-tertiary);
+}
+
+.sketch-hub-empty {
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  padding: 32px 24px;
+  color: var(--text-secondary);
+}
+
+.sketch-hub-empty h3 {
+  margin: 0;
+  font-size: 20px;
+  color: var(--text-primary);
+}
+
+.sketch-hub-empty p {
+  margin: 0;
+  max-width: 320px;
+}
+
+.sketch-hub-empty-icon {
+  width: 56px;
+  height: 56px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.sketch-hub-empty-action {
+  margin-top: 8px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 999px;
+  background: var(--accent-color);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .tasks-hub-container,
+  .sketches-hub-container {
+    padding: 20px;
+  }
+
+  .tasks-hub-header h1,
+  .sketches-hub-header h1 {
+    font-size: 32px;
+  }
+
+  .sketch-hub-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sketch-hub-controls {
+    width: 100%;
+  }
+
+  .sketch-hub-search {
+    width: 100%;
+  }
+}
+
+/* Pane Manager Styles */
+.pane-manager-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.pane-container {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  position: relative;
+}
+
+.pane.active {
+  /* Visual indicator for active pane */
+}
+
+.pane-tab-bar {
+  /* Tab bar is styled by TabBar component */
+}
+
+.pane-editor-wrapper {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.pane-divider {
+  width: 3px;
+  background-color: var(--border-color);
+  cursor: col-resize;
+  position: relative;
+  transition: background-color 0.2s;
+}
+
+.pane-divider:hover {
+  background-color: var(--accent-color);
+}
+
+.pane-divider:active,
+.pane-divider.resizing {
+  background-color: var(--accent-color);
+}
+
+/* Split view layout */
+.pane-container.split {
+  /* Ensures proper flex layout when split */
+}
+
+.pane-container.split .pane:first-child {
+  border-right: 1px solid var(--border-color);
+}
+
+/* New Tab Screen */
+.new-tab-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-primary);
+}
+
+.new-tab-content {
+  text-align: center;
+  max-width: 400px;
+}
+
+.new-tab-content h2 {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 24px;
+}
+
+.new-tab-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.new-tab-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border: none;
+  background: none;
+  color: var(--accent-color);
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 0.1s;
+}
+
+.new-tab-action:hover {
+  background-color: var(--bg-secondary);
+}
+
+.new-tab-action.secondary {
+  color: var(--text-secondary);
+  justify-content: center;
+}
+
+.new-tab-shortcut {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-left: 16px;
+}
+
+/* Zen Mode Styles */
+.app-container.zen-mode {
+  padding-top: 0;
+}
+
+.app-container.zen-mode::before {
+  display: none; /* Remove drag region in zen mode */
+}
+
+.zen-mode .editor-container {
+  margin: 0 !important;
+  padding: 0;
+}
+
+.zen-mode .editor-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-primary);
+}
+
+.zen-mode .pane-manager-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.zen-mode .tab-bar {
+  display: none;
+}
+
+.zen-mode .editor-content {
+  font-size: 18px;
+  line-height: 1.8;
+}
+
+/* Smooth transitions for zen mode */
+.editor-container,
+.sidebar,
+.editor-header,
+.editor-status-bar,
+#right-sidebar {
+  transition: all 0.3s ease;
+}
+
+/* Ensure editor container doesn't overflow in normal mode */
+.editor-container {
+  overflow: hidden;
+  position: relative;
+}
+
+/* Fix for zen mode exit transition */
+.app-container:not(.zen-mode) .editor-container {
+  max-width: 100%;
+  height: 100%;
+}
+
+/* MCP Tools Indicator */
+.mcp-tools-indicator {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  margin-left: 12px;
+  padding: 4px 10px;
+  background: rgba(var(--accent-rgb), 0.1);
+  border-radius: 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: default;
+}
+
+.mcp-tools-indicator .mcp-icon {
+  font-size: 14px;
+}
+
+/* MCP Status Bar Item */
+.status-separator {
+  margin: 0 8px;
+  color: var(--text-secondary);
+  opacity: 0.5;
+}
+
+.mcp-status-item {
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 12px;
+}
+
+.mcp-status-item:hover {
+  background: rgba(var(--accent-rgb), 0.1);
+}
+
+.mcp-status-item.mcp-connected {
+  color: var(--accent-color);
+}
+
+.mcp-status-item.mcp-disconnected {
+  color: var(--text-secondary);
+}
+
+.mcp-status-item.mcp-error {
+  color: var(--error-text);
+}
+
+.mcp-tools-indicator .mcp-text {
+  font-weight: 500;
+}
+
+.mcp-tools-indicator:hover {
+  background: rgba(var(--accent-rgb), 0.15);
+  color: var(--text-primary);
+}

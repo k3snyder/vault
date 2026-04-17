@@ -1,0 +1,108 @@
+[package]
+name = "vault"
+version = "0.1.0"
+description = "Open-source, local-first knowledge management application"
+authors = ["Vault Contributors"]
+edition = "2021"
+default-run = "vault"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["macos-private-api", "devtools"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+notify = "6"
+walkdir = "2"
+regex = "1"
+chrono = { version = "0.4", features = ["serde"] }
+chrono-english = "0.1"
+reqwest = { version = "0.11", features = ["json", "stream"] }
+base64 = "0.21"
+headless_chrome = "1.0"
+pulldown-cmark = "0.9"
+ammonia = "3"
+urlencoding = "2"
+futures-util = "0.3"
+futures = "0.3"
+sha2 = "0.10"
+aes-gcm = "0.10"
+rand = "0.8"
+anyhow = "1.0"
+dotenvy = "0.15"
+thiserror = "1.0"
+url = "2.5"
+libc = "0.2"
+lazy_static = "1.4"
+once_cell = "1.19"
+# For async traits
+async-trait = "0.1"
+# For home directory
+dirs = "5.0"
+# For UUID generation
+uuid = { version = "1.11", features = ["v4", "v7", "serde"] }
+# For LRU cache
+lru = "0.12"
+# For binary serialization
+bincode = "1.3"
+# For efficient thread-safe locks
+parking_lot = "0.12"
+# For YAML parsing and writing
+yaml-rust = "0.4"
+# For TOML parsing and writing
+toml = "0.8"
+# For safe temporary file creation
+tempfile = "3.8"
+# For advanced file watching with debouncing
+notify-debouncer-full = "0.3"
+# For progress bars and reporting
+indicatif = "0.17"
+# For PTY handling
+portable-pty = "0.8.1"
+# For CLI port selection
+portpicker = "0.1"
+# For development server
+warp = "0.3"
+webbrowser = "0.8"
+sysinfo = "0.31"
+tracing = "0.1.41"
+# For machine fingerprinting in license system
+machine-uid = "0.3"
+# For secure credential storage in OS keychain
+keyring = "2.0"
+# For CSV parsing
+csv = "1.3"
+# For PDF text extraction (fallback when pdfium unavailable)
+pdf-extract = "0.7"
+# For high-quality PDF text extraction (uses Google's Pdfium)
+pdfium-render = { version = "0.8", features = ["thread_safe"] }
+rusqlite = { version = "0.32", features = ["bundled"] }
+# For macOS window decorations (traffic lights)
+tauri-plugin-decorum = "1"
+# For TypeScript type generation
+specta = { version = "2.0.0-rc.22", features = ["derive", "serde"] }
+
+[dev-dependencies]
+tempfile = "3.8"
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-shell = "2"
+tauri-plugin-store = "2"
+tauri-plugin-window-state = "2"
+tauri-plugin-clipboard-manager = "2"
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+
+[lib]
+name = "vault"
+path = "src/lib.rs"
+
+[[bin]]
+name = "vault"
+path = "src/main.rs"

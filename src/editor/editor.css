@@ -1,0 +1,940 @@
+/* Fonts are self-hosted in src/fonts/ - loaded via style.css */
+
+/* Frontmatter Properties Styling */
+.frontmatter-properties-container {
+  background: transparent !important;
+  border: none !important;
+  margin: 0 0 4px 0 !important;
+}
+
+/* Hide frontmatter content */
+.cm-frontmatter-hidden {
+  display: none !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  line-height: 0 !important;
+  font-size: 0 !important;
+}
+
+/* Collapse YAML frontmatter lines added by line decorations */
+.cm-line.cm-hidden-frontmatter {
+  height: 0 !important;
+  line-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  overflow: hidden !important;
+  color: transparent !important;
+}
+
+.frontmatter-properties-header {
+  background: transparent !important;
+  border: none !important;
+}
+
+.frontmatter-properties-header:hover {
+  color: var(--text-primary) !important;
+}
+
+.frontmatter-properties-header:focus {
+  outline: 2px solid var(--focus-ring) !important;
+  outline-offset: 2px !important;
+  border-radius: 4px !important;
+}
+
+.frontmatter-properties-content {
+  background: transparent !important;
+  border: none !important;
+  border-top: 1px solid var(--border-primary) !important;
+  padding: 8px 0 4px 18px !important;
+}
+
+/* Frontmatter Properties Container - Obsidian Style */
+.frontmatter-properties-container {
+  margin: 0 0 4px 0;
+  background: transparent;
+  border: none;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.frontmatter-properties-header {
+  display: flex;
+  align-items: center;
+  padding: 4px 0;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 400;
+  font-size: 13px;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  transition: color 0.15s ease;
+}
+
+.frontmatter-properties-header:hover {
+  color: var(--text-primary);
+}
+
+.frontmatter-properties-header:focus {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+  border-radius: 3px;
+  color: var(--text-primary);
+}
+
+.frontmatter-properties-content {
+  padding: 8px 0 8px 18px;
+  background: transparent;
+  border: none;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+/* Property rows */
+.frontmatter-properties-content div {
+  padding: 1px 0;
+  min-height: 20px;
+  display: flex;
+  align-items: center;
+}
+
+/* Property keys */
+.frontmatter-properties-content span:first-child {
+  font-weight: 400;
+  color: var(--text-secondary);
+  min-width: 80px;
+  margin-right: 8px;
+}
+
+/* Property values */
+.frontmatter-properties-content span:last-child {
+  color: var(--text-primary);
+  flex: 1;
+}
+
+/* CodeMirror Autocompletion Styles */
+.cm-tooltip-autocomplete {
+  z-index: 10000 !important;
+  background: var(--background-color, white) !important;
+  border: 1px solid var(--border-color, #ddd) !important;
+  border-radius: 4px !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+  max-height: 300px !important;
+  overflow-y: auto !important;
+}
+
+.cm-tooltip-autocomplete ul {
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+.cm-tooltip-autocomplete ul li {
+  padding: 4px 8px !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  min-height: 24px !important;
+}
+
+.cm-tooltip-autocomplete ul li.cm-ac-selected,
+.cm-tooltip-autocomplete ul li:hover {
+  background-color: var(--hover-color, #f0f0f0) !important;
+}
+
+.cm-completionLabel {
+  flex: 1 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.cm-completionDetail {
+  margin-left: 8px !important;
+  color: var(--text-muted, #666) !important;
+  font-size: 0.9em !important;
+}
+
+/* CodeMirror Search Panel Styles */
+/* Separator between the top panel row and the document. Placed on the
+   full-width panels wrapper so it always spans edge-to-edge, regardless
+   of the inner .cm-search shrink-to-content width. */
+.cm-panels.cm-panels-top {
+  border-bottom: 1px solid var(--border-color, #e1e4e8);
+  background: var(--bg-secondary, #f8f9fa);
+}
+
+.cm-search {
+  background: var(--bg-secondary, #f8f9fa);
+  padding: 8px 12px;
+  /* Shrink to content and align left instead of stretching full width.
+     Use block-level flex with width: fit-content so the panel doesn't
+     sit on the parent's text baseline (which clips the inputs). */
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
+  font-family: var(--system-font-stack);
+  font-size: 13px;
+  /* Reset editor theme's 1.7 line-height; otherwise labels/buttons
+     balloon to ~27px line boxes and the panel's bottom gets clipped
+     by CodeMirror's cached panel-height measurement. */
+  line-height: normal;
+  /* Allow the panel to wrap so the replace row is visible */
+  flex-wrap: wrap;
+}
+
+/* Force the library-inserted <br> in the search panel to break to a new row in flex layout */
+.cm-search br {
+  flex-basis: 100%;
+  height: 0;
+}
+
+/* Keep the close (×) button parked at the far right of the panel row when space allows */
+/* Override CodeMirror base theme that absolutely positions the close button */
+.cm-panel.cm-search button[name="close"] {
+  position: static !important;
+  top: auto !important;
+  right: auto !important;
+  margin-left: 12px; /* space from replace all */
+  align-self: center;
+}
+
+.cm-search input.cm-textfield {
+  background: var(--bg-primary, #ffffff);
+  border: 1px solid var(--border-color, #e1e4e8);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 13px;
+  color: var(--editor-text-color);
+  min-width: 200px;
+}
+
+.cm-search input.cm-textfield:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px var(--accent-bg);
+}
+
+/* Ensure checkboxes don't inherit textfield sizing */
+.cm-search input[type="checkbox"] {
+  min-width: 0;
+  width: auto;
+  height: auto;
+  margin-right: 6px;
+}
+
+.cm-search button {
+  background: var(--bg-primary, #ffffff);
+  border: 1px solid var(--border-color, #e1e4e8);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--editor-text-color);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cm-search button:hover {
+  background: var(--bg-hover, #f3f4f6);
+  border-color: var(--border-hover, #d1d5db);
+}
+
+.cm-search button:active {
+  background: var(--bg-active, #e5e7eb);
+}
+
+.cm-search .cm-button {
+  min-width: auto;
+}
+
+.cm-search-panel {
+  top: 0;
+  position: absolute;
+  width: 100%;
+  z-index: 100;
+}
+
+.cm-searchMatch {
+  background-color: rgba(255, 235, 59, 0.5);
+  outline: 1px solid rgba(255, 235, 59, 0.8);
+}
+
+.cm-searchMatch-selected {
+  background-color: rgba(255, 152, 0, 0.5);
+  outline: 1px solid rgba(255, 152, 0, 0.8);
+}
+
+/* System font stack for native feel */
+:root {
+  --system-font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                       Roboto, Helvetica, Arial, sans-serif;
+  --mono-font-stack: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono",
+                     Consolas, "Courier New", monospace;
+
+  /* Editor-specific non-color variables */
+  --editor-font-family: 'Inter', sans-serif;
+  --editor-font-size: 16px;
+  --editor-line-height: 1.65;
+  --editor-letter-spacing: -0.01em;
+  --editor-padding: 24px 32px;
+
+  /* Inter font features for better typography */
+  --editor-font-features: 'liga' 1, 'calt' 1;
+
+  /* Markdown non-color variables */
+  --md-heading-weight: 600;
+  --md-strong-color: inherit;
+  --md-emphasis-color: inherit;
+
+  /* Editor color variables using token system */
+  --editor-text-color: var(--editor-text);
+  --editor-bg-color: var(--editor-bg);
+  --editor-selection-bg: var(--editor-selection);
+  --editor-caret-color: var(--accent-primary);
+  --editor-gutter-bg: var(--editor-gutter);
+  --editor-gutter-color: var(--editor-line-number);
+  --editor-gutter-border: var(--border-primary);
+  --editor-active-line-bg: var(--editor-active-line);
+  --editor-active-line-gutter-bg: var(--editor-active-line);
+
+  /* Markdown color variables using token system */
+  --md-heading-color: var(--text-primary);
+  --md-heading-border: var(--border-primary);
+  --md-heading-muted: var(--text-secondary);
+  --md-link-color: var(--link-color);
+  --md-link-hover-color: var(--link-hover);
+  --md-code-bg: var(--bg-secondary);
+  --md-code-color: var(--syntax-keyword);
+  --md-code-block-bg: var(--bg-secondary);
+  --md-code-block-border: var(--border-primary);
+  --md-quote-border: var(--accent-primary);
+  --md-quote-bg: var(--accent-bg);
+  --md-quote-color: var(--text-secondary);
+  --md-hr-color: var(--border-primary);
+  --md-list-bullet: var(--text-secondary);
+  --md-task-checked: var(--text-secondary);
+  --md-wikilink-bg: var(--wikilink-valid-bg);
+  --md-wikilink-hover-bg: var(--accent-bg);
+  --md-blockref-color: var(--accent-primary);
+  --md-blockref-bg: var(--accent-bg);
+  --md-tag-color: var(--success-text);
+  --md-tag-bg: var(--success-bg);
+  --md-tag-hover-bg: var(--success-bg);
+  --md-embedded-border: var(--border-primary);
+  --md-embedded-bg: var(--bg-secondary);
+  --md-embedded-header-bg: var(--bg-tertiary);
+  --md-embedded-header-color: var(--text-secondary);
+  --md-embedded-content-color: var(--text-primary);
+}
+
+/* Smooth animations for native feel */
+* {
+  transition: background-color 0.15s ease,
+              color 0.15s ease,
+              border-color 0.15s ease;
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Editor container */
+.editor-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--editor-bg-color, #ffffff) !important;
+}
+
+.editor {
+  flex: 1;
+  overflow: hidden;
+  background: var(--editor-bg-color, #ffffff) !important;
+}
+
+#editor-container {
+  width: 100%;
+  height: 100%;
+  min-height: 400px;
+  background: var(--editor-bg-color, #ffffff) !important;
+}
+
+/* CodeMirror base styling with typography */
+.cm-editor {
+  height: 100%;
+  font-family: var(--editor-font-family);
+  font-size: var(--editor-font-size);
+  line-height: var(--editor-line-height);
+  color: var(--editor-text-color);
+}
+
+.cm-content {
+  padding: 12px 16px;
+  min-height: 100%;
+  letter-spacing: var(--editor-letter-spacing);
+  font-feature-settings: var(--editor-font-features);
+}
+
+/* Enable Inter variable font support when available */
+@supports (font-variation-settings: normal) {
+  :root {
+    --editor-font-family: 'Inter', sans-serif;
+  }
+}
+
+.cm-focused {
+  outline: none;
+}
+
+/* Enhanced typography for better readability */
+.cm-line {
+  padding: 2px 0;
+  font-size: var(--editor-font-size);
+  line-height: var(--editor-line-height);
+}
+
+/* Native scrollbar styling */
+.cm-scroller::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.cm-scroller::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.cm-scroller::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+.cm-scroller::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Dark theme scrollbar */
+[data-theme='dark'] .cm-scroller::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme='dark'] .cm-scroller::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Platform-specific adjustments */
+@media (platform: macos) {
+  .cm-content {
+    font-smoothing: antialiased;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@media (platform: windows) {
+  .cm-content {
+    font-smoothing: auto;
+    -webkit-font-smoothing: auto;
+  }
+}
+
+/* Remove padding from lines with block widgets to prevent click target misalignment */
+.cm-line:has(.cm-horizontal-rule),
+.cm-line:has(.cm-table-formatted),
+.cm-line:has(.cm-code-block-formatted) {
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  line-height: 1 !important;
+  min-height: 0 !important;
+  height: auto !important;
+}
+
+/* Remove all possible underlines from headings */
+.cm-editor h1,
+.cm-editor h2,
+.cm-editor h3,
+.cm-editor h4,
+.cm-editor h5,
+.cm-editor h6,
+.cm-content h1,
+.cm-content h2,
+.cm-content h3,
+.cm-content h4,
+.cm-content h5,
+.cm-content h6,
+.cm-line h1,
+.cm-line h2,
+.cm-line h3,
+.cm-line h4,
+.cm-line h5,
+.cm-line h6 {
+  text-decoration: none !important;
+  border: none !important;
+  border-bottom: none !important;
+}
+
+/* Remove underlines from markdown tokens */
+.cm-editor .tok-heading,
+.cm-editor .tok-heading1,
+.cm-editor .tok-heading2,
+.cm-editor .tok-heading3,
+.cm-editor .tok-heading4,
+.cm-editor .tok-heading5,
+.cm-editor .tok-heading6 {
+  text-decoration: none !important;
+  border: none !important;
+  border-bottom: none !important;
+}
+
+/* Remove underlines from any element with heading classes */
+.cm-editor [class*="heading"],
+.cm-editor [class*="header"] {
+  text-decoration: none !important;
+  border: none !important;
+  border-bottom: none !important;
+}
+
+/* Override CodeMirror's built-in heading styles */
+.cm-editor .cm-heading1,
+.cm-editor .cm-heading2,
+.cm-editor .cm-heading3,
+.cm-editor .cm-heading4,
+.cm-editor .cm-heading5,
+.cm-editor .cm-heading6,
+.cm-content .cm-heading1,
+.cm-content .cm-heading2,
+.cm-content .cm-heading3,
+.cm-content .cm-heading4,
+.cm-content .cm-heading5,
+.cm-content .cm-heading6 {
+  text-decoration: none !important;
+  border: none !important;
+  border-bottom: none !important;
+}
+
+/* Override Lezer/markdown syntax highlighting */
+.cm-editor .ͼ1,
+.cm-editor .ͼ2,
+.cm-editor .ͼ3,
+.cm-editor .ͼ4,
+.cm-editor .ͼ5,
+.cm-editor .ͼ6,
+.cm-content .ͼ1,
+.cm-content .ͼ2,
+.cm-content .ͼ3,
+.cm-content .ͼ4,
+.cm-content .ͼ5,
+.cm-content .ͼ6 {
+  text-decoration: none !important;
+  border: none !important;
+  border-bottom: none !important;
+}
+
+/* Nuclear option - remove underlines from EVERYTHING in the editor */
+/* BUT preserve selection and essential backgrounds */
+.cm-editor *:not(.cm-selectionBackground),
+.cm-content *:not(.cm-selectionBackground) {
+  text-decoration: none !important;
+  border-bottom: none !important;
+}
+
+/* Removed old green selection styles - now using subtle blue */
+
+/* Then re-add underlines only where we want them (links and underline class) */
+.cm-editor .cm-link,
+.cm-editor .tok-link,
+.cm-editor .cm-wikilink,
+.cm-content .cm-link,
+.cm-content .tok-link,
+.cm-content .cm-wikilink {
+  text-decoration: underline !important;
+}
+
+/* Ensure underline inline formatting works */
+.cm-editor .cm-underline-inline,
+.cm-content .cm-underline-inline,
+.cm-line .cm-underline-inline,
+.cm-underline-inline,
+.cm-editor .cm-underline-formatted,
+.cm-content .cm-underline-formatted,
+.cm-line .cm-underline-formatted,
+.cm-underline-formatted {
+  text-decoration: underline !important;
+  text-decoration-line: underline !important;
+  text-decoration-style: solid !important;
+  text-decoration-color: currentColor !important;
+  text-underline-offset: 2px !important;
+  font-style: normal !important;
+  display: inline !important;
+}
+
+/* Override any italic styling that might be applied to underscores */
+.cm-line:has(.cm-underline-inline) .tok-emphasis,
+.cm-line:has(.cm-underline-inline) .cm-emphasis,
+.cm-line:has(.cm-underline-formatted) .tok-emphasis,
+.cm-line:has(.cm-underline-formatted) .cm-emphasis {
+  font-style: normal !important;
+}
+
+/* Override CodeMirror's default emphasis for underscore syntax */
+.cm-editor .tok-emphasis:has(+ .cm-underline-formatted),
+.cm-editor .tok-emphasis:has(.cm-underline-formatted),
+.cm-content .tok-emphasis:has(+ .cm-underline-formatted),
+.cm-content .tok-emphasis:has(.cm-underline-formatted) {
+  font-style: normal !important;
+  text-decoration: underline !important;
+  text-underline-offset: 2px !important;
+}
+
+/* SUBTLE BLUE SELECTION - FULL WORD COVERAGE */
+.cm-selectionBackground {
+  background-color: var(--editor-selection) !important;
+  color: var(--text-primary) !important;
+  opacity: 1 !important;
+  z-index: 1000 !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Selection styling for all states - cleaner approach */
+.cm-editor .cm-selectionBackground,
+.cm-content .cm-selectionBackground,
+.cm-line .cm-selectionBackground {
+  background-color: var(--editor-selection) !important;
+  color: var(--text-primary) !important;
+  opacity: 1 !important;
+  z-index: 1000 !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Ensure selection is visible even when editor is not focused */
+.cm-editor:not(.cm-focused) .cm-selectionBackground {
+  background-color: var(--editor-selection) !important;
+  color: var(--text-primary) !important;
+  opacity: 1 !important;
+  z-index: 1000 !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Browser native selection fallback */
+.cm-content ::selection,
+.cm-editor ::selection {
+  background-color: var(--editor-selection) !important;
+  color: var(--text-primary) !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Ensure no borders or outlines on any selected text */
+.cm-editor *::selection,
+.cm-content *::selection,
+.cm-line *::selection {
+  background-color: var(--editor-selection) !important;
+  color: var(--text-primary) !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* HIGH SPECIFICITY FOR FULL WORD SELECTION */
+.cm-editor.cm-editor.cm-editor .cm-selectionBackground,
+.cm-content.cm-content.cm-content .cm-selectionBackground,
+.cm-line.cm-line.cm-line .cm-selectionBackground,
+html body .cm-editor .cm-selectionBackground,
+html body .cm-content .cm-selectionBackground {
+  background-color: var(--editor-selection) !important;
+  background: var(--editor-selection) !important;
+  color: var(--text-primary) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  z-index: 999999 !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.cm-cursor {
+  border-left-width: 2px;
+}
+
+.cm-activeLine {
+  background-color: transparent !important;
+}
+
+/* Ensure active line background doesn't cover selections */
+.cm-activeLine .cm-selectionBackground {
+  background-color: var(--editor-selection) !important;
+  background: var(--editor-selection) !important;
+  color: var(--text-primary) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  z-index: 999999 !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.cm-gutters {
+  background-color: var(--editor-gutter-bg) !important;
+  border-right: 1px solid var(--editor-gutter-border) !important;
+}
+
+.cm-activeLineGutter {
+  background-color: transparent !important;
+}
+
+.cm-lineNumbers .cm-gutterElement {
+  color: var(--editor-gutter-color) !important;
+  padding: 0 12px 0 16px !important;
+  font-size: 14px !important;
+  line-height: var(--editor-line-height) !important;
+}
+
+/* Focus styling */
+.cm-editor.cm-focused {
+  outline: none !important;
+}
+
+/* Print styling */
+@media print {
+  .cm-gutters {
+    display: none;
+  }
+  
+  .cm-content {
+    background: white;
+    color: black;
+  }
+  
+  .cm-editor {
+    font-size: 12pt;
+    line-height: 1.4;
+  }
+}
+
+/* High contrast mode support - tokens from variables.css apply automatically */
+/* Additional high contrast overrides can be added here if needed */
+
+/* Active line text - make all markdown syntax same color as content */
+/* This overrides CodeMirror's defaultHighlightStyle for uniform editing */
+.cm-activeLine,
+.cm-activeLine * {
+  color: var(--editor-text-color, var(--editor-text, #1f2937)) !important;
+}
+
+/* Preserve highlight background on active lines (light mode) */
+.cm-activeLine .cm-highlight-formatted {
+  background-color: #ffeb3b !important;
+  color: #000000 !important;
+}
+
+/* Dark theme overrides - explicit overrides for editor containers */
+/* These are needed because the light theme uses !important fallbacks */
+[data-theme='dark'] .editor-container,
+[data-theme='dark'] .editor,
+[data-theme='dark'] #editor-container {
+  background: var(--editor-bg, #1a1a1a) !important;
+}
+
+[data-theme='dark'] .cm-editor {
+  background-color: var(--editor-bg, #1a1a1a) !important;
+  color: var(--editor-text, #dcddde) !important;
+}
+
+[data-theme='dark'] .cm-content {
+  background-color: var(--editor-bg, #1a1a1a) !important;
+  color: var(--editor-text, #dcddde) !important;
+  caret-color: var(--editor-cursor, #60a5fa) !important;
+}
+
+[data-theme='dark'] .cm-gutters {
+  background-color: var(--editor-gutter, #0a0a0a) !important;
+  color: var(--editor-line-number, #a3a3a3) !important;
+  border-right-color: var(--border-primary, #404040) !important;
+}
+
+[data-theme='dark'] .cm-activeLineGutter {
+  background-color: var(--editor-active-line, rgba(255, 255, 255, 0.05)) !important;
+}
+
+[data-theme='dark'] .cm-activeLine {
+  background-color: var(--editor-active-line, rgba(255, 255, 255, 0.05)) !important;
+}
+
+[data-theme='dark'] .cm-line {
+  color: var(--editor-text, #dcddde) !important;
+}
+
+/* Dark mode selection - ensure visibility */
+[data-theme='dark'] .cm-selectionBackground,
+[data-theme='dark'] .cm-editor .cm-selectionBackground,
+[data-theme='dark'] .cm-content .cm-selectionBackground,
+[data-theme='dark'] .cm-line .cm-selectionBackground {
+  background-color: var(--editor-selection, rgba(96, 165, 250, 0.5)) !important;
+  background: var(--editor-selection, rgba(96, 165, 250, 0.5)) !important;
+}
+
+[data-theme='dark'] .cm-editor ::selection,
+[data-theme='dark'] .cm-content ::selection {
+  background-color: var(--editor-selection, rgba(96, 165, 250, 0.5)) !important;
+}
+
+/* Link/URL colors - uses CSS variables for theme support */
+.cm-editor .cm-link-highlight,
+.cm-editor .cm-url-highlight,
+.cm-content .cm-link-highlight,
+.cm-content .cm-url-highlight {
+  color: var(--md-link-color, #2563eb) !important;
+}
+
+.cm-editor .cm-link-highlight:hover,
+.cm-editor .cm-url-highlight:hover,
+.cm-content .cm-link-highlight:hover,
+.cm-content .cm-url-highlight:hover {
+  color: var(--md-link-hover-color, #1d4ed8) !important;
+}
+
+/* Dark mode link colors - brighter blue for visibility */
+[data-theme='dark'] .cm-editor .tok-link,
+[data-theme='dark'] .cm-content .tok-link,
+[data-theme='dark'] .cm-editor .cm-link,
+[data-theme='dark'] .cm-content .cm-link,
+[data-theme='dark'] .cm-editor .cm-link-highlight,
+[data-theme='dark'] .cm-editor .cm-url-highlight,
+[data-theme='dark'] .cm-content .cm-link-highlight,
+[data-theme='dark'] .cm-content .cm-url-highlight {
+  color: var(--md-link-color, #60a5fa) !important;
+}
+
+[data-theme='dark'] .cm-editor .tok-link:hover,
+[data-theme='dark'] .cm-content .tok-link:hover,
+[data-theme='dark'] .cm-editor .cm-link:hover,
+[data-theme='dark'] .cm-content .cm-link:hover,
+[data-theme='dark'] .cm-editor .cm-link-highlight:hover,
+[data-theme='dark'] .cm-editor .cm-url-highlight:hover,
+[data-theme='dark'] .cm-content .cm-link-highlight:hover,
+[data-theme='dark'] .cm-content .cm-url-highlight:hover {
+  color: var(--md-link-hover-color, #93c5fd) !important;
+}
+
+/* Focus ring for accessibility */
+.cm-editor.cm-focused {
+  outline: 2px solid var(--editor-caret-color);
+  outline-offset: -2px;
+}
+
+/* Screen reader support */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ZERO extra spacing, natural text flow */
+
+/* Inter font headings with proper weights and sizing */
+.cm-editor h1, .cm-content h1 {
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 2rem !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.02em !important;
+  font-display: swap !important;
+}
+
+.cm-editor h2, .cm-content h2 {
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 600 !important;
+  font-size: 1.5rem !important;
+  line-height: 1.3 !important;
+  letter-spacing: -0.01em !important;
+}
+
+.cm-editor h3, .cm-content h3 {
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 600 !important;
+  font-size: 1.25rem !important;
+  line-height: 1.4 !important;
+  letter-spacing: -0.01em !important;
+}
+
+.cm-editor h4, .cm-content h4,
+.cm-editor h5, .cm-content h5,
+.cm-editor h6, .cm-content h6 {
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 600 !important;
+  font-size: 1.125rem !important;
+  line-height: 1.4 !important;
+  letter-spacing: -0.005em !important;
+}
+
+/* Apply Inter to all editor content */
+.cm-editor, .cm-content {
+  font-family: 'Inter', sans-serif !important;
+}
+
+/* Fix underscore formatting - when it's meant to be underline, not italic */
+.cm-content .cm-line .tok-emphasis {
+  /* This will be overridden when underline formatting is applied */
+}
+
+/* Override CodeMirror's default italic for underscore when our formatting is applied */
+.cm-line .cm-underline-formatted {
+  font-style: normal !important;
+  text-decoration: underline !important;
+  text-underline-offset: 2px !important;
+}
+
+/* Ensure the content inside underline formatting is not italic */
+.cm-underline-formatted * {
+  font-style: normal !important;
+}
+
+/* Force override any emphasis/italic within underline formatted text */
+.cm-line .cm-underline-formatted,
+.cm-line .cm-underline-formatted .tok-emphasis,
+.cm-line .cm-underline-formatted .cm-emphasis,
+.cm-line .tok-emphasis.cm-underline-formatted,
+.cm-line .cm-emphasis.cm-underline-formatted {
+  font-style: normal !important;
+  text-decoration: underline !important;
+  text-underline-offset: 2px !important;
+}
+
+/* Ensure CodeMirror tooltip shows above everything */
+.cm-tooltip {
+  z-index: 10000 !important;
+}
+
+.cm-tooltip.cm-tooltip-autocomplete {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Ensure completion popup is visible */
+.cm-autocomplete {
+  z-index: 10000 !important;
+  position: absolute !important;
+}
