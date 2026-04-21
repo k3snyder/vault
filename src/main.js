@@ -5835,10 +5835,7 @@ window.showEditorSettings = function() {
   overlay.className = 'settings-overlay';
   overlay.onclick = (e) => {
     if (e.target === overlay) {
-      overlay.classList.remove('show');
-      setTimeout(() => {
-        document.body.removeChild(overlay);
-      }, 300);
+      userSettingsPanel.close();
     }
   };
   
@@ -6163,6 +6160,22 @@ window.toggleZenMode = function() {
 // Apply settings to all open editors
 function applySettingsToAllEditors(editorSettings) {
   console.log('Applying settings to all editors:', editorSettings);
+
+  // Keep late-created MarkdownEditor instances in sync with the latest
+  // saved settings. Without this, an editor opened after changing settings can
+  // replay stale window.pendingEditorSettings (including WYSIWYG mode) and undo
+  // the runtime reconfiguration until the whole UI is reloaded.
+  window.pendingEditorSettings = {
+    ...(window.pendingEditorSettings || {}),
+    ...(editorSettings.fontSize !== undefined ? { fontSize: editorSettings.fontSize } : {}),
+    ...(editorSettings.fontFamily !== undefined ? { fontFamily: editorSettings.fontFamily } : {}),
+    ...(editorSettings.fontColor !== undefined ? { fontColor: editorSettings.fontColor } : {}),
+    ...(editorSettings.theme !== undefined ? { theme: editorSettings.theme } : {}),
+    ...(editorSettings.lineNumbers !== undefined ? { lineNumbers: editorSettings.lineNumbers } : {}),
+    ...(editorSettings.lineWrapping !== undefined ? { lineWrapping: editorSettings.lineWrapping } : {}),
+    ...(editorSettings.showStatusBar !== undefined ? { showStatusBar: editorSettings.showStatusBar } : {}),
+    ...(editorSettings.wysiwygMode !== undefined ? { wysiwygMode: editorSettings.wysiwygMode } : {})
+  };
   
   // Update CSS variables for immediate visual changes
   const root = document.documentElement;

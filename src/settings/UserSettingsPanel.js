@@ -59,6 +59,7 @@ export class UserSettingsPanel {
         this.previewTimeout = null;
         this.pluginSettingsPanel = null;
         this.listenersAttached = false;
+        this.listenerContainer = null;
         this.boundClickHandler = this.handleContainerClick.bind(this);
         this.boundChangeHandler = this.handleContainerChange.bind(this);
 
@@ -360,13 +361,35 @@ export class UserSettingsPanel {
     }
 
     attachEventListeners() {
-        if (!this.container || this.listenersAttached) {
+        if (!this.container) {
             return;
+        }
+
+        if (this.listenersAttached && this.listenerContainer === this.container) {
+            return;
+        }
+
+        if (this.listenersAttached) {
+            this.detachEventListeners();
         }
 
         this.container.addEventListener('click', this.boundClickHandler);
         this.container.addEventListener('change', this.boundChangeHandler);
+        this.listenerContainer = this.container;
         this.listenersAttached = true;
+    }
+
+    detachEventListeners() {
+        if (!this.listenersAttached || !this.listenerContainer) {
+            this.listenerContainer = null;
+            this.listenersAttached = false;
+            return;
+        }
+
+        this.listenerContainer.removeEventListener('click', this.boundClickHandler);
+        this.listenerContainer.removeEventListener('change', this.boundChangeHandler);
+        this.listenerContainer = null;
+        this.listenersAttached = false;
     }
 
     handleContainerClick(event) {
@@ -431,9 +454,15 @@ export class UserSettingsPanel {
     }
     
     close() {
+        if (this.previewTimeout) {
+            clearTimeout(this.previewTimeout);
+            this.previewTimeout = null;
+        }
+        this.detachEventListeners();
         if (this.callbacks.onClose) {
             this.callbacks.onClose();
         }
+        this.container = null;
     }
 
     /**
