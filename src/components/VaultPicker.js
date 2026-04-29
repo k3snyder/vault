@@ -7,12 +7,22 @@ import { icons } from '../icons/icon-utils.js';
 export class VaultPicker {
     constructor(container, options = {}) {
         this.container = container;
+        const defaultActionLabels = {
+            openFolder: 'Open Folder...',
+            openNewWindow: 'Open Folder in New Window...',
+            closeVault: 'Close Folder'
+        };
         this.options = {
             variant: 'default',
             emptyLabel: 'No Vault',
             showIcon: true,
             enableKeyboardShortcut: true,
+            actionLabels: defaultActionLabels,
             ...options
+        };
+        this.options.actionLabels = {
+            ...defaultActionLabels,
+            ...(options.actionLabels || {})
         };
         this.recentVaults = [];
         this.isOpen = false;
@@ -83,12 +93,13 @@ export class VaultPicker {
     }
     
     renderMenu() {
+        const actionLabels = this.options.actionLabels;
         let menuHtml = '<div class="vault-picker-menu-inner">';
         
         // Recent vaults section - show only last 3
         if (this.recentVaults.length > 0) {
             menuHtml += '<div class="vault-picker-section">';
-            menuHtml += '<div class="vault-picker-section-title">Recent Vaults</div>';
+            menuHtml += '<div class="vault-picker-section-title">Recent Folders</div>';
             
             // Limit to last 3 recent vaults
             const vaultsToShow = this.recentVaults.slice(0, 3);
@@ -116,19 +127,15 @@ export class VaultPicker {
         menuHtml += `
             <div class="vault-picker-item" data-action="open-folder">
                 <span class="spacer"></span>
-                <span class="vault-item-name">Open Vault...</span>
+                <span class="vault-item-name">${this.escapeHtml(actionLabels.openFolder)}</span>
             </div>
             <div class="vault-picker-item" data-action="open-new-window">
                 <span class="spacer"></span>
-                <span class="vault-item-name">Open Vault in New Window...</span>
-            </div>
-            <div class="vault-picker-item" data-action="create-vault">
-                <span class="spacer"></span>
-                <span class="vault-item-name">Create New Vault</span>
+                <span class="vault-item-name">${this.escapeHtml(actionLabels.openNewWindow)}</span>
             </div>
             <div class="vault-picker-item" data-action="close-vault">
                 <span class="spacer"></span>
-                <span class="vault-item-name">Close Vault</span>
+                <span class="vault-item-name">${this.escapeHtml(actionLabels.closeVault)}</span>
             </div>
         `;
         

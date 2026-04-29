@@ -167,7 +167,12 @@ function ensureWelcomeVaultPicker() {
     variant: 'hero',
     emptyLabel: 'Select your vault',
     showIcon: false,
-    enableKeyboardShortcut: false
+    enableKeyboardShortcut: false,
+    actionLabels: {
+      openFolder: 'Open Folder...',
+      openNewWindow: 'Open Folder in New Window...',
+      closeVault: 'Close Folder'
+    }
   });
 }
 
@@ -2805,13 +2810,7 @@ window.closeCurrentVault = async function() {
   
   const fileTreeElement = document.getElementById('file-tree');
   if (fileTreeElement) {
-    fileTreeElement.innerHTML = `
-      <div class="empty-state">
-        <p>No vault open</p>
-        <button id="open-vault" class="primary-button" data-action="open-vault">Open Vault</button>
-        <button id="create-vault" class="secondary-button" data-action="create-vault">Create Vault</button>
-      </div>
-    `;
+    fileTreeElement.innerHTML = '';
   }
   
   // Close all tabs
@@ -2866,7 +2865,7 @@ function showWelcomeScreen() {
           <img src="/vault-logo-transparent.png" alt="Vault Logo" class="welcome-logo" />
           <div class="welcome-header">
             <h1>Welcome to Vault</h1>
-            <p class="welcome-tagline">Open an existing vault folder or create new.</p>
+            <p class="welcome-tagline">Open an existing folder or create new.</p>
           </div>
           <div id="welcome-vault-picker-container" class="welcome-vault-picker"></div>
         </div>
@@ -4101,11 +4100,6 @@ async function initializeApp() {
               </div>
             </div>
             <div class="file-tree" id="file-tree">
-              <div class="empty-state">
-                <p>No vault open</p>
-                <button id="open-vault" class="primary-button" data-action="open-vault">Open Vault</button>
-                <button id="create-vault" class="secondary-button" data-action="create-vault">Create Vault</button>
-              </div>
             </div>
           </div>
           <div class="sidebar-resize-handle" id="sidebar-resize-handle"></div>

@@ -94,4 +94,40 @@ describe('VaultPicker', () => {
     sidebarPicker.destroy();
     welcomePicker.destroy();
   });
+
+  test('uses folder wording for picker action labels', async () => {
+    const sidebarContainer = document.createElement('div');
+    const welcomeContainer = document.createElement('div');
+    document.body.appendChild(sidebarContainer);
+    document.body.appendChild(welcomeContainer);
+
+    const sidebarPicker = new VaultPicker(sidebarContainer);
+    const welcomePicker = new VaultPicker(welcomeContainer, {
+      variant: 'hero',
+      enableKeyboardShortcut: false,
+      showIcon: false,
+      emptyLabel: 'Select your vault',
+      actionLabels: {
+        openFolder: 'Open Folder...',
+        openNewWindow: 'Open Folder in New Window...',
+        closeVault: 'Close Folder'
+      }
+    });
+
+    await flushAsyncWork();
+
+    expect(sidebarContainer.textContent).toContain('Recent Folders');
+    expect(sidebarContainer.textContent).toContain('Open Folder...');
+    expect(sidebarContainer.textContent).toContain('Open Folder in New Window...');
+    expect(sidebarContainer.textContent).not.toContain('Create New Folder');
+    expect(sidebarContainer.textContent).toContain('Close Folder');
+
+    expect(welcomeContainer.textContent).toContain('Open Folder...');
+    expect(welcomeContainer.textContent).toContain('Open Folder in New Window...');
+    expect(welcomeContainer.textContent).not.toContain('Create New Folder');
+    expect(welcomeContainer.textContent).toContain('Close Folder');
+
+    sidebarPicker.destroy();
+    welcomePicker.destroy();
+  });
 });

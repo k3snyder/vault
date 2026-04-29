@@ -553,21 +553,6 @@ export class EnhancedChatPanel {
                 const spacer = document.createElement('div');
                 spacer.className = 'chat-toolbar-spacer';
 
-                // MCP Settings button
-                const mcpBtn = document.createElement('button');
-                mcpBtn.className = 'chat-toolbar-btn icon-only';
-                mcpBtn.title = 'MCP Settings';
-                const mcpLabel = document.createElement('span');
-                mcpLabel.textContent = 'M';
-                mcpLabel.style.cssText = 'font-weight: bold; font-size: 11px;';
-                mcpBtn.appendChild(mcpLabel);
-                mcpBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    if (window.mcpSettings) {
-                        window.mcpSettings.show();
-                    }
-                };
-
                 // AI Settings button (gear icon)
                 const settingsBtn = document.createElement('button');
                 settingsBtn.className = 'chat-toolbar-btn icon-only';
@@ -586,7 +571,6 @@ export class EnhancedChatPanel {
                 chatToolbar.appendChild(newChatBtn);
                 chatToolbar.appendChild(exportBtn);
                 chatToolbar.appendChild(spacer);
-                chatToolbar.appendChild(mcpBtn);
                 chatToolbar.appendChild(settingsBtn);
                 contentContainer.appendChild(chatToolbar);
 
