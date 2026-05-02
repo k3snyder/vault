@@ -1,5 +1,4 @@
 import { invoke } from '@tauri-apps/api/core';
-import { mcpManager } from '../mcp/MCPManager.js';
 import { icons } from '../icons/icon-utils.js';
 
 export class GlobalSearch {
@@ -281,101 +280,32 @@ export class GlobalSearch {
       }
 
       // Legacy fallback (should not reach here)
-      if (this.searchMode === 'hybrid') {
-        // For hybrid search, combine backend graph search with frontend semantic search
+      if (this.searchMode === 'hybrid' || this.searchMode === 'semantic') {
         try {
-          // First check search capabilities
-          const capabilities = await invoke('get_search_capabilities');
-          
-          if (capabilities.semantic_handler === 'frontend_mcp') {
-            // Run graph search on backend and semantic search on frontend in parallel
-            const [graphResults, semanticResults] = await Promise.all([
-              // Get graph results from backend
-              invoke('search_with_mode', {
-                query: this.currentQuery,
-                mode: 'graph',
-                maxResults: 40 // Get more for fusion
-              }).catch(err => {
-                console.error('Graph search error:', err);
-                return [];
-              }),
-              
-              // Get semantic results from frontend MCP
-              this.performSemanticSearchMCP(this.currentQuery, 40).catch(err => {
-                console.error('Semantic search error:', err);
-                return [];
-              })
-            ]);
-            
-            // Fuse results using RRF (Reciprocal Rank Fusion)
-            results = this.fuseSearchResults(graphResults, semanticResults);
-            
-            // Batch resolve any node IDs that need resolution
-            await this.resolveNodeIds(results);
-          } else {
-            // Fallback to backend hybrid search if capabilities changed
-            const hybridResults = await invoke('search_with_mode', {
-              query: this.currentQuery,
-              mode: 'hybrid',
-              maxResults: 20
-            });
-            
-            results = hybridResults.map(r => ({
-              note: {
-                path: r.file_path,
-                title: r.title || r.file_path.split('/').pop(),
-                content: r.preview || ''
-              },
-              score: r.rrf_score || r.relevance_score,
-              matchType: r.match_type,
-              relationshipPath: r.relationship_path,
-              graphRank: r.graph_rank,
-              semanticRank: r.semantic_rank
-            }));
-          }
+          const mode = this.searchMode === 'semantic' ? 'semantic' : 'hybrid';
+          const searchResults = await invoke('search_with_mode', {
+            query: this.currentQuery,
+            mode,
+            maxResults: 20
+          });
+
+          results = searchResults.map(r => ({
+            note: {
+              path: r.file_path,
+              title: r.title || r.file_path.split('/').pop(),
+              content: r.preview || ''
+            },
+            score: r.rrf_score || r.relevance_score,
+            matchType: r.match_type,
+            relationshipPath: r.relationship_path,
+            graphRank: r.graph_rank,
+            semanticRank: r.semantic_rank
+          }));
         } catch (error) {
-          console.error('Hybrid search failed:', error);
-          // Fallback to keyword search
-          results = await this.performKeywordSearch(this.currentQuery);
-        }
-      } else if (this.searchMode === 'semantic') {
-        // Use Qdrant MCP for semantic search with local embeddings
-        try {
-          const qdrantResults = await mcpManager.invokeTool(
-            'gaimplan-qdrant',
-            'search_semantic_patterns',
-            {
-              description: this.currentQuery,
-              limit: 20
-            }
-          );
-          
-          // Parse the results from MCP response
-          if (qdrantResults && qdrantResults.content && qdrantResults.content[0]) {
-            const text = qdrantResults.content[0].text;
-            // Extract pattern names and scores from the response text
-            const patterns = this.parseQdrantResults(text);
-            
-            // Load the actual note content for each pattern
-            results = await this.loadNotesFromPatterns(patterns);
-            
-            // Only mark results as needing resolution if they don't have a valid file path
-            results.forEach(r => {
-              if (r.neo4j_node_id && (!r.note.path || r.note.path === r.neo4j_node_id)) {
-                r.needs_resolution = true;
-              }
-            });
-            
-            // Batch resolve any node IDs
-            await this.resolveNodeIds(results);
-          }
-        } catch (mcpError) {
-          console.error('MCP search failed:', mcpError);
-          // Fallback to keyword search
+          console.error('Search failed:', error);
           results = await this.performKeywordSearch(this.currentQuery);
         }
       } else {
-        // Keyword search
         results = await this.performKeywordSearch(this.currentQuery);
       }
 
@@ -736,7 +666,6 @@ export class GlobalSearch {
   parseQdrantResults(responseText) {
     const patterns = [];
     
-    // Parse the MCP response text to extract pattern information
     const lines = responseText.split('\n');
     
     for (let i = 0; i < lines.length; i++) {
@@ -1075,78 +1004,6 @@ export class GlobalSearch {
       await this.handlePacasdbSync(syncStatus, syncBtn, style);
       return;
 
-      // Legacy Qdrant sync (disabled)
-      // First sync vault name to ensure Qdrant has the correct vault context
-      syncStatus.textContent = 'Syncing vault name...';
-      try {
-        await mcpSettingsPanel.syncVaultNameForQdrant();
-        console.log('✓ Vault name synced successfully');
-      } catch (error) {
-        console.error('Failed to sync vault name:', error);
-        // Continue with sync even if vault name sync fails
-      }
-
-      // Wait a moment for the server to restart if needed
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Now sync the vault contents
-      syncStatus.textContent = 'Preparing to sync notes...';
-      const result = await qdrantSync.syncVaultToQdrant((progress) => {
-        // Update progress in UI
-        if (progress.status === 'loading_notes') {
-          syncStatus.textContent = 'Loading notes from vault...';
-        } else if (progress.status === 'syncing') {
-          let statusParts = [];
-          if (progress.successCount) statusParts.push(`✓${progress.successCount}`);
-          if (progress.alreadyExistsCount) statusParts.push(`⏭️${progress.alreadyExistsCount}`);
-          if (progress.errorCount) statusParts.push(`✗${progress.errorCount}`);
-          
-          const statusText = statusParts.length > 0 ? ` (${statusParts.join(' ')})` : '';
-          syncStatus.textContent = `Syncing ${progress.current}/${progress.total}${statusText}: ${progress.currentNote || ''}`;
-          if (progress.lastError) {
-            syncStatus.title = `Last error: ${progress.lastError}`;
-          }
-        } else if (progress.status === 'completed') {
-          let summaryParts = [];
-          if (progress.successCount) summaryParts.push(`✓ ${progress.successCount} new`);
-          if (progress.alreadyExistsCount) summaryParts.push(`⏭️ ${progress.alreadyExistsCount} existing`);
-          if (progress.errorCount) summaryParts.push(`✗ ${progress.errorCount} failed`);
-          
-          syncStatus.textContent = summaryParts.join(', ');
-          syncStatus.style.color = progress.errorCount ? 'var(--warning-color)' : 'var(--success-color)';
-        } else if (progress.status === 'error') {
-          syncStatus.textContent = `Error: ${progress.error}`;
-          syncStatus.style.color = 'var(--error-color)';
-        }
-      });
-      
-      // Show success/failure summary
-      let finalSummary = [];
-      if (result.successCount) finalSummary.push(`✓ ${result.successCount} new`);
-      if (result.alreadyExistsCount) finalSummary.push(`⏭️ ${result.alreadyExistsCount} existing`);
-      if (result.errorCount) finalSummary.push(`✗ ${result.errorCount} failed`);
-      
-      syncStatus.textContent = `Sync complete: ${finalSummary.join(', ')}`;
-      syncStatus.style.color = result.errorCount ? 'var(--warning-color)' : 'var(--success-color)';
-      
-      // Reset button after delay
-      setTimeout(() => {
-        syncStatus.style.display = 'none';
-        syncStatus.style.color = '';
-      }, 5000);
-      
-      // Refresh GraphSync status after successful sync
-      if (window.graphSyncStatus) {
-        console.log('🔄 Refreshing GraphSync status after sync completion');
-        setTimeout(() => {
-          window.graphSyncStatus.fetchStatus();
-        }, 1000); // Small delay to allow backend to process
-      }
-      
-    } catch (error) {
-      console.error('Sync failed:', error);
-      syncStatus.textContent = `Error: ${error.message}`;
-      syncStatus.style.color = 'var(--error-color)';
     } finally {
       // Re-enable button
       syncBtn.disabled = false;
@@ -1158,80 +1015,6 @@ export class GlobalSearch {
 
       // Clean up style
       style.remove();
-    }
-  }
-  
-  async performSemanticSearchMCP(query, limit = 20) {
-    // Use MCP to search with local embeddings
-    try {
-      const qdrantStatus = mcpManager.status.get('gaimplan-qdrant');
-      const isConnected = 
-        (typeof qdrantStatus === 'object' && qdrantStatus.status === 'connected') ||
-        (typeof qdrantStatus === 'string' && qdrantStatus === 'connected');
-      
-      if (!isConnected) {
-        console.warn('Qdrant MCP server not connected');
-        return [];
-      }
-      
-      // Search using the MCP server
-      const searchResult = await mcpManager.invokeTool(
-        'gaimplan-qdrant',
-        'search_semantic_patterns',
-        {
-          description: query,
-          limit: limit
-        }
-      );
-      
-      // Parse results
-      const results = [];
-      if (searchResult && searchResult.content && searchResult.content[0]) {
-        // The response is text format, parse it to extract patterns
-        const responseText = searchResult.content[0].text;
-        
-        // Extract pattern information from the numbered list format
-        // Format: "1. Similarity: 0.XXX\n   • Pattern: name\n   • Type: type\n   • Neo4j ID: id"
-        const patternBlocks = responseText.split(/\n\n\d+\. /).slice(1); // Split by pattern number
-        
-        // Add the first pattern (which doesn't have \n\n before it)
-        const firstMatch = responseText.match(/1\. Similarity:[\s\S]*?(?=\n\n2\.|$)/);
-        if (firstMatch) {
-          patternBlocks.unshift(firstMatch[0].replace(/^1\. /, ''));
-        }
-        
-        for (const block of patternBlocks) {
-          // Extract fields from each pattern block
-          const scoreMatch = block.match(/Similarity: ([\d.]+)/);
-          const nameMatch = block.match(/• Pattern: (.+)/);
-          const typeMatch = block.match(/• Type: (.+)/);
-          const domainMatch = block.match(/• Domain: (.+)/);
-          const nodeIdMatch = block.match(/• Neo4j ID: (\S+)/);
-          const filePathMatch = block.match(/• File Path: (.+)/);
-          
-          if (nodeIdMatch && nodeIdMatch[1] && nodeIdMatch[1] !== 'none') {
-            // Use file path if available, otherwise use neo4j ID for resolution
-            const filePath = filePathMatch && filePathMatch[1] !== 'none' ? filePathMatch[1].trim() : nodeIdMatch[1];
-            const needsResolution = !filePathMatch || filePathMatch[1] === 'none';
-            
-            results.push({
-              file_path: filePath,
-              title: nameMatch ? nameMatch[1].trim() : 'Untitled',
-              preview: `${typeMatch ? typeMatch[1].trim() : 'note'} - ${domainMatch ? domainMatch[1].trim() : 'general'}`,
-              relevance_score: scoreMatch ? parseFloat(scoreMatch[1]) : 0,
-              match_type: 'Semantic',
-              semantic_score: scoreMatch ? parseFloat(scoreMatch[1]) : 0,
-              neo4j_node_id: nodeIdMatch[1],
-              needs_resolution: needsResolution
-            });
-          }
-        }
-      }
-      
-      return results;
-    } catch (error) {
-      console.error('MCP semantic search failed:', error);
-      return [];
     }
   }
   

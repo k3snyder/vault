@@ -2,12 +2,11 @@ import { invoke } from '@tauri-apps/api/core'
 
 /**
  * IntelligenceService - PDF text extraction service
- * Coordinates Rust PDF text extraction. Advanced features (vision, summarization)
- * are handled by MCP servers externally.
+ * Coordinates Rust PDF text extraction. Advanced enrichment features can be added by native services later.
  *
  * V2 Schema (summarizer-compatible):
  * - Each page is an EnrichedChunk with chunk_id, text
- * - Empty enrichment fields ready for MCP server to fill
+ * - Empty enrichment fields reserved for future native enrichment
  */
 export class IntelligenceService {
   constructor(pdfPath) {
@@ -30,7 +29,7 @@ export class IntelligenceService {
 
   /**
    * Run PDF text extraction with V2 schema
-   * Extracts text only; enrichment fields are empty (for MCP to fill later)
+   * Extracts text only; enrichment fields are empty for future native enrichment
    *
    * @param {Object} config - Extraction configuration (mode fields ignored)
    * @returns {Promise<Object>} Intelligence result in V2 format

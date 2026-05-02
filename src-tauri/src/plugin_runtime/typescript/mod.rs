@@ -492,7 +492,6 @@ declare global {
         vault: VaultAPI;
         workspace: WorkspaceAPI;
         settings: SettingsAPI;
-        mcp: McpAPI;
         network: NetworkAPI;
     }
 }

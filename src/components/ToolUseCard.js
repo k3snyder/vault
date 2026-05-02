@@ -116,7 +116,7 @@ export class ToolUseCard {
         }
       }
 
-      // Handle content array from MCP response
+      // Handle structured content arrays from tool responses
       if (parsed.content && Array.isArray(parsed.content)) {
         const textContent = parsed.content
           .filter(c => c.type === 'text')

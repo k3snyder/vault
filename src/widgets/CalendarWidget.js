@@ -226,56 +226,34 @@ export class CalendarWidget {
             // Clear existing notes
             this.dailyNotes.clear();
             
-            // Check if MCP search server is available
-            if (window.mcpManager && window.mcpManager.servers && window.mcpManager.servers.get('gaimplan-search')) {
-                console.log('[CalendarWidget] Using MCP search server for daily notes');
-                
-                // Get daily notes folder
-                const dailyNotesFolder = await this.getDailyNotesFolder();
-                
-                // Search for daily notes with pattern YYYY-MM-*.md in the daily notes folder
-                const searchPattern = `${year}-${month}-*.md`;
-                
-                try {
-                    const result = await window.mcpManager.invokeTool('gaimplan-search', 'search_files', {
-                        query: '',
-                        path: '.',
-                        pattern: searchPattern,
-                        case_sensitive: false,
-                        whole_word: false,
-                        regex: false,
-                        max_results: 100
-                    });
-                    
-                    if (result && result.results) {
-                        console.log(`[CalendarWidget] Found ${result.results.length} daily notes`);
-                        
-                        // Process each found note
-                        for (const note of result.results) {
-                            // Extract date from filename
-                            const match = note.path.match(/(\d{4}-\d{2}-\d{2})\.md$/);
-                            if (match) {
-                                const dateString = match[1];
-                                const noteDate = new Date(dateString);
-                                
-                                // Only include notes from current month
-                                if (noteDate.getMonth() === this.currentDate.getMonth()) {
-                                    this.dailyNotes.set(dateString, {
-                                        exists: true,
-                                        path: note.path,
-                                        preview: note.snippet || `Daily note for ${dateString}`
-                                    });
-                                }
-                            }
-                        }
-                    }
-                } catch (error) {
-                    console.error('[CalendarWidget] MCP search error:', error);
+            const dailyNotesFolder = await this.getDailyNotesFolder();
+            const searchPrefix = `${year}-${month}-`;
+            const fileTree = await invoke('get_file_tree');
+            const files = Array.isArray(fileTree?.files) ? fileTree.files : [];
+
+            for (const file of files) {
+                if (file.is_dir) continue;
+
+                const path = file.path || '';
+                const fileName = file.name || path.split('/').pop() || '';
+                const inDailyFolder = !dailyNotesFolder || path.startsWith(`${dailyNotesFolder}/`);
+
+                if (!inDailyFolder || !fileName.startsWith(searchPrefix) || !fileName.endsWith('.md')) {
+                    continue;
                 }
-            } else {
-                console.log('[CalendarWidget] MCP search not available');
-                // Without MCP search, we can't detect existing notes
-                // The calendar will show all days as empty until MCP is available
+
+                const match = fileName.match(/(\d{4}-\d{2}-\d{2})\.md$/);
+                if (!match) continue;
+
+                const dateString = match[1];
+                const noteDate = new Date(dateString);
+                if (noteDate.getMonth() === this.currentDate.getMonth()) {
+                    this.dailyNotes.set(dateString, {
+                        exists: true,
+                        path,
+                        preview: `Daily note for ${dateString}`
+                    });
+                }
             }
             
             // Update calendar to show which days have notes
@@ -541,27 +519,17 @@ export class CalendarWidget {
         const preview = document.createElement('div');
         preview.className = 'calendar-preview';
         
-        // Try to load actual content preview
-        if (noteInfo.path && window.mcpManager && window.mcpManager.servers && window.mcpManager.servers.get('gaimplan-filesystem')) {
+        if (noteInfo.path) {
             try {
-                // Read first few lines of the file
-                const result = await window.mcpManager.invokeTool('gaimplan-filesystem', 'read_file', {
-                    path: noteInfo.path
-                });
-                
-                if (result && result.content) {
-                    // Extract first few lines or characters
-                    const lines = result.content.split('\n');
-                    const previewLines = lines.slice(0, 5).filter(line => line.trim());
-                    const previewText = previewLines.join('\n').substring(0, 200);
-                    
-                    preview.innerHTML = `
-                        <div class="calendar-preview-title">${dateString}</div>
-                        <div class="calendar-preview-content">${this.escapeHtml(previewText)}${previewText.length >= 200 ? '...' : ''}</div>
-                    `;
-                } else {
-                    preview.textContent = noteInfo.preview || 'Daily note';
-                }
+                const content = await invoke('read_file_content', { filePath: noteInfo.path });
+                const lines = content.split('\n');
+                const previewLines = lines.slice(0, 5).filter(line => line.trim());
+                const previewText = previewLines.join('\n').substring(0, 200);
+
+                preview.innerHTML = `
+                    <div class="calendar-preview-title">${dateString}</div>
+                    <div class="calendar-preview-content">${this.escapeHtml(previewText)}${previewText.length >= 200 ? '...' : ''}</div>
+                `;
             } catch (error) {
                 console.error('[CalendarWidget] Error loading preview:', error);
                 preview.textContent = noteInfo.preview || 'Daily note';
@@ -663,22 +631,16 @@ export class CalendarWidget {
     async ensureDailyNotesFolder() {
         try {
             const folderPath = await this.getDailyNotesFolder();
-            
-            // Check if folder exists using filesystem API
-            if (window.mcpManager && window.mcpManager.servers && window.mcpManager.servers.get('gaimplan-filesystem')) {
-                try {
-                    // Try to read the folder
-                    await window.mcpManager.invokeTool('gaimplan-filesystem', 'read_directory', {
-                        path: folderPath
-                    });
-                } catch (error) {
-                    // Folder doesn't exist, create it
-                    console.log(`[CalendarWidget] Creating daily notes folder: ${folderPath}`);
-                    await invoke('create_directory', {
-                        vaultPath: window.currentVaultPath,
-                        dirPath: folderPath
-                    });
-                }
+            const fileTree = await invoke('get_file_tree');
+            const files = Array.isArray(fileTree?.files) ? fileTree.files : [];
+            const folderExists = files.some(file => file.is_dir && file.path === folderPath);
+
+            if (!folderExists) {
+                console.log(`[CalendarWidget] Creating daily notes folder: ${folderPath}`);
+                await invoke('create_directory', {
+                    vaultPath: window.currentVaultPath,
+                    dirPath: folderPath
+                });
             }
         } catch (error) {
             console.error('[CalendarWidget] Error ensuring daily notes folder:', error);

@@ -75,10 +75,6 @@ export function PluginPermissionDialog({
       const domain = cap.substring(8);
       return `Connect to ${domain}`;
     }
-    if (cap.startsWith('mcp:')) {
-      const tool = cap.substring(4);
-      return `Use MCP tool: ${tool}`;
-    }
     if (cap.startsWith('vault:read:')) {
       const path = cap.substring(11);
       return `Read files from ${path}`;

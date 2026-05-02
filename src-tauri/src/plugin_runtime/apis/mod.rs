@@ -1,14 +1,12 @@
 // Plugin APIs Module - Public APIs for plugin development
 // This module provides all the APIs that plugins can use to interact with Vault
 
-pub mod mcp;
 pub mod network;
 pub mod settings;
 pub mod vault;
 pub mod workspace;
 
 // Re-export main API types
-pub use mcp::McpApi;
 pub use network::NetworkApi;
 pub use settings::{SettingsApi, SettingsError};
 pub use vault::{VaultApi, VaultError};
@@ -19,7 +17,6 @@ pub struct ApiManager {
     pub vault: VaultApi,
     pub workspace: WorkspaceApi,
     pub settings: SettingsApi,
-    pub mcp: McpApi,
     pub network: NetworkApi,
 }
 
@@ -36,7 +33,6 @@ impl ApiManager {
             vault: VaultApi::new(vault_path, permission_manager.clone()),
             workspace: WorkspaceApi::new(permission_manager.clone()),
             settings: SettingsApi::new(settings_path, permission_manager.clone()),
-            mcp: McpApi::new(permission_manager.clone()),
             network: NetworkApi::new(permission_manager),
         }
     }

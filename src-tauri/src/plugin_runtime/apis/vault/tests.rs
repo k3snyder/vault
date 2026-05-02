@@ -499,68 +499,6 @@ mod vault_api_tests {
         }
     }
 
-    mod mcp_integration {
-        use super::*;
-
-        #[tokio::test]
-        async fn test_mcp_filesystem_fallback() {
-            let (vault_api, temp_dir) = create_test_vault().await;
-            create_test_file(&temp_dir.path().to_path_buf(), "test.md", "content");
-
-            // Enable MCP mode
-            vault_api.set_mcp_mode(true).await;
-            vault_api
-                .grant_permission("test-plugin", VaultPermission::Read)
-                .await;
-
-            // Should use MCP if available, fallback to direct if not
-            let result = vault_api.read("test-plugin", "test.md").await;
-
-            // Result should work either way
-            assert!(result.is_ok() || result.is_err());
-
-            // Disable MCP mode
-            vault_api.set_mcp_mode(false).await;
-
-            // Should use direct filesystem
-            let result = vault_api.read("test-plugin", "test.md").await;
-            assert!(result.is_ok());
-            assert_eq!(result.unwrap(), "content");
-        }
-
-        #[tokio::test]
-        async fn test_mcp_permission_consistency() {
-            let (vault_api, _temp_dir) = create_test_vault().await;
-
-            // Test that permissions are enforced consistently
-            // whether using MCP or direct filesystem
-            vault_api.set_mcp_mode(true).await;
-
-            // Without permission, both should fail
-            let mcp_result = vault_api.write("test-plugin", "mcp.md", "content").await;
-            assert!(mcp_result.is_err());
-
-            vault_api.set_mcp_mode(false).await;
-            let direct_result = vault_api.write("test-plugin", "direct.md", "content").await;
-            assert!(direct_result.is_err());
-
-            // With permission, both should succeed
-            vault_api
-                .grant_permission("test-plugin", VaultPermission::Write)
-                .await;
-
-            vault_api.set_mcp_mode(true).await;
-            let mcp_result = vault_api.write("test-plugin", "mcp2.md", "content").await;
-            assert!(mcp_result.is_ok() || mcp_result.is_err()); // Depends on MCP availability
-
-            vault_api.set_mcp_mode(false).await;
-            let direct_result = vault_api
-                .write("test-plugin", "direct2.md", "content")
-                .await;
-            assert!(direct_result.is_ok());
-        }
-    }
-
     mod performance {
         use super::*;
         use std::time::Instant;

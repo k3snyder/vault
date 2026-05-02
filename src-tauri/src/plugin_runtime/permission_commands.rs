@@ -160,12 +160,6 @@ fn parse_capability_string(capability: &str) -> Result<Capability, String> {
                 domains: vec![domain.to_string()],
             })
         }
-        cap if cap.starts_with("mcp:") => {
-            let tool = cap.strip_prefix("mcp:").unwrap();
-            Ok(Capability::McpInvoke {
-                tools: vec![tool.to_string()],
-            })
-        }
         cap if cap.starts_with("vault:read:") => {
             let path = cap.strip_prefix("vault:read:").unwrap();
             Ok(Capability::VaultRead {
@@ -238,9 +232,6 @@ fn capability_to_string(capability: &Capability) -> String {
             } else {
                 format!("network:{}", domains.join(","))
             }
-        }
-        Capability::McpInvoke { tools } => {
-            format!("mcp:{}", tools.join(","))
         }
     }
 }
@@ -322,10 +313,6 @@ fn get_capability_consequences(capability: &Capability) -> Vec<String> {
             format!("Connect to: {}", domains.join(", ")),
             "Send and receive data over network".to_string(),
             "Potential data exfiltration risk".to_string(),
-        ],
-        Capability::McpInvoke { tools } => vec![
-            format!("Use MCP tools: {}", tools.join(", ")),
-            "Execute external server functions".to_string(),
         ],
     }
 }

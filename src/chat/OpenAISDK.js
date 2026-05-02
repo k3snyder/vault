@@ -148,17 +148,6 @@ export class OpenAISDK {
             systemContent += '\n\nYou have access to tag-based context from the user\'s notes. When you see related tags mentioned or detected, use this information to provide more connected and relevant responses.';
         }
         
-        // Add MCP tools information if available
-        try {
-            const { mcpToolHandler } = await import('../mcp/MCPToolHandler.js');
-            const mcpPromptAdditions = await mcpToolHandler.getSystemPromptAdditions();
-            if (mcpPromptAdditions) {
-                systemContent += mcpPromptAdditions;
-            }
-        } catch (error) {
-            console.log('MCP tools not available:', error);
-        }
-        
         // Add tag context to system message if available
         if (tagContext && tagContext.contextPrompt) {
             systemContent += tagContext.contextPrompt;

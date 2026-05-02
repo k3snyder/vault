@@ -123,7 +123,7 @@ pub struct PdfMetadata {
 }
 
 // ============================================================================
-// Intelligence Result Types (after MCP enrichment)
+// Intelligence Result Types (after enrichment)
 // ============================================================================
 
 /// Complete intelligence result including extraction and enrichments

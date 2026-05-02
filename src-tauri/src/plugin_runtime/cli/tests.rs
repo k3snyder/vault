@@ -738,7 +738,6 @@ mod cli_tests {
             assert!(index_content.contains("VaultAPI"));
             assert!(index_content.contains("WorkspaceAPI"));
             assert!(index_content.contains("SettingsAPI"));
-            assert!(index_content.contains("McpAPI"));
             assert!(index_content.contains("NetworkAPI"));
             assert!(index_content.contains("PluginManifest"));
             assert!(index_content.contains("abstract class Plugin"));

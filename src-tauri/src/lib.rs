@@ -2,12 +2,12 @@
 pub mod ai_settings;
 pub mod ai_settings_multi;
 pub mod app_state;
+pub mod botcky;
 pub mod commands;
 pub mod csv;
 pub mod editor;
 pub mod identity;
 pub mod license;
-pub mod mcp;
 pub mod pdf_intelligence;
 pub mod plugin_runtime;
 pub mod refactored_app_state;

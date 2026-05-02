@@ -4,7 +4,6 @@
 #![allow(unused_variables)]
 
 use crate::editor::EditorManager;
-use crate::mcp::MCPManager;
 use crate::vault::Vault;
 use notify::{Event, EventKind, RecursiveMode, Watcher};
 use serde::{Deserialize, Serialize};
@@ -22,29 +21,26 @@ pub struct WindowState {
     pub vault: Arc<Mutex<Option<Vault>>>,
     pub editor: EditorManager,
     pub watcher: Arc<Mutex<Option<notify::RecommendedWatcher>>>,
-    pub mcp_manager: Arc<MCPManager>,
 }
 
 impl WindowState {
     /// Creates a new WindowState with a unique window ID
-    pub fn new(app_handle: AppHandle) -> Result<Self, String> {
+    pub fn new(_app_handle: AppHandle) -> Result<Self, String> {
         Ok(Self {
             window_id: Uuid::new_v4().to_string(),
             vault: Arc::new(Mutex::new(None)),
             editor: EditorManager::new(),
             watcher: Arc::new(Mutex::new(None)),
-            mcp_manager: Arc::new(MCPManager::new(app_handle).map_err(|e| e.to_string())?),
         })
     }
 
     /// Creates a new WindowState with a specific window ID
-    pub fn with_id(window_id: String, app_handle: AppHandle) -> Result<Self, String> {
+    pub fn with_id(window_id: String, _app_handle: AppHandle) -> Result<Self, String> {
         Ok(Self {
             window_id,
             vault: Arc::new(Mutex::new(None)),
             editor: EditorManager::new(),
             watcher: Arc::new(Mutex::new(None)),
-            mcp_manager: Arc::new(MCPManager::new(app_handle).map_err(|e| e.to_string())?),
         })
     }
 }

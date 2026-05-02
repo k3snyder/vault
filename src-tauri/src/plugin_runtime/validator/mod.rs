@@ -905,8 +905,6 @@ impl PluginValidator {
             "settings:write".to_string(),
             "network:fetch".to_string(),
             "network:websocket".to_string(),
-            "mcp:tools".to_string(),
-            "mcp:resources".to_string(),
         ]
     }
 

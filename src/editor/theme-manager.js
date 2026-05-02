@@ -1,5 +1,6 @@
 import { invoke } from '@tauri-apps/api/core'
 import { getCurrentWindow } from '@tauri-apps/api/window'
+import { EditorView } from '@codemirror/view'
 import { applyTheme as applyTokenTheme } from '../tokens/css-generator.js'
 
 export class ThemeManager {
@@ -349,12 +350,14 @@ export class ThemeManager {
   setFontSize(size) {
     const root = document.documentElement
     root.style.setProperty('--editor-font-size', `${size}px`)
-    
-    this.editor.view.dispatch({
-      effects: this.editor.fontSizeCompartment.reconfigure(
-        this.editor.createFontSizeTheme(size)
-      )
-    })
+
+    if (this.editor?.view && this.editor.fontSizeCompartment && this.editor.createFontSizeTheme) {
+      this.editor.view.dispatch({
+        effects: this.editor.fontSizeCompartment.reconfigure(
+          this.editor.createFontSizeTheme(size)
+        )
+      })
+    }
 
     this.saveEditorPreference('font_size', size.toString())
   }
@@ -398,6 +401,10 @@ export class ThemeManager {
   }
 
   toggleLineWrapping() {
+    if (!this.editor?.view || !this.editor.lineWrappingCompartment) {
+      return false
+    }
+
     const currentWrapping = this.editor.view.state.facet(EditorView.lineWrapping)
     const newWrapping = !currentWrapping
     

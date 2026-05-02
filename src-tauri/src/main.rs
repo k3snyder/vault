@@ -17,13 +17,12 @@ mod ai_settings;
 mod ai_settings_multi;
 mod ai_stream;
 mod auth;
+mod botcky;
 mod commands;
 mod csv;
 mod editor;
 mod identity;
 mod license;
-mod mcp;
-mod mcp_settings;
 mod pdf_export;
 mod pdf_intelligence;
 mod plugin_runtime;
@@ -54,17 +53,10 @@ use commands::ghostty::{
     ghostty_installation_status, ghostty_spawn, ghostty_status, ghostty_stop, ghostty_write,
     register_ghostty_commands, GhosttyManager,
 };
-use commands::mcp_config::{generate_mcp_config, validate_mcp_server, write_mcp_config};
 use commands::pty::{pty_close, pty_resize, pty_spawn, pty_write, PtyManager};
 use commands::util::{check_command_exists, get_bundle_path};
 use editor::EditorManager;
 use identity::IdentityManager;
-use mcp::setup::{check_mcp_servers_status, setup_mcp_servers};
-use mcp::MCPManager;
-use mcp_settings::{
-    delete_mcp_server_config, get_mcp_server_config, get_mcp_settings, list_mcp_server_configs,
-    save_mcp_server_config, save_mcp_settings,
-};
 use pdf_export::{ExportOptions, PdfExporter};
 use pdf_intelligence::commands::{
     export_intelligence_markdown, extract_pdf_intelligence, extract_pdf_intelligence_v2,
@@ -93,7 +85,6 @@ pub struct AppState {
     identity_manager: Arc<RwLock<IdentityManager>>,
     editor: EditorManager,
     watcher: Arc<Mutex<Option<notify::RecommendedWatcher>>>,
-    mcp_manager: Arc<MCPManager>,
     plugin_runtime: Arc<Mutex<plugin_runtime::PluginRuntime>>,
 }
 
@@ -2076,17 +2067,6 @@ fn main() {
             test_messages,
             debug_send_ai_chat,
             check_ollama_status,
-            mcp::start_mcp_server,
-            mcp::stop_mcp_server,
-            mcp::send_mcp_message,
-            mcp::get_mcp_server_statuses,
-            mcp::get_mcp_server_info,
-            save_mcp_settings,
-            get_mcp_settings,
-            save_mcp_server_config,
-            delete_mcp_server_config,
-            get_mcp_server_config,
-            list_mcp_server_configs,
             get_vault_settings,
             save_vault_settings,
             reset_vault_settings,
@@ -2135,16 +2115,11 @@ fn main() {
             ghostty_write,
             ghostty_status,
             ghostty_installation_status,
-            generate_mcp_config,
             // License commands
             commands::license::get_license_status,
             commands::license::start_trial_cmd,
             commands::license::activate_license,
             commands::license::deactivate_license,
-            write_mcp_config,
-            validate_mcp_server,
-            check_mcp_servers_status,
-            setup_mcp_servers,
             check_command_exists,
             get_bundle_path,
             // PTY commands
@@ -2185,6 +2160,15 @@ fn main() {
             plugin_runtime::ipc_commands::plugin_workspace_notice,
             plugin_runtime::ipc_commands::plugin_settings_get,
             plugin_runtime::ipc_commands::plugin_settings_set,
+            // Native Botcky bridge commands (Vault-root-safe, no MCP/PTY path)
+            botcky::context::botcky_validate_context,
+            botcky::direct_tools::botcky_read_file,
+            botcky::direct_tools::botcky_search_files,
+            botcky::direct_tools::botcky_create_file,
+            botcky::direct_tools::botcky_update_file,
+            botcky::direct_tools::botcky_append_file,
+            botcky::shell_allowlist::botcky_run_allowed_command,
+            botcky::tasks::botcky_build_executor_task_request,
             // Vault agent commands (secure path validation in Rust)
             vault_agent_commands::agent_read_note,
             vault_agent_commands::agent_write_note,
@@ -2205,11 +2189,6 @@ fn main() {
             csv::export_to_file,
         ])
         .setup(|app| {
-            // Create MCP manager with app handle
-            let mcp_manager = Arc::new(
-                MCPManager::new(app.handle().clone()).expect("Failed to create MCP manager"),
-            );
-
             // Create Ghostty manager
             let ghostty_manager = Arc::new(GhosttyManager::new());
 
@@ -2246,7 +2225,6 @@ fn main() {
                 identity_manager: identity_manager.clone(),
                 editor: EditorManager::new(),
                 watcher: Arc::new(Mutex::new(None)),
-                mcp_manager: mcp_manager.clone(),
                 plugin_runtime: plugin_runtime.clone(),
             };
 
@@ -2258,9 +2236,6 @@ fn main() {
 
             // Also manage IdentityManager for task commands (Mutex version)
             app.manage(identity_manager_mutex);
-
-            // Also manage MCP manager separately for the MCP commands
-            app.manage(mcp_manager);
 
             // Also manage Ghostty manager for Ghostty commands
             app.manage(ghostty_manager);

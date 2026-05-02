@@ -13,7 +13,6 @@ import { ThemeManager } from './editor/theme-manager.js';
 import { markdownExtensions, markdownStyles } from './editor/markdown-extensions.js';
 import { PaneManager } from './PaneManager.js';
 import { EnhancedChatPanel } from './chat/EnhancedChatPanel.js';
-import { mcpSettingsPanel } from './mcp/MCPSettingsPanel.js';
 import { userSettingsPanel } from './settings/UserSettingsPanel.js';
 import { WidgetSidebar } from './widgets/WidgetSidebar.js';
 import { TaskWidget } from './widgets/TaskWidget.js';
@@ -708,8 +707,6 @@ window.paneManager = null; // Make accessible globally
 let statusBarVisible = true; // Global status bar visibility state
 let chatPanel = null; // Enhanced chat panel
 window.chatPanel = null; // Make accessible globally
-let mcpSettings = null; // MCP settings panel
-window.mcpSettings = null; // Make accessible globally
 
 // Import event listener from Tauri
 import { listen } from '@tauri-apps/api/event';
@@ -1206,34 +1203,6 @@ async function initializeChatPanel() {
   }
 }
 
-// Initialize MCP Settings Panel
-async function initializeMCPSettings() {
-  console.log('🔧 Initializing MCP Settings Panel...');
-  
-  // Create container for MCP settings
-  let settingsContainer = document.getElementById('mcp-settings-container');
-  if (!settingsContainer) {
-    settingsContainer = document.createElement('div');
-    settingsContainer.id = 'mcp-settings-container';
-    document.body.appendChild(settingsContainer);
-  }
-  
-  try {
-    console.log('🔧 Creating MCPSettingsPanel instance...');
-    mcpSettings = mcpSettingsPanel;
-    window.mcpSettings = mcpSettings;
-    
-    console.log('📌 Mounting MCP settings panel...');
-    await mcpSettings.mount(settingsContainer);
-    console.log('✅ MCP Settings Panel initialized successfully');
-    console.log('🔍 mcpSettings object:', mcpSettings);
-    console.log('🔍 mcpSettings.show method exists?', typeof mcpSettings.show);
-  } catch (error) {
-    console.error('❌ Failed to initialize MCP Settings Panel:', error);
-    console.error('Stack trace:', error.stack);
-  }
-}
-
 // Initialize CodeMirror editor with panes
 async function initializeEditor() {
   const editorWrapper = document.getElementById('editor-wrapper');
@@ -1536,17 +1505,6 @@ window.onFileSaved = function(filePath) {
   }
 }
 
-// MCP status removed from UI for cleaner interface
-
-// Track tool executions
-window.onMCPToolExecuted = function(toolName) {
-  window.lastMCPToolExecution = {
-    tool: toolName,
-    time: Date.now()
-  };
-  // MCP status removed from UI
-}
-
 let keyboardShortcutsInitialized = false;
 
 /**
@@ -1707,14 +1665,6 @@ function setupTabKeyboardShortcuts() {
       } else {
         console.warn('Plugin Hub not initialized');
       }
-      return;
-    }
-    
-    // Cmd+Shift+M: MCP Settings (check this first, before tab shortcuts)
-    if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'M') {
-      e.preventDefault();
-      console.log('Cmd+Shift+M pressed');
-      window.showMCPSettings();
       return;
     }
     
@@ -3008,18 +2958,9 @@ window.createVault = async function() {
 async function updateUIWithVault(vaultInfo) {
   console.log('🔄 Updating UI with vault:', vaultInfo);
   
-  // Store vault path globally for MCP servers
+  // Store vault path globally for chat and CLI contexts
   window.currentVaultPath = vaultInfo.path;
   updateSidebarAppNav();
-  
-  // MCP servers are now managed by MCPSettingsPanel (bundledServers.js)
-  // Trigger reload of MCP settings when vault opens
-  if (window.mcpSettings) {
-    console.log('🔄 Reloading MCP settings for vault:', vaultInfo.path);
-    window.mcpSettings.loadServers().catch(err => {
-      console.error('Failed to reload MCP servers:', err);
-    });
-  }
   
   // Save this as the last opened vault
   try {
@@ -4260,9 +4201,6 @@ async function initializeApp() {
     
     // Initialize Enhanced Chat Panel
     await initializeChatPanel();
-    
-    // Initialize MCP Settings Panel
-    await initializeMCPSettings();
     
     // Check for last opened vault - now handled by WindowContext
     // WindowContext will check URL params and saved state
@@ -6696,7 +6634,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('📊 Initial performance metrics:', metrics);
   }, 1000);
   
-  // MCP status bar removed for cleaner UI
   
   // Add global click handler to close dropdowns
   document.addEventListener('click', (e) => {
@@ -6720,31 +6657,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 });
 
-// MCP Test Functions
-import { mcpManager } from './mcp/MCPManager.js';
-
-window.mcpManager = mcpManager;
-
 // Plugin Hub global
 window.pluginHub = pluginHub;
 console.log('🔌 Plugin Hub initialized and available at window.pluginHub');
-
-// MCP Settings shortcut function
-window.showMCPSettings = function() {
-  console.log('🔧 showMCPSettings called');
-  console.log('mcpSettings exists?', !!window.mcpSettings);
-  
-  if (window.mcpSettings) {
-    console.log('Calling mcpSettings.show()');
-    window.mcpSettings.show();
-  } else {
-    console.error('MCP Settings not initialized');
-    console.log('Available globals:', Object.keys(window).filter(k => k.includes('mcp')));
-  }
-};
-
-// Add keyboard shortcut for MCP settings (Cmd+Shift+M)
-// Moved to setupKeyboardShortcuts function to ensure proper initialization
 
 // ======== Calendar Widget Helper Functions ========
 

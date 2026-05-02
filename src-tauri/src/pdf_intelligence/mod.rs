@@ -4,7 +4,7 @@
 /// - Text extraction via pdfium-render (primary) with pdf-extract fallback
 /// - Storage of results in .vault.json companion files
 ///
-/// Advanced features (tables, images, vision, summarization) are handled by MCP servers.
+/// Advanced features (tables, images, vision, summarization) are intentionally omitted from text extractions.
 pub mod commands;
 pub mod extractor;
 pub mod types;

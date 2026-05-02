@@ -73,7 +73,7 @@ impl AIProvider {
             },
             AIProvider::Gemini => AISettings {
                 provider: self.clone(),
-                endpoint: "https://generativelanguage.googleapis.com/v1beta/openai".to_string(),
+                endpoint: "https://generativelanguage.googleapis.com/v1beta/".to_string(),
                 api_key: None,
                 model: "gemini-2.0-flash".to_string(),
                 temperature: 0.7,
@@ -135,7 +135,7 @@ impl AIProvider {
             },
             AIProvider::BotckyGateway => AISettings {
                 provider: self.clone(),
-                endpoint: "http://localhost:3005".to_string(),
+                endpoint: "http://127.0.0.1:7110".to_string(),
                 api_key: None,
                 model: "botcky-agent".to_string(),
                 temperature: 0.7,
@@ -570,10 +570,21 @@ mod tests {
     fn botcky_gateway_default_settings_are_expected() {
         let settings = AIProvider::BotckyGateway.default_settings();
         assert_eq!(settings.provider, AIProvider::BotckyGateway);
-        assert_eq!(settings.endpoint, "http://localhost:3005");
+        assert_eq!(settings.endpoint, "http://127.0.0.1:7110");
         assert_eq!(settings.model, "botcky-agent");
         assert_eq!(settings.max_tokens, 8000);
         assert!(settings.api_key.is_none());
         assert!(settings.streaming_enabled);
+    }
+
+    #[test]
+    fn gemini_default_endpoint_uses_native_google_api_path() {
+        let settings = AIProvider::Gemini.default_settings();
+        assert_eq!(settings.provider, AIProvider::Gemini);
+        assert_eq!(
+            settings.endpoint,
+            "https://generativelanguage.googleapis.com/v1beta/"
+        );
+        assert_eq!(settings.model, "gemini-2.0-flash");
     }
 }

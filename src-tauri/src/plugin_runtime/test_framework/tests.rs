@@ -208,31 +208,6 @@ async fn test_mock_settings_api() {
 }
 
 #[tokio::test]
-async fn test_mock_mcp_api() {
-    let mut harness = PluginTestHarness::new();
-
-    // Register tool
-    harness
-        .mock_mcp()
-        .register_tool(
-            "test-tool",
-            |params| serde_json::json!({ "result": "processed", "params": params }),
-        )
-        .await;
-
-    // Call tool
-    let result = harness
-        .mock_mcp()
-        .call_tool("test-tool", serde_json::json!({"input": "test"}))
-        .await;
-    assert!(result.is_ok());
-
-    let response = result.unwrap();
-    assert_eq!(response["result"], "processed");
-    assert_eq!(response["params"]["input"], "test");
-}
-
-#[tokio::test]
 async fn test_mock_network_api() {
     let mut harness = PluginTestHarness::new();
 

@@ -8,9 +8,8 @@ A local-first notes app that brings together everything you've saved, highlighte
 - **Local app performance** - Native desktop performance that keeps pace with how you think. A knowledge engine that responds the moment you do. Built for professionals who refuse to wait.
 - **Local-First Storage** — Plain Markdown files. No lock-in. No tracking. 
 - **Multi-Model AI** — OpenAI, Claude, Gemini, Ollama, LM Studio
-- **CLI AI Agents** — Integrated Claude Code, Codex, Gemini CLI AI Agents with full vault context and MCP integration
+- **CLI AI Agents** — Integrated Claude Code, Codex, Gemini CLI AI Agents with full vault context
 - **UUID Identity** — Stable note and task identity (UUIDv7) Frontmatter preserved across renames, moves, and sync. Critical for AI & Database integration. 
-- **MCP Native** — Model Context Protocol for AI agent workflows. Ability to setup and integrate to any MCP service. 
 - **WikiLinks** — `[[note]]` and `[[tid:xxx]]` linking with auto-completion
 - **Task Management** — Central Task management with ability to edit/view all tasks across notes
 - **Plugin System** — Extensible architecture with permission controls

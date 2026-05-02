@@ -14,8 +14,10 @@ export class ChatInterface {
     this.onSendMessage = null;
     this.isTyping = false;
     this.currentContext = [];
+    this.excludedActiveNoteKey = null;
     this.contextDialogOverlay = null;
     this.activeToolCards = new Map(); // Track tool cards by ID
+    this.onMessagesChanged = null;
 
     // Load saved messages
     this.loadMessages();
@@ -106,9 +108,9 @@ export class ChatInterface {
     this.inputContainer.className = 'chat-input-container';
     this.createInputUI();
     
-    // Assemble - Input at top, messages below (Cursor style)
-    container.appendChild(this.inputContainer);
+    // Assemble - standard chat flow: messages above, composer anchored at bottom
     container.appendChild(this.messagesContainer);
+    container.appendChild(this.inputContainer);
     
     // Listen for tab changes to update context indicator
     setInterval(() => {
@@ -165,7 +167,7 @@ export class ChatInterface {
     // Auto-resize textarea
     textarea.addEventListener('input', (e) => {
       textarea.style.height = 'auto';
-      textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+      textarea.style.height = Math.min(textarea.scrollHeight, 96) + 'px';
     });
     
     // Handle enter key
@@ -242,12 +244,30 @@ export class ChatInterface {
       }
     }
     
-    // Combine active note with additional context
+    const activeNoteIncluded = activeNote && this.shouldIncludeActiveNoteContext(activeNote);
+    const activeNoteKey = this.getActiveNoteContextKey(activeNote);
+
+    // Combine active note with additional context, deduping the active file if
+    // ContextManager also reported it.
     const allContext = [];
-    if (activeNote) {
-      allContext.push(activeNote);
+    const seenPaths = new Set();
+    if (activeNoteIncluded) {
+      allContext.push({ note: activeNote, isActiveNote: true });
+      if (activeNote.path) {
+        seenPaths.add(activeNote.path);
+      }
     }
-    allContext.push(...this.currentContext);
+    this.currentContext.forEach(note => {
+      if (!note) return;
+      const noteKey = note.path || note.title || note.name || '';
+      if (note.type === 'active' || (activeNoteKey && noteKey === activeNoteKey) || (note.path && seenPaths.has(note.path))) {
+        return;
+      }
+      if (note.path) {
+        seenPaths.add(note.path);
+      }
+      allContext.push({ note, isActiveNote: false });
+    });
     
     // Always show the indicator so Add Context button is visible
     indicator.style.display = 'flex';
@@ -261,35 +281,87 @@ export class ChatInterface {
     indicator.appendChild(addContextBtn);
     
     // Show context pills
-    allContext.forEach((note, index) => {
+    if (activeNote && !activeNoteIncluded) {
+      const excludedPill = document.createElement('div');
+      excludedPill.className = 'context-pill excluded-active-note';
+      excludedPill.role = 'button';
+      excludedPill.tabIndex = 0;
+      excludedPill.title = 'Include active note';
+      excludedPill.onclick = () => this.includeActiveNoteContext(activeNote);
+      excludedPill.onkeydown = (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          this.includeActiveNoteContext(activeNote);
+        }
+      };
+      const label = document.createElement('span');
+      label.textContent = 'Active note +';
+      excludedPill.appendChild(label);
+      indicator.appendChild(excludedPill);
+    }
+
+    allContext.forEach(({ note, isActiveNote }) => {
       const pill = document.createElement('div');
       pill.className = 'context-pill';
-      if (index === 0 && activeNote) {
+      if (isActiveNote) {
         pill.classList.add('active-note');
       }
       
-      const isActiveNote = index === 0 && activeNote;
       const displayName = note.title || note.name || 'Untitled';
 
       const label = document.createElement('span');
       label.textContent = displayName;
       pill.appendChild(label);
 
-      if (!isActiveNote) {
-        const removeBtn = document.createElement('button');
-        removeBtn.className = 'remove-context';
-        removeBtn.type = 'button';
-        removeBtn.dataset.path = note.path;
-        removeBtn.textContent = '×';
-        removeBtn.onclick = (e) => {
-          e.stopPropagation();
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'remove-context';
+      removeBtn.type = 'button';
+      removeBtn.dataset.path = note.path;
+      removeBtn.textContent = '×';
+      removeBtn.onclick = (e) => {
+        e.stopPropagation();
+        if (isActiveNote) {
+          this.excludeActiveNoteFromContext(note);
+        } else {
           this.removeFromContext(note.path);
-        };
-        pill.appendChild(removeBtn);
-      }
+        }
+      };
+      pill.appendChild(removeBtn);
       
       indicator.appendChild(pill);
     });
+  }
+
+  getActiveNoteContextKey(note) {
+    if (!note) return '';
+    return note.path || note.title || note.name || '';
+  }
+
+  shouldIncludeActiveNoteContext(note) {
+    const key = this.getActiveNoteContextKey(note);
+    return Boolean(key) && key !== this.excludedActiveNoteKey;
+  }
+
+  excludeActiveNoteFromContext(note) {
+    const key = this.getActiveNoteContextKey(note);
+    if (!key) return;
+    console.log('[ChatInterface] Excluding active note from context:', key);
+    this.excludedActiveNoteKey = key;
+    if (note.path) {
+      this.currentContext = this.currentContext.filter(contextNote => contextNote.path !== note.path);
+      if (window.chatContextManager) {
+        window.chatContextManager.removeNote(note.path);
+      }
+    }
+    this.updateContextIndicator();
+  }
+
+  includeActiveNoteContext(note) {
+    const key = this.getActiveNoteContextKey(note);
+    if (!key || this.excludedActiveNoteKey !== key) return;
+    console.log('[ChatInterface] Including active note in context:', key);
+    this.excludedActiveNoteKey = null;
+    this.updateContextIndicator();
   }
   
   updateContext(context) {
@@ -429,6 +501,9 @@ export class ChatInterface {
   
   addNoteToContext(note) {
     console.log('[ChatInterface] Adding note to context:', note);
+    if (note?.path && note.path === this.excludedActiveNoteKey) {
+      this.excludedActiveNoteKey = null;
+    }
     
     // Check if already in context
     const exists = this.currentContext.find(n => n.path === note.path);
@@ -475,24 +550,41 @@ export class ChatInterface {
   
   addMessage(message) {
     console.log('[ChatInterface] Adding message:', message.type);
+    const normalizedMessage = {
+      ...message,
+      timestamp: message.timestamp || new Date(),
+    };
     
     // Hide typing indicator if this is an assistant message
-    if (message.type === 'assistant') {
+    if (normalizedMessage.type === 'assistant') {
       this.hideTyping();
     }
     
-    this.messages.push(message);
+    const previousNewest = this.messages[this.messages.length - 1];
+    this.messages.push(normalizedMessage);
     
-    // For newest-at-top display, we need to prepend the new message
-    const messageEl = this.createMessageElement(message);
-    this.messagesContainer.insertBefore(messageEl, this.messagesContainer.firstChild);
+    // Standard chat flow: append new messages at bottom with day breaks.
+    this.appendMessageElement(normalizedMessage, previousNewest);
     
-    this.scrollToTop();
+    this.scrollToBottom();
     
     // Save messages after adding (skip typing indicators and context)
-    if (message.type !== 'typing' && message.type !== 'context') {
+    if (normalizedMessage.type !== 'typing' && normalizedMessage.type !== 'context') {
       this.saveMessages();
     }
+  }
+
+  appendMessageElement(message, previousNewest) {
+    const messageEl = this.createMessageElement(message);
+    const messageDateKey = this.getMessageDateKey(message.timestamp);
+    const previousDateKey = previousNewest ? this.getMessageDateKey(previousNewest.timestamp) : null;
+
+    if (messageDateKey && messageDateKey !== previousDateKey) {
+      const separator = this.createDateSeparatorElement(message.timestamp);
+      this.messagesContainer.appendChild(separator);
+    }
+
+    this.messagesContainer.appendChild(messageEl);
   }
 
   addTaskCreated(meta = {}) {
@@ -537,9 +629,8 @@ export class ChatInterface {
   addElement(element) {
     console.log('[ChatInterface] Adding custom element to chat');
 
-    // Insert the element at the top (newest first)
-    this.messagesContainer.insertBefore(element, this.messagesContainer.firstChild);
-    this.scrollToTop();
+    this.messagesContainer.appendChild(element);
+    this.scrollToBottom();
   }
 
   // Tool Use Card Management
@@ -556,9 +647,8 @@ export class ChatInterface {
 
       this.activeToolCards.set(toolId, card);
 
-      // Insert tool card at top (newest first)
-      this.messagesContainer.insertBefore(card.getElement(), this.messagesContainer.firstChild);
-      this.scrollToTop();
+      this.messagesContainer.appendChild(card.getElement());
+      this.scrollToBottom();
 
       return card;
     } catch (error) {
@@ -611,8 +701,7 @@ export class ChatInterface {
           messageEl.appendChild(cursor);
         }
         
-        // For newest-at-top, we don't need to scroll during updates
-        // The user can naturally scroll down as they read
+        this.scrollToBottom();
       }
     }
   }
@@ -636,31 +725,7 @@ export class ChatInterface {
       messageEl.setAttribute('data-message-id', message.id);
     }
     
-    // Header with avatar and timestamp
-    const header = document.createElement('div');
-    header.className = 'message-header';
-    
-    // Avatar with timestamp
-    const avatarText = message.type === 'user' ? 'You' : 
-                      message.type === 'assistant' ? 'AI' : 
-                      message.type === 'error' ? 'Error' : 
-                      message.type === 'context' ? 'Context' :
-                      message.type === 'task_created' ? 'Task' : '?';
-    
-    const timeString = message.timestamp ? new Date(message.timestamp).toLocaleTimeString() : '';
-
-    const avatar = document.createElement('span');
-    avatar.className = 'message-avatar';
-    avatar.textContent = avatarText;
-    header.appendChild(avatar);
-
-    if (timeString) {
-      header.appendChild(document.createTextNode(' '));
-      const timestamp = document.createElement('span');
-      timestamp.className = 'message-timestamp';
-      timestamp.textContent = timeString;
-      header.appendChild(timestamp);
-    }
+    const timeString = this.formatMessageTime(message.timestamp);
     
     // Content
     const content = document.createElement('div');
@@ -683,10 +748,17 @@ export class ChatInterface {
     } else {
       content.textContent = normalizedContent;
     }
+
+    const bubble = document.createElement('div');
+    bubble.className = 'message-bubble';
+    bubble.appendChild(content);
+
+    const stack = document.createElement('div');
+    stack.className = 'message-stack';
+    stack.appendChild(bubble);
     
     // Assemble
-    messageEl.appendChild(header);
-    messageEl.appendChild(content);
+    messageEl.appendChild(stack);
     
     // Add copy button for assistant messages
     if (message.type === 'assistant') {
@@ -696,7 +768,7 @@ export class ChatInterface {
       const copyBtn = document.createElement('button');
       copyBtn.className = 'message-copy-btn';
       copyBtn.title = 'Copy response';
-      copyBtn.innerHTML = `${icons.copy({ size: 14 })}<span>Copy</span>`;
+      copyBtn.innerHTML = icons.copy({ size: 14 });
       
       copyBtn.onclick = async () => {
         try {
@@ -705,7 +777,7 @@ export class ChatInterface {
           
           // Visual feedback
           const originalHTML = copyBtn.innerHTML;
-          copyBtn.innerHTML = `${icons.check({ size: 14 })}<span>Copied!</span>`;
+          copyBtn.innerHTML = icons.check({ size: 14 });
           copyBtn.classList.add('copied');
           
           setTimeout(() => {
@@ -718,7 +790,13 @@ export class ChatInterface {
       };
       
       actionsBar.appendChild(copyBtn);
-      messageEl.appendChild(actionsBar);
+      if (timeString) {
+        const hoverTime = document.createElement('span');
+        hoverTime.className = 'message-hover-time';
+        hoverTime.textContent = timeString;
+        actionsBar.appendChild(hoverTime);
+      }
+      stack.appendChild(actionsBar);
     }
     
     return messageEl;
@@ -958,9 +1036,62 @@ export class ChatInterface {
 
   renderMessages() {
     this.messagesContainer.innerHTML = '';
-    // Render messages in reverse order so newest appear at top
-    this.messages.slice().reverse().forEach(msg => this.renderMessage(msg));
-    this.scrollToTop();
+    // Render messages oldest to newest, with date breaks as the day changes.
+    let currentDateKey = null;
+    this.getMessagesInDisplayOrder().forEach(msg => {
+      const dateKey = this.getMessageDateKey(msg.timestamp);
+      if (dateKey && dateKey !== currentDateKey) {
+        currentDateKey = dateKey;
+        this.messagesContainer.appendChild(this.createDateSeparatorElement(msg.timestamp));
+      }
+      this.renderMessage(msg);
+    });
+    this.scrollToBottom();
+  }
+
+  getMessagesInDisplayOrder() {
+    return [...this.messages].sort((a, b) => {
+      const aTime = this.getValidDate(a.timestamp)?.getTime();
+      const bTime = this.getValidDate(b.timestamp)?.getTime();
+
+      if (aTime === undefined && bTime === undefined) return 0;
+      if (aTime === undefined) return 1;
+      if (bTime === undefined) return -1;
+      return aTime - bTime;
+    });
+  }
+
+  createDateSeparatorElement(timestamp) {
+    const separator = document.createElement('div');
+    separator.className = 'chat-date-separator';
+    separator.textContent = this.formatThreadDateTime(timestamp);
+    return separator;
+  }
+
+  getMessageDateKey(timestamp) {
+    const date = this.getValidDate(timestamp);
+    if (!date) return null;
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  getValidDate(timestamp) {
+    if (!timestamp) return null;
+    const date = new Date(timestamp);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  formatMessageTime(timestamp) {
+    const date = this.getValidDate(timestamp);
+    return date ? date.toLocaleTimeString() : '';
+  }
+
+  formatThreadDateTime(timestamp) {
+    const date = this.getValidDate(timestamp);
+    if (!date) return '';
+    return `${date.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })} · ${date.toLocaleTimeString()}`;
   }
   
   showTyping(isOllama = false) {
@@ -974,15 +1105,17 @@ export class ChatInterface {
     typingEl.className = 'chat-message chat-message-assistant';
     typingEl.id = 'typing-indicator';
     
-    // Header with avatar and timestamp
-    const header = document.createElement('div');
-    header.className = 'message-header';
-    header.innerHTML = '<span class="message-avatar">AI</span> <span class="message-timestamp">' + new Date().toLocaleTimeString() + '</span>';
-    
-    // Content
     const content = document.createElement('div');
     content.className = 'message-content thinking';
     content.textContent = 'Thinking...';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'message-bubble';
+    bubble.appendChild(content);
+
+    const stack = document.createElement('div');
+    stack.className = 'message-stack';
+    stack.appendChild(bubble);
     
     // If Ollama, set up extended status updates
     if (isOllama) {
@@ -998,13 +1131,10 @@ export class ChatInterface {
       }, 5000); // Update every 5 seconds
     }
     
-    // Assemble
-    typingEl.appendChild(header);
-    typingEl.appendChild(content);
+    typingEl.appendChild(stack);
     
-    // Insert at the top for newest-first display
-    this.messagesContainer.insertBefore(typingEl, this.messagesContainer.firstChild);
-    this.scrollToTop();
+    this.messagesContainer.appendChild(typingEl);
+    this.scrollToBottom();
   }
   
   hideTyping() {
@@ -1023,14 +1153,18 @@ export class ChatInterface {
     }
   }
   
-  clearMessages() {
+  clearMessages(options = {}) {
     console.log('[ChatInterface] Clearing all messages');
+    const persist = options.persist !== false;
     this.messages = [];
     this.renderMessages();
     this.showWelcomeMessage();
     
-    // Clear from localStorage
-    localStorage.removeItem('gaimplan-chat-messages');
+    if (persist) {
+      // Clear from localStorage
+      localStorage.removeItem('gaimplan-chat-messages');
+      this.onMessagesChanged?.([]);
+    }
   }
   
   getMessages() {
@@ -1068,14 +1202,38 @@ export class ChatInterface {
       })).filter(msg => msg.type && msg.type !== 'typing' && msg.type !== 'context');
       
       localStorage.setItem('gaimplan-chat-messages', JSON.stringify(toSave));
+      this.onMessagesChanged?.(toSave);
       console.log('[ChatInterface] Saved', toSave.length, 'messages');
     } catch (error) {
       console.error('[ChatInterface] Failed to save messages:', error);
     }
   }
   
-  loadMessages() {
+  loadMessages(messages = null, options = {}) {
     try {
+      const persist = options.persist !== false;
+      if (Array.isArray(messages)) {
+        this.messages = messages
+          .map(msg => this.normalizeStoredMessage(msg))
+          .filter(Boolean);
+        this.messages = this.getMessagesInDisplayOrder();
+
+        if (persist) {
+          localStorage.setItem('gaimplan-chat-messages', JSON.stringify(this.messages));
+          this.onMessagesChanged?.(this.messages);
+        }
+
+        if (this.messagesContainer) {
+          this.renderMessages();
+          if (this.messages.length === 0) {
+            this.showWelcomeMessage();
+          }
+        }
+
+        console.log('[ChatInterface] Loaded', this.messages.length, 'messages');
+        return;
+      }
+
       const saved = localStorage.getItem('gaimplan-chat-messages');
       if (saved) {
         const parsed = JSON.parse(saved);
@@ -1084,6 +1242,7 @@ export class ChatInterface {
               .map(msg => this.normalizeStoredMessage(msg))
               .filter(Boolean)
           : [];
+        this.messages = this.getMessagesInDisplayOrder();
 
         const sanitized = JSON.stringify(this.messages);
         if (sanitized !== saved) {

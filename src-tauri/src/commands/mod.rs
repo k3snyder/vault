@@ -5,7 +5,6 @@
 
 pub mod ghostty;
 pub mod license;
-pub mod mcp_config;
 pub mod pty;
 pub mod sync;
 pub mod task_commands;

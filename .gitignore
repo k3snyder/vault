@@ -8,8 +8,6 @@ dist-ssr/
 src-tauri/target/
 src-tauri/WixTools/
 
-# Rust MCP servers
-mcp-servers/*/target/
 
 # Editor directories and files
 .vscode/*

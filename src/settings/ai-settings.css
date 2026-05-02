@@ -345,3 +345,59 @@ textarea.form-input {
     background: #fbfbfa;
     border-left: 3px solid #3b82f6;
 }
+.botcky-settings-note {
+    margin: 0 0 20px 0;
+    padding: 14px 16px;
+    border: 1px solid #dbeafe;
+    border-radius: 8px;
+    background: #eff6ff;
+    color: #1f2937;
+}
+
+.botcky-settings-note strong {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.botcky-settings-note p {
+    margin: 0 0 12px 0;
+    color: #4b5563;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.botcky-settings-note code {
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.7);
+    font-family: 'SF Mono', Monaco, Consolas, monospace;
+    font-size: 12px;
+}
+
+.danger-btn {
+    padding: 8px 12px;
+    border: 1px solid #fca5a5;
+    border-radius: 6px;
+    background: #fff;
+    color: #b91c1c;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.danger-btn:hover:not(:disabled),
+.danger-btn:focus-visible:not(:disabled) {
+    background: #fef2f2;
+    border-color: #ef4444;
+    outline: none;
+}
+
+.danger-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.botcky-provider-settings .provider-legacy-field {
+    display: none;
+}

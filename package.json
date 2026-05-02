@@ -11,12 +11,10 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "build:excalidraw": "cd public/excalidraw-bundle && npm run build",
-    "build:mcp": "./scripts/build-mcp-servers.sh",
-    "build:mcp:force": "./scripts/build-mcp-servers.sh --force",
-    "prebuild": "npm run build:mcp",
     "tauri": "tauri",
-    "tauri:dev": "npm run build:mcp && tauri dev",
-    "tauri:build": "npm run build:mcp && tauri build"
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "test:botcky-static": "node scripts/check-botcky-native-gates.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
@@ -32,7 +30,6 @@
     "@codemirror/view": "^6.38.0",
     "@lezer/highlight": "^1.2.1",
     "@lezer/markdown": "^1.4.3",
-    "@modelcontextprotocol/sdk": "^1.0.0",
     "@tauri-apps/api": "^2.2.0",
     "@tauri-apps/plugin-clipboard-manager": "^2.3.2",
     "@tauri-apps/plugin-dialog": "^2.0.0",
@@ -43,6 +40,8 @@
     "date-fns": "^4.1.0",
     "fuse.js": "^6.6.2",
     "pdfjs-dist": "5.4.530",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
     "zod": "^3.25.76"
   },
   "devDependencies": {

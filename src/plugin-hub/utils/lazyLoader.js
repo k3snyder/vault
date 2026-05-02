@@ -83,18 +83,29 @@ class LazyLoader {
 export class ViewLoader extends LazyLoader {
   constructor() {
     super();
-    this.viewBasePath = './views/';
+    this.viewModules = import.meta.glob('../views/*.js');
   }
   
   /**
    * Load a view dynamically
    */
   async loadView(viewName) {
-    const path = `${this.viewBasePath}${viewName}.js`;
+    const path = `../views/${viewName}.js`;
     
     try {
       console.log(`Loading view: ${viewName}`);
-      const ViewClass = await this.loadModule(path);
+      if (this.cache.has(path)) {
+        return this.cache.get(path);
+      }
+
+      const loader = this.viewModules[path];
+      if (!loader) {
+        throw new Error(`Unknown plugin hub view: ${viewName}`);
+      }
+
+      const module = await loader();
+      const ViewClass = module.default || module;
+      this.cache.set(path, ViewClass);
       return ViewClass;
     } catch (error) {
       console.error(`Failed to load view: ${viewName}`, error);
@@ -144,8 +155,7 @@ export class ViewLoader extends LazyLoader {
    */
   async preloadCommonViews() {
     const commonViews = ['InstalledView', 'DiscoverView'];
-    const paths = commonViews.map(view => `${this.viewBasePath}${view}.js`);
-    return this.preloadModules(paths);
+    return Promise.all(commonViews.map(view => this.loadView(view)));
   }
 }
 

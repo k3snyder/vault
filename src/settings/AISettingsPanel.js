@@ -1,5 +1,9 @@
 import { invoke } from '@tauri-apps/api/core';
 import { icons } from '../icons/icon-utils.js';
+import { BotckyGatewayNativeClient, normalizeGatewayApiKey } from '../botcky/botckyGatewayClient.js';
+
+const BOTCKY_GATEWAY_DEFAULT_ENDPOINT = 'http://127.0.0.1:7110';
+const BOTCKY_LEGACY_LOCAL_PORTS = new Set(['3002', '3005', '7112']);
 
 export class AISettingsPanel {
     constructor() {
@@ -19,6 +23,7 @@ export class AISettingsPanel {
             saving: false,
             testStatus: null,
             showAdvanced: false,
+            deletingBotckySessions: false,
             // Claude specific settings
             maxTurns: 10,
             // Tool permissions for Claude
@@ -44,8 +49,6 @@ export class AISettingsPanel {
         this.boundClickHandler = this.handleContainerClick.bind(this);
         this.boundChangeHandler = this.handleContainerChange.bind(this);
         this.boundInputHandler = this.handleContainerInput.bind(this);
-        this.boundMouseOverHandler = this.handleContainerMouseOver.bind(this);
-        this.boundMouseOutHandler = this.handleContainerMouseOut.bind(this);
     }
     
     async mount(container, callbacks = {}) {
@@ -81,15 +84,18 @@ export class AISettingsPanel {
             const settings = await invoke('get_ai_settings');
             if (settings) {
                 console.log('Loaded AI settings:', { ...settings, api_key: '***' });
-                const endpoint = settings.provider === 'botckyGateway'
+                const provider = settings.provider || this.state.provider;
+                const endpoint = provider === 'botckyGateway'
                     ? this.normalizeBotckyEndpoint(settings.endpoint)
                     : settings.endpoint;
                 // Convert snake_case to camelCase for frontend use
                 this.state = {
                     ...this.state,
-                    provider: settings.provider || this.state.provider,
+                    provider,
                     endpoint,
-                    apiKey: settings.api_key || '',
+                    apiKey: provider === 'botckyGateway'
+                        ? normalizeGatewayApiKey(settings.api_key, endpoint) || ''
+                        : settings.api_key || '',
                     model: settings.model,
                     temperature: settings.temperature,
                     maxTokens: settings.max_tokens,
@@ -119,10 +125,17 @@ export class AISettingsPanel {
             const endpoint = this.state.provider === 'botckyGateway'
                 ? this.normalizeBotckyEndpoint(this.state.endpoint)
                 : this.state.endpoint;
+            const apiKey = this.state.provider === 'botckyGateway'
+                ? normalizeGatewayApiKey(this.state.apiKey, endpoint)
+                : this.state.apiKey || null;
+            if (this.state.provider === 'botckyGateway') {
+                this.state.endpoint = endpoint;
+                this.state.apiKey = apiKey || '';
+            }
             const settings = {
                 provider: this.state.provider,
                 endpoint,
-                api_key: this.state.apiKey || null,
+                api_key: apiKey,
                 model: this.state.model,
                 temperature: this.state.temperature,
                 max_tokens: this.state.maxTokens,
@@ -157,6 +170,36 @@ export class AISettingsPanel {
         }
     }
     
+    async deleteAllBotckySessions() {
+        if (this.state.provider !== 'botckyGateway' || this.state.deletingBotckySessions) {
+            return;
+        }
+
+        const confirmed = typeof window.confirm === 'function'
+            ? window.confirm('Delete all Vault Botcky sessions? This cannot be undone.')
+            : true;
+        if (!confirmed) {
+            return;
+        }
+
+        this.state.deletingBotckySessions = true;
+        this.render();
+
+        try {
+            const endpoint = this.normalizeBotckyEndpoint(this.state.endpoint);
+            const apiKey = normalizeGatewayApiKey(this.state.apiKey, endpoint);
+            const client = new BotckyGatewayNativeClient({ endpoint, apiKey, WebSocketCtor: null });
+            const result = await client.deleteAllSessions({ platform: 'vault', status: null });
+            this.showNotification(`Deleted ${result.deleted} Botcky session${result.deleted === 1 ? '' : 's'}`, 'success');
+        } catch (error) {
+            console.error('Failed to delete Botcky sessions:', error);
+            this.showNotification('Failed to delete Botcky sessions: ' + error, 'error');
+        } finally {
+            this.state.deletingBotckySessions = false;
+            this.render();
+        }
+    }
+
     async testConnection() {
         this.state.testing = true;
         this.state.testStatus = null;
@@ -164,7 +207,7 @@ export class AISettingsPanel {
         
         try {
             if (this.state.provider === 'botckyGateway') {
-                this.state.testStatus = await this.testBotckyConnection();
+                this.state.testStatus = this.getBotckyNativeTestStatus();
                 return;
             }
 
@@ -198,136 +241,24 @@ export class AISettingsPanel {
         }
     }
 
-    async testBotckyConnection() {
+    getBotckyNativeTestStatus() {
         const endpoint = this.normalizeBotckyEndpoint(this.state.endpoint);
-        if (!endpoint) {
-            throw new Error('Botcky connector endpoint is required');
-        }
-
-        if (endpoint !== this.state.endpoint) {
-            this.state.endpoint = endpoint;
-        }
-
-        const wsUrl = new URL(
-            endpoint.startsWith('ws://') || endpoint.startsWith('wss://')
-                ? endpoint
-                : endpoint.startsWith('https://')
-                    ? `wss://${endpoint.slice('https://'.length)}`
-                    : endpoint.startsWith('http://')
-                        ? `ws://${endpoint.slice('http://'.length)}`
-                        : `ws://${endpoint}`
-        );
-        wsUrl.pathname = `${(wsUrl.pathname || '').replace(/\/+$/, '')}/ws/vault`.replace('//ws/vault', '/ws/vault');
-
-        const timezone = (() => {
-            try {
-                return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
-            } catch {
-                return 'UTC';
+        return {
+            overall_status: {
+                success: Boolean(endpoint),
+                message: endpoint
+                    ? 'Botcky native chat is configured. Save settings to switch the chat panel to Botcky.'
+                    : 'Botcky Gateway endpoint is required.'
+            },
+            endpoint_status: {
+                success: Boolean(endpoint),
+                message: endpoint
+                    ? `Native chat will connect to ${endpoint}/gateway/ws/chat.`
+                    : 'Enter the Botcky Gateway base URL.'
             }
-        })();
-        const handshakeId = `botcky_test_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-
-        return new Promise((resolve, reject) => {
-            let settled = false;
-            let socket = null;
-
-            const finish = (fn, value) => {
-                if (settled) return;
-                settled = true;
-                clearTimeout(timeoutId);
-                try {
-                    socket?.close(1000, 'test-complete');
-                } catch {
-                    // ignore close failures
-                }
-                fn(value);
-            };
-
-            const timeoutId = setTimeout(() => {
-                finish(reject, new Error('Timed out waiting for Botcky connector handshake'));
-            }, 10000);
-
-            try {
-                socket = new WebSocket(wsUrl.toString());
-            } catch (error) {
-                clearTimeout(timeoutId);
-                reject(error);
-                return;
-            }
-
-            socket.onopen = () => {
-                socket.send(JSON.stringify({
-                    type: 'client.hello',
-                    request_id: handshakeId,
-                    client_secret: this.state.apiKey || undefined,
-                    workspace_id: 'vault-desktop',
-                    vault_id: 'vault-test',
-                    user_id: 'test-user',
-                    thread_id: handshakeId,
-                    room_id: handshakeId,
-                    user_email: 'test@vault.local',
-                    timezone,
-                    default_priority: 'p2',
-                    is_main_session: true
-                }));
-            };
-
-            socket.onmessage = event => {
-                let message = null;
-                try {
-                    message = JSON.parse(event.data);
-                } catch {
-                    return;
-                }
-
-                if (!message || typeof message !== 'object') {
-                    return;
-                }
-
-                if (message.type === 'client.ready' || message.type === 'session.resumed') {
-                    finish(resolve, {
-                        endpoint_status: {
-                            stage: 'endpoint',
-                            success: true,
-                            message: 'Connector websocket reachable'
-                        },
-                        auth_status: {
-                            stage: 'auth',
-                            success: true,
-                            message: 'client.hello accepted'
-                        },
-                        model_status: {
-                            stage: 'model',
-                            success: true,
-                            message: 'Connector-managed in Botcky'
-                        },
-                        overall_status: {
-                            stage: 'overall',
-                            success: true,
-                            message: 'Botcky Vault connector reachable'
-                        }
-                    });
-                    return;
-                }
-
-                if (message.type === 'error') {
-                    const detail = message.detail || message.message || message.error || 'Connector returned an error';
-                    finish(reject, new Error(detail));
-                }
-            };
-
-            socket.onerror = () => {
-                finish(reject, new Error('Botcky connector websocket failed to open'));
-            };
-
-            socket.onclose = event => {
-                if (settled) return;
-                const detail = event?.reason || `Botcky connector websocket closed (${event?.code ?? 'unknown'})`;
-                finish(reject, new Error(detail));
-            };
-        });
+        };
     }
+
     
     async quickSetup(provider) {
         console.log('Quick setup for:', provider);
@@ -341,14 +272,17 @@ export class AISettingsPanel {
             console.log(`Loaded settings for ${provider}:`, { ...settings, api_key: '***' });
             
             // Update state with loaded settings
-            const endpoint = provider === 'botckyGateway'
+            const selectedProvider = settings.provider || provider;
+            const endpoint = selectedProvider === 'botckyGateway'
                 ? this.normalizeBotckyEndpoint(settings.endpoint)
                 : settings.endpoint;
             this.state = {
                 ...this.state,
-                provider: settings.provider || provider,
+                provider: selectedProvider,
                 endpoint,
-                apiKey: settings.api_key || '',
+                apiKey: selectedProvider === 'botckyGateway'
+                    ? normalizeGatewayApiKey(settings.api_key, endpoint) || ''
+                    : settings.api_key || '',
                 model: settings.model,
                 temperature: settings.temperature,
                 maxTokens: settings.max_tokens,
@@ -416,9 +350,9 @@ export class AISettingsPanel {
                 this.state.maxTurns = 10;
                 break;
             case 'botckyGateway':
-                this.state.endpoint = 'http://localhost:3005';
+                this.state.endpoint = BOTCKY_GATEWAY_DEFAULT_ENDPOINT;
                 this.state.model = 'botcky-agent';
-                this.state.apiKey = '';
+                this.state.apiKey = normalizeGatewayApiKey('', this.state.endpoint) || '';
                 this.state.temperature = 0.7;
                 this.state.maxTokens = 8000;
                 break;
@@ -507,8 +441,6 @@ export class AISettingsPanel {
         this.container.addEventListener('click', this.boundClickHandler);
         this.container.addEventListener('change', this.boundChangeHandler);
         this.container.addEventListener('input', this.boundInputHandler);
-        this.container.addEventListener('mouseover', this.boundMouseOverHandler);
-        this.container.addEventListener('mouseout', this.boundMouseOutHandler);
         this.listenersAttached = true;
     }
 
@@ -521,8 +453,6 @@ export class AISettingsPanel {
         this.container.removeEventListener('click', this.boundClickHandler);
         this.container.removeEventListener('change', this.boundChangeHandler);
         this.container.removeEventListener('input', this.boundInputHandler);
-        this.container.removeEventListener('mouseover', this.boundMouseOverHandler);
-        this.container.removeEventListener('mouseout', this.boundMouseOutHandler);
         this.listenersAttached = false;
     }
 
@@ -551,10 +481,8 @@ export class AISettingsPanel {
             case 'save-settings':
                 await this.saveSettings();
                 break;
-            case 'mcp-settings':
-                console.log('MCP button clicked');
-                console.log('window.mcpSettings:', window.mcpSettings);
-                window.mcpSettings?.show();
+            case 'delete-botcky-sessions':
+                await this.deleteAllBotckySessions();
                 break;
         }
     }
@@ -602,6 +530,27 @@ export class AISettingsPanel {
         }
 
         switch (target.dataset.action) {
+            case 'update-endpoint':
+                this.updateEndpoint(target.value);
+                break;
+            case 'update-api-key':
+                this.updateApiKey(target.value);
+                break;
+            case 'update-header-name':
+                this.updateHeaderName(target.value);
+                break;
+            case 'update-header-value':
+                this.updateHeaderValue(target.value);
+                break;
+            case 'update-model':
+                this.updateModel(target.value);
+                break;
+            case 'update-max-tokens':
+                this.updateMaxTokens(target.value);
+                break;
+            case 'update-system-prompt':
+                this.updateSystemPrompt(target.value);
+                break;
             case 'update-max-turns':
                 this.updateMaxTurns(target.value);
                 this.updateRangeLabel(target, 'Max Turns');
@@ -611,32 +560,6 @@ export class AISettingsPanel {
                 this.updateRangeLabel(target, 'Temperature');
                 break;
         }
-    }
-
-    handleContainerMouseOver(event) {
-        const button = event.target.closest('.mcp-settings-btn');
-        if (!button || !this.container.contains(button)) {
-            return;
-        }
-
-        if (event.relatedTarget && button.contains(event.relatedTarget)) {
-            return;
-        }
-
-        button.style.background = 'var(--bg-tertiary)';
-    }
-
-    handleContainerMouseOut(event) {
-        const button = event.target.closest('.mcp-settings-btn');
-        if (!button || !this.container.contains(button)) {
-            return;
-        }
-
-        if (event.relatedTarget && button.contains(event.relatedTarget)) {
-            return;
-        }
-
-        button.style.background = 'var(--bg-secondary)';
     }
 
     updateRangeLabel(input, labelText) {
@@ -678,8 +601,8 @@ export class AISettingsPanel {
             return 'Examples: Use model name from LM Studio';
         } else if (endpoint.includes('anthropic.com')) {
             return 'Examples: claude-sonnet-4-5-20250929, claude-opus-4-5-20251101, claude-haiku-3-5-20241022';
-        } else if (this.state.provider === 'botckyGateway' || endpoint.includes('3005') || endpoint.includes('vault-connector')) {
-            return 'Connector-managed in Botcky. Leave as botcky-agent unless your Botcky admin says otherwise.';
+        } else if (this.state.provider === 'botckyGateway' || endpoint.includes('7110')) {
+            return 'Botcky Gateway-native chat. Leave as botcky-agent unless your Botcky admin says otherwise.';
         }
         return 'Enter the model name for your AI provider';
     }
@@ -687,13 +610,22 @@ export class AISettingsPanel {
     normalizeBotckyEndpoint(endpoint) {
         const normalized = (endpoint || '').trim();
         if (!normalized) {
-            return 'http://localhost:3005';
+            return BOTCKY_GATEWAY_DEFAULT_ENDPOINT;
         }
 
         try {
-            const parsed = new URL(normalized);
-            if (parsed.port === '3002' && ['', '/', '/gateway'].includes(parsed.pathname || '')) {
-                parsed.port = '3005';
+            const parsed = new URL(/^https?:\/\//i.test(normalized) ? normalized : `http://${normalized}`);
+            const localHost = ['localhost', '127.0.0.1', '::1', '[::1]'].includes(parsed.hostname.toLowerCase());
+            const gatewayRootPath = ['', '/', '/gateway'].includes(parsed.pathname || '');
+            if (localHost && gatewayRootPath && BOTCKY_LEGACY_LOCAL_PORTS.has(parsed.port)) {
+                parsed.hostname = '127.0.0.1';
+                parsed.port = '7110';
+                parsed.pathname = '';
+                parsed.search = '';
+                parsed.hash = '';
+                return parsed.toString().replace(/\/$/, '');
+            }
+            if (gatewayRootPath && parsed.pathname === '/gateway') {
                 parsed.pathname = '';
                 parsed.search = '';
                 parsed.hash = '';
@@ -707,39 +639,58 @@ export class AISettingsPanel {
     }
 
     getEndpointLabel() {
-        return this.state.provider === 'botckyGateway' ? 'Connector Endpoint:' : 'API Endpoint:';
+        return this.state.provider === 'botckyGateway' ? 'Botcky Gateway Endpoint:' : 'API Endpoint:';
     }
 
     getEndpointPlaceholder() {
         return this.state.provider === 'botckyGateway'
-            ? 'http://localhost:3005'
+            ? BOTCKY_GATEWAY_DEFAULT_ENDPOINT
             : 'https://api.openai.com/v1';
     }
 
     getEndpointHelp() {
         return this.state.provider === 'botckyGateway'
-            ? 'Base URL for the Botcky Vault connector service'
+            ? 'Base URL for Botcky Gateway. Native chat uses /gateway/ws/chat.'
             : 'The base URL for your AI provider\'s API';
     }
 
     getApiKeyLabel() {
-        return this.state.provider === 'botckyGateway' ? 'Client Secret:' : 'API Key:';
+        return this.state.provider === 'botckyGateway' ? 'Gateway Frontend Key:' : 'API Key:';
     }
 
     getApiKeyPlaceholder() {
-        return this.state.provider === 'botckyGateway' ? 'connector secret' : 'sk-...';
+        return this.state.provider === 'botckyGateway' ? 'gateway frontend key' : 'sk-...';
     }
 
     getApiKeyHelp() {
         return this.state.provider === 'botckyGateway'
-            ? 'Matches VAULT_CLIENT_SHARED_SECRET on the Botcky Vault connector. Leave empty only if the connector allows unauthenticated clients.'
+            ? 'Sent as the Botcky Gateway frontend/API key for session and websocket auth. Local devstack defaults to dev-gateway-key.'
             : 'Leave empty for local AI servers';
     }
 
     getSystemPromptHelp() {
         return this.state.provider === 'botckyGateway'
-            ? 'Botcky connector-specific prompt additions come from .botcky.json system_prompt_append; this generic field is not sent to the connector.'
-            : 'This prompt will be used for all AI conversations. Dynamic content like MCP tools and tag context will be appended automatically.';
+            ? 'Native Botcky prompt context is assembled by Botcky Gateway from Vault context; this field is stored but not sent by the native Botcky UI.'
+            : 'This prompt will be used for all AI conversations. Dynamic content like tag context will be appended automatically.';
+    }
+
+    renderBotckySessionControls() {
+        if (this.state.provider !== 'botckyGateway') return '';
+        const endpoint = this.normalizeBotckyEndpoint(this.state.endpoint);
+        return `
+                    <div class="botcky-settings-note">
+                        <strong>Vault Botcky sessions</strong>
+                        <p>Session dropdown entries are loaded from <code>${endpoint}/gateway/chat/sessions?platform=vault&amp;status=active</code>. They are Vault-created Botcky Gateway threads, not dashboard sessions or Vault AI Chat exports.</p>
+                        <button
+                            type="button"
+                            data-action="delete-botcky-sessions"
+                            class="danger-btn"
+                            ${this.state.deletingBotckySessions ? 'disabled' : ''}
+                        >
+                            ${this.state.deletingBotckySessions ? 'Deleting sessions...' : 'Delete All Vault Botcky Sessions'}
+                        </button>
+                    </div>
+        `;
     }
     
     render() {
@@ -749,7 +700,7 @@ export class AISettingsPanel {
         window.aiSettingsPanel = this;
         
         this.container.innerHTML = `
-            <div class="ai-settings-panel">
+            <div class="ai-settings-panel ${this.state.provider === 'botckyGateway' ? 'botcky-provider-settings' : ''}">
                 <h2>AI Chat Settings</h2>
                 
                 <div class="quick-setup">
@@ -835,7 +786,9 @@ export class AISettingsPanel {
                         <small>${this.getApiKeyHelp()}</small>
                     </div>
                     
-                    <div class="form-group">
+                    ${this.renderBotckySessionControls()}
+                    
+                    <div class="form-group provider-legacy-field">
                         <label>Custom Header:</label>
                         <div style="display:flex; gap:8px;">
                             <input 
@@ -858,7 +811,7 @@ export class AISettingsPanel {
                     <small>Optional. Leave blanks to disable. Useful for proxies.</small>
                 </div>
 
-                    <div class="form-group">
+                    <div class="form-group provider-legacy-field">
                         <label>Model Name:</label>
                         <input 
                             type="text" 
@@ -917,7 +870,7 @@ export class AISettingsPanel {
                     </div>
                     ` : ''}
 
-                    <div class="form-group">
+                    <div class="form-group provider-legacy-field">
                         <label>System Prompt:</label>
                         <textarea 
                             value="${this.state.systemPrompt || 'You are a helpful AI assistant integrated into a note-taking app called Vault. You help users with their notes, writing, research, and questions. Always provide helpful, accurate, and relevant responses.'}"
@@ -929,7 +882,7 @@ export class AISettingsPanel {
                         <small>${this.getSystemPromptHelp()}</small>
                     </div>
                     
-                    <div class="advanced-section">
+                    <div class="advanced-section provider-legacy-field">
                         <button type="button" data-action="toggle-advanced" class="advanced-toggle">
                             ${this.state.showAdvanced ? '▼' : '▶'} Advanced Settings
                         </button>
@@ -987,30 +940,6 @@ export class AISettingsPanel {
                     
                     ${this.state.testStatus ? this.renderTestStatus() : ''}
                     
-                    <div class="mcp-section" style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-color);">
-                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <div>
-                                <h3 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600;">MCP Integration</h3>
-                                <p style="margin: 0; font-size: 12px; color: var(--text-secondary);">
-                                    Configure Model Context Protocol servers for enhanced AI capabilities
-                                </p>
-                            </div>
-                            <button type="button" data-action="mcp-settings" class="mcp-settings-btn" style="
-                                background: var(--bg-secondary);
-                                border: 1px solid var(--border-color);
-                                padding: 8px 16px;
-                                border-radius: 6px;
-                                cursor: pointer;
-                                font-size: 13px;
-                                display: flex;
-                                align-items: center;
-                                gap: 6px;
-                                transition: all 0.2s;
-                            ">
-                                ${icons.settings({ size: 14 })} MCP Settings
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
         `;

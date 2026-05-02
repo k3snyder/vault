@@ -479,7 +479,6 @@ async fn test_generate_complete_vault_api() {
     assert!(module_names.contains(&"vault"));
     assert!(module_names.contains(&"workspace"));
     assert!(module_names.contains(&"settings"));
-    assert!(module_names.contains(&"mcp"));
     assert!(module_names.contains(&"network"));
 }
 
@@ -524,7 +523,6 @@ async fn test_complete_type_package_generation() {
     assert!(index_content.contains("VaultAPI"));
     assert!(index_content.contains("WorkspaceAPI"));
     assert!(index_content.contains("SettingsAPI"));
-    assert!(index_content.contains("McpAPI"));
     assert!(index_content.contains("NetworkAPI"));
     assert!(index_content.contains("PluginManifest"));
     assert!(index_content.contains("abstract class Plugin"));

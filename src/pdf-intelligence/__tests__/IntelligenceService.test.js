@@ -1,5 +1,5 @@
 // IntelligenceService.test.js - Unit tests for IntelligenceService
-import { jest, describe, it, expect, beforeEach, afterEach } from '@jest/globals'
+import { jest, describe, it, expect, beforeEach } from '@jest/globals'
 
 // Import service (invoke is mocked via moduleNameMapper)
 import { IntelligenceService } from '../IntelligenceService.js'
@@ -9,28 +9,7 @@ describe('IntelligenceService', () => {
   const testPdfPath = '/test/document.pdf'
 
   beforeEach(() => {
-    // Mock window.windowContext with mcpManager
     global.window = global.window || {}
-    global.window.windowContext = {
-      getComponent: jest.fn((name) => {
-        if (name === 'mcpManager') {
-          return {
-            invokeTool: jest.fn().mockResolvedValue({
-              classifications: {},
-              extractions: {},
-              summaries: {}
-            })
-          }
-        }
-        return null
-      })
-    }
-  })
-
-  afterEach(() => {
-    if (global.window && global.window.windowContext) {
-      delete global.window.windowContext
-    }
   })
 
   describe('constructor', () => {
@@ -40,28 +19,6 @@ describe('IntelligenceService', () => {
       expect(service.pdfPath).toBe(testPdfPath)
       expect(service.result).toBeNull()
       expect(service.listeners).toBeInstanceOf(Set)
-    })
-  })
-
-  describe('mapVisionProvider', () => {
-    beforeEach(() => {
-      service = new IntelligenceService(testPdfPath)
-    })
-
-    it('should map geminiVision to gemini', () => {
-      expect(service.mapVisionProvider('geminiVision')).toBe('gemini')
-    })
-
-    it('should map openaiVision to openai', () => {
-      expect(service.mapVisionProvider('openaiVision')).toBe('openai')
-    })
-
-    it('should map ollamaVision to ollama', () => {
-      expect(service.mapVisionProvider('ollamaVision')).toBe('ollama')
-    })
-
-    it('should pass through unknown modes', () => {
-      expect(service.mapVisionProvider('deepseekOcr')).toBe('deepseekOcr')
     })
   })
 

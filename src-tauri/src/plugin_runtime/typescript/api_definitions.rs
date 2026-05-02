@@ -13,7 +13,6 @@ impl TypeScriptGenerator {
                 Self::create_vault_module(),
                 Self::create_workspace_module(),
                 Self::create_settings_module(),
-                Self::create_mcp_module(),
                 Self::create_network_module(),
             ],
         }
@@ -360,93 +359,6 @@ impl TypeScriptGenerator {
                 },
             ],
             interfaces: vec![],
-            types: vec![],
-        }
-    }
-
-    /// Create MCP API module
-    fn create_mcp_module() -> ApiModule {
-        ApiModule {
-            name: "mcp".to_string(),
-            description: "Model Context Protocol integration".to_string(),
-            methods: vec![
-                ApiMethod {
-                    name: "listTools".to_string(),
-                    description: "List available MCP tools".to_string(),
-                    params: vec![ApiParam {
-                        name: "server".to_string(),
-                        type_def: "string".to_string(),
-                        required: false,
-                        description: "Specific server name (optional)".to_string(),
-                    }],
-                    returns: "Promise<McpTool[]>".to_string(),
-                    permissions: vec!["mcp:read".to_string()],
-                },
-                ApiMethod {
-                    name: "callTool".to_string(),
-                    description: "Call an MCP tool".to_string(),
-                    params: vec![
-                        ApiParam {
-                            name: "name".to_string(),
-                            type_def: "string".to_string(),
-                            required: true,
-                            description: "Tool name".to_string(),
-                        },
-                        ApiParam {
-                            name: "args".to_string(),
-                            type_def: "Record<string, any>".to_string(),
-                            required: false,
-                            description: "Tool arguments".to_string(),
-                        },
-                    ],
-                    returns: "Promise<McpResponse>".to_string(),
-                    permissions: vec!["mcp:execute".to_string()],
-                },
-            ],
-            interfaces: vec![
-                InterfaceDefinition {
-                    name: "McpTool".to_string(),
-                    description: "MCP tool definition".to_string(),
-                    properties: vec![
-                        PropertyDefinition {
-                            name: "name".to_string(),
-                            type_def: "string".to_string(),
-                            optional: false,
-                            description: "Tool name".to_string(),
-                        },
-                        PropertyDefinition {
-                            name: "description".to_string(),
-                            type_def: "string".to_string(),
-                            optional: false,
-                            description: "Tool description".to_string(),
-                        },
-                        PropertyDefinition {
-                            name: "schema".to_string(),
-                            type_def: "Record<string, any>".to_string(),
-                            optional: false,
-                            description: "Tool input schema".to_string(),
-                        },
-                    ],
-                },
-                InterfaceDefinition {
-                    name: "McpResponse".to_string(),
-                    description: "MCP tool response".to_string(),
-                    properties: vec![
-                        PropertyDefinition {
-                            name: "content".to_string(),
-                            type_def: "any".to_string(),
-                            optional: false,
-                            description: "Response content".to_string(),
-                        },
-                        PropertyDefinition {
-                            name: "isError".to_string(),
-                            type_def: "boolean".to_string(),
-                            optional: false,
-                            description: "Whether response is an error".to_string(),
-                        },
-                    ],
-                },
-            ],
             types: vec![],
         }
     }

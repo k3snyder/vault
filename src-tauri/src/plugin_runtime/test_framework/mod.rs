@@ -143,7 +143,6 @@ pub struct PluginTestHarness {
     mock_vault: MockVaultApi,
     mock_workspace: MockWorkspaceApi,
     mock_settings: MockSettingsApi,
-    mock_mcp: MockMcpApi,
     mock_network: MockNetworkApi,
     time_controller: TimeController,
     coverage_collector: Option<CoverageCollector>,
@@ -170,7 +169,6 @@ impl PluginTestHarness {
             mock_vault: MockVaultApi::new(),
             mock_workspace: MockWorkspaceApi::new(),
             mock_settings: MockSettingsApi::new(),
-            mock_mcp: MockMcpApi::new(),
             mock_network: MockNetworkApi::new(),
             time_controller: TimeController::new(config.time_control),
             coverage_collector,
@@ -345,11 +343,6 @@ impl PluginTestHarness {
     /// Get mock settings API
     pub fn mock_settings(&mut self) -> &mut MockSettingsApi {
         &mut self.mock_settings
-    }
-
-    /// Get mock MCP API
-    pub fn mock_mcp(&mut self) -> &mut MockMcpApi {
-        &mut self.mock_mcp
     }
 
     /// Get mock network API
@@ -548,41 +541,6 @@ impl MockSettingsApi {
     pub async fn delete(&mut self, key: &str) -> Result<(), TestError> {
         self.settings.write().await.remove(key);
         Ok(())
-    }
-}
-
-/// Mock MCP API
-pub struct MockMcpApi {
-    tools: Arc<RwLock<HashMap<String, Box<dyn Fn(Value) -> Value + Send + Sync>>>>,
-}
-
-impl MockMcpApi {
-    fn new() -> Self {
-        Self {
-            tools: Arc::new(RwLock::new(HashMap::new())),
-        }
-    }
-
-    pub async fn register_tool<F>(&mut self, name: &str, handler: F)
-    where
-        F: Fn(Value) -> Value + Send + Sync + 'static,
-    {
-        self.tools
-            .write()
-            .await
-            .insert(name.to_string(), Box::new(handler));
-    }
-
-    pub async fn call_tool(&self, name: &str, params: Value) -> Result<Value, TestError> {
-        let tools = self.tools.read().await;
-        if let Some(handler) = tools.get(name) {
-            Ok(handler(params))
-        } else {
-            Err(TestError::ExecutionFailed(format!(
-                "Tool not found: {}",
-                name
-            )))
-        }
     }
 }
 

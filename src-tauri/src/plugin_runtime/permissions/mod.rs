@@ -38,9 +38,6 @@ pub enum Capability {
     GraphWrite,
     GraphQuery,
 
-    // MCP access
-    McpInvoke { tools: Vec<String> },
-
     // Network access
     NetworkAccess { domains: Vec<String> },
 
@@ -239,12 +236,6 @@ impl PermissionManager {
                     let domain = perm.strip_prefix("network:").unwrap();
                     Capability::NetworkAccess {
                         domains: vec![domain.to_string()],
-                    }
-                }
-                perm if perm.starts_with("mcp:") => {
-                    let tool = perm.strip_prefix("mcp:").unwrap();
-                    Capability::McpInvoke {
-                        tools: vec![tool.to_string()],
                     }
                 }
                 _ => return Err(PermissionError::InvalidPermission(perm_str.clone())),
@@ -664,11 +655,10 @@ mod tests {
             "vault:read".to_string(),
             "workspace:write".to_string(),
             "network:https://api.example.com".to_string(),
-            "mcp:readwise".to_string(),
         ];
 
         let capabilities = manager.parse_permission_strings(&permissions).unwrap();
-        assert_eq!(capabilities.len(), 4);
+        assert_eq!(capabilities.len(), 3);
 
         // Test invalid permission
         let invalid = vec!["invalid:permission".to_string()];

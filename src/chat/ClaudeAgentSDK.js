@@ -178,7 +178,7 @@ export class ClaudeAgentSDK {
     // Define tools in Claude API format
     this.tools = [
       {
-        name: "mcp__vault__search_notes",
+        name: "vault__search_notes",
         description: "Search through notes in the vault by name. Returns matching note names and paths.",
         input_schema: {
           type: "object",
@@ -190,7 +190,7 @@ export class ClaudeAgentSDK {
         }
       },
       {
-        name: "mcp__vault__get_note",
+        name: "vault__get_note",
         description: "Read the content of a specific note by its path. Returns the full markdown content.",
         input_schema: {
           type: "object",
@@ -201,7 +201,7 @@ export class ClaudeAgentSDK {
         }
       },
       {
-        name: "mcp__vault__get_current_note",
+        name: "vault__get_current_note",
         description: "Get the content of the note currently open in the editor. Returns the note's path, title, and content.",
         input_schema: {
           type: "object",
@@ -209,7 +209,7 @@ export class ClaudeAgentSDK {
         }
       },
       {
-        name: "mcp__vault__list_tags",
+        name: "vault__list_tags",
         description: "List all tags used in the vault. Returns tag names with their usage counts.",
         input_schema: {
           type: "object",
@@ -219,7 +219,7 @@ export class ClaudeAgentSDK {
         }
       },
       {
-        name: "mcp__vault__notes_by_tag",
+        name: "vault__notes_by_tag",
         description: "Find all notes that have a specific tag.",
         input_schema: {
           type: "object",
@@ -231,7 +231,7 @@ export class ClaudeAgentSDK {
         }
       },
       {
-        name: "mcp__vault__semantic_search",
+        name: "vault__semantic_search",
         description: "Search notes using semantic/meaning-based search (requires premium).",
         input_schema: {
           type: "object",
@@ -243,7 +243,7 @@ export class ClaudeAgentSDK {
         }
       },
       {
-        name: "mcp__vault__write_note",
+        name: "vault__write_note",
         description: "Create a new note in the vault with the specified content.",
         input_schema: {
           type: "object",
@@ -255,7 +255,7 @@ export class ClaudeAgentSDK {
         }
       },
       {
-        name: "mcp__vault__update_note",
+        name: "vault__update_note",
         description: "Replace the entire content of an existing note.",
         input_schema: {
           type: "object",
@@ -267,7 +267,7 @@ export class ClaudeAgentSDK {
         }
       },
       {
-        name: "mcp__vault__append_to_note",
+        name: "vault__append_to_note",
         description: "Append content to the end of an existing note.",
         input_schema: {
           type: "object",
@@ -280,7 +280,7 @@ export class ClaudeAgentSDK {
       },
       // CSV Editor Pro tools (Premium features)
       {
-        name: "mcp__vault__list_csv_files",
+        name: "vault__list_csv_files",
         description: "List all CSV files in the vault. Returns file information including path, name, size, and whether a schema exists.",
         input_schema: {
           type: "object",
@@ -288,7 +288,7 @@ export class ClaudeAgentSDK {
         }
       },
       {
-        name: "mcp__vault__get_csv_schema",
+        name: "vault__get_csv_schema",
         description: "Get the schema for a CSV file. Returns column definitions with data types, semantic roles, and descriptions. Premium feature - creates schema if missing when createIfMissing is true.",
         input_schema: {
           type: "object",
@@ -300,7 +300,7 @@ export class ClaudeAgentSDK {
         }
       },
       {
-        name: "mcp__vault__get_csv_context",
+        name: "vault__get_csv_context",
         description: "Get AI-optimized context for a CSV file. Returns rich metadata including schema summary, column descriptions, sample data as markdown table, and relationship context. Premium feature - ideal for understanding CSV structure before analysis.",
         input_schema: {
           type: "object",
@@ -315,19 +315,19 @@ export class ClaudeAgentSDK {
 
     // Register tool handlers - All use secure Rust backend commands
     this.toolHandlers = {
-      "mcp__vault__search_notes": this.handleSearchNotes.bind(this),
-      "mcp__vault__get_note": this.handleGetNote.bind(this),
-      "mcp__vault__get_current_note": this.handleGetCurrentNote.bind(this),
-      "mcp__vault__list_tags": this.handleListTags.bind(this),
-      "mcp__vault__notes_by_tag": this.handleNotesByTag.bind(this),
-      "mcp__vault__semantic_search": this.handleSemanticSearch.bind(this),
-      "mcp__vault__write_note": this.handleWriteNote.bind(this),
-      "mcp__vault__update_note": this.handleUpdateNote.bind(this),
-      "mcp__vault__append_to_note": this.handleAppendToNote.bind(this),
+      "vault__search_notes": this.handleSearchNotes.bind(this),
+      "vault__get_note": this.handleGetNote.bind(this),
+      "vault__get_current_note": this.handleGetCurrentNote.bind(this),
+      "vault__list_tags": this.handleListTags.bind(this),
+      "vault__notes_by_tag": this.handleNotesByTag.bind(this),
+      "vault__semantic_search": this.handleSemanticSearch.bind(this),
+      "vault__write_note": this.handleWriteNote.bind(this),
+      "vault__update_note": this.handleUpdateNote.bind(this),
+      "vault__append_to_note": this.handleAppendToNote.bind(this),
       // CSV Editor Pro handlers
-      "mcp__vault__list_csv_files": this.handleListCsvFiles.bind(this),
-      "mcp__vault__get_csv_schema": this.handleGetCsvSchema.bind(this),
-      "mcp__vault__get_csv_context": this.handleGetCsvContext.bind(this)
+      "vault__list_csv_files": this.handleListCsvFiles.bind(this),
+      "vault__get_csv_schema": this.handleGetCsvSchema.bind(this),
+      "vault__get_csv_context": this.handleGetCsvContext.bind(this)
     };
 
     console.log('Created', this.tools.length, 'tool definitions');

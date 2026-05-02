@@ -1,7 +1,7 @@
 /// Tauri commands for PDF intelligence
 ///
 /// This module provides IPC commands for PDF text extraction, storage, and export.
-/// Text extraction only; advanced features (tables, images, vision) handled by MCP server.
+/// Text extraction only; advanced features (tables, images, vision) intentionally omitted from text extraction.
 use std::collections::HashMap;
 use std::path::Path;
 use std::time::Instant;
@@ -13,7 +13,7 @@ use crate::pdf_intelligence::{
 
 /// Extract intelligence from a PDF file (V1 schema)
 ///
-/// Extracts text content from all pages. Tables and images are empty (handled by MCP).
+/// Extracts text content from all pages. Tables and images are empty (not extracted here).
 ///
 /// # Arguments
 /// * `pdf_path` - Absolute path to the PDF file
@@ -51,7 +51,7 @@ pub async fn extract_pdf_intelligence(
 
     let total_pages = page_texts.len() as u32;
 
-    // Build pages with text only (tables/images empty for MCP to fill)
+    // Build pages with text only (tables/images empty for future native enrichment)
     let pages: Vec<crate::pdf_intelligence::ExtractedPage> = page_texts
         .iter()
         .enumerate()
@@ -94,7 +94,7 @@ pub async fn extract_pdf_intelligence(
 /// Returns a flattened structure where each page is an enriched chunk containing:
 /// - chunk_id: "chunk_1", "chunk_2", etc.
 /// - text: Extracted text content
-/// - Empty enrichment fields (to be filled by MCP server)
+/// - Empty enrichment fields (reserved for future native enrichment)
 ///
 /// # Arguments
 /// * `pdf_path` - Absolute path to the PDF file
@@ -132,7 +132,7 @@ pub async fn extract_pdf_intelligence_v2(
 
     let total_pages = page_texts.len() as u32;
 
-    // Build enriched chunks with text only (enrichments empty for MCP to fill)
+    // Build enriched chunks with text only (enrichments empty for future native enrichment)
     let chunks: Vec<EnrichedChunk> = page_texts
         .iter()
         .enumerate()

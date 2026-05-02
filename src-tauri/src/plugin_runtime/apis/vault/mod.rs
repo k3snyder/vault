@@ -71,9 +71,6 @@ pub enum VaultError {
 
     #[error("Watch error: {0}")]
     WatchError(String),
-
-    #[error("MCP error: {0}")]
-    McpError(String),
 }
 
 /// Vault API implementation
@@ -81,7 +78,6 @@ pub struct VaultApi {
     vault_path: PathBuf,
     permission_manager: Arc<RwLock<PermissionManager>>,
     watchers: Arc<RwLock<HashMap<String, notify::RecommendedWatcher>>>,
-    use_mcp: Arc<RwLock<bool>>,
 }
 
 impl VaultApi {
@@ -91,7 +87,6 @@ impl VaultApi {
             vault_path,
             permission_manager,
             watchers: Arc::new(RwLock::new(HashMap::new())),
-            use_mcp: Arc::new(RwLock::new(false)),
         }
     }
 
@@ -128,12 +123,6 @@ impl VaultApi {
             .grant_permissions(plugin_id, vec![perm])
             .await
             .unwrap();
-    }
-
-    /// Set whether to use MCP filesystem server
-    pub async fn set_mcp_mode(&self, use_mcp: bool) {
-        let mut mcp = self.use_mcp.write().await;
-        *mcp = use_mcp;
     }
 
     /// Validate and normalize a path
@@ -205,14 +194,6 @@ impl VaultApi {
             .await?;
         let full_path = self.validate_path(path)?;
 
-        // Check if we should use MCP
-        let use_mcp = *self.use_mcp.read().await;
-        if use_mcp {
-            // TODO: Implement MCP filesystem call
-            // For now, fall back to direct access
-        }
-
-        // Direct filesystem access
         fs::read_to_string(full_path)
             .await
             .map_err(|e| VaultError::IoError(e.to_string()))
