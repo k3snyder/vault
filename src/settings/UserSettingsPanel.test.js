@@ -21,7 +21,12 @@ function makeVaultSettings(wysiwygMode = true) {
       line_numbers: false,
       line_wrapping: true,
       show_status_bar: true,
-      wysiwyg_mode: wysiwygMode
+      wysiwyg_mode: wysiwygMode,
+      theme_overrides: {
+        enabled: false,
+        light: {},
+        dark: {}
+      }
     },
     files: {
       image_location: 'Files/',
@@ -90,5 +95,42 @@ describe('UserSettingsPanel lifecycle', () => {
     expect(panel.state.editor.wysiwygMode).toBe(true)
     expect(panel.state.isDirty).toBe(true)
     expect(secondContainer.querySelector('[data-action="save-settings"]').disabled).toBe(false)
+  })
+
+  test('persists advanced theme override colors with vault settings', async () => {
+    const savedPayloads = []
+    invoke.mockImplementation(async (command, payload) => {
+      if (command === 'get_vault_settings') {
+        return makeVaultSettings(true)
+      }
+      if (command === 'save_vault_settings') {
+        savedPayloads.push(payload.settings)
+        return makeVaultSettings(true)
+      }
+      throw new Error(`Unexpected invoke command: ${command}`)
+    })
+
+    const panel = new UserSettingsPanel()
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+    await panel.mount(container)
+
+    const themeSelect = container.querySelector('[data-setting="theme"]')
+    themeSelect.value = 'dark'
+    themeSelect.dispatchEvent(new Event('change', { bubbles: true }))
+
+    const toggle = container.querySelector('[data-action="toggle-theme-overrides"]')
+    toggle.checked = true
+    toggle.dispatchEvent(new Event('change', { bubbles: true }))
+
+    const accentInput = container.querySelector('[data-action="update-theme-override"][data-override-key="accent"]')
+    accentInput.value = '#88aadd'
+    accentInput.dispatchEvent(new Event('change', { bubbles: true }))
+
+    await panel.saveSettings()
+
+    expect(savedPayloads).toHaveLength(1)
+    expect(savedPayloads[0].editor.theme_overrides.enabled).toBe(true)
+    expect(savedPayloads[0].editor.theme_overrides.dark.accent).toBe('#88AADD')
   })
 })

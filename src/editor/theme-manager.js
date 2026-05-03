@@ -2,12 +2,14 @@ import { invoke } from '@tauri-apps/api/core'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { EditorView } from '@codemirror/view'
 import { applyTheme as applyTokenTheme } from '../tokens/css-generator.js'
+import { applyThemeOverrides, getThemeOverrideColor, normalizeThemeOverrides } from '../tokens/theme-overrides.js'
 
 export class ThemeManager {
   constructor(editor) {
     this.editor = editor
     this.themes = new Map()
     this.activeTheme = 'default'
+    this.themeOverrides = normalizeThemeOverrides()
     this.loadBuiltInThemes()
   }
 
@@ -87,32 +89,32 @@ export class ThemeManager {
       name: 'Gaimplan Dark',
       type: 'dark',
       variables: {
-        '--editor-text-color': '#dcddde',
-        '--editor-bg-color': '#202020',
-        '--editor-selection-bg': '#404040',
-        '--editor-caret-color': '#7c3aed',
-        '--editor-gutter-bg': '#1a1a1a',
-        '--editor-gutter-color': '#666666',
-        '--editor-gutter-border': '#2a2a2a',
-        '--editor-active-line-bg': '#2a2a2a',
-        '--editor-active-line-gutter-bg': '#2a2a2a',
+        '--editor-text-color': '#E8E3DA',
+        '--editor-bg-color': '#141412',
+        '--editor-selection-bg': 'rgba(127, 166, 214, 0.24)',
+        '--editor-caret-color': '#7FA6D6',
+        '--editor-gutter-bg': '#12110F',
+        '--editor-gutter-color': '#847F75',
+        '--editor-gutter-border': 'rgba(255, 255, 255, 0.095)',
+        '--editor-active-line-bg': 'rgba(255, 255, 255, 0.045)',
+        '--editor-active-line-gutter-bg': 'rgba(255, 255, 255, 0.045)',
         '--editor-font-family': "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
         '--editor-font-size': '16px',
         '--editor-line-height': '1.7',
         '--editor-padding': '24px 32px',
         
-        '--md-heading-color': '#ffffff',
+        '--md-heading-color': '#EEECE6',
         '--md-heading-weight': '600',
-        '--md-heading-border': '#404040',
-        '--md-link-color': '#60a5fa',
-        '--md-link-hover-color': '#93c5fd',
-        '--md-code-bg': '#2a2a2a',
-        '--md-code-color': '#ff6b6b',
-        '--md-code-block-bg': '#1a1a1a',
-        '--md-code-block-border': '#404040',
-        '--md-quote-border': '#60a5fa',
-        '--md-quote-bg': 'rgba(96, 165, 250, 0.08)',
-        '--md-quote-color': '#b3b3b3'
+        '--md-heading-border': 'rgba(255, 255, 255, 0.095)',
+        '--md-link-color': '#7FA6D6',
+        '--md-link-hover-color': '#9BBCE0',
+        '--md-code-bg': '#20201D',
+        '--md-code-color': '#fca5a5',
+        '--md-code-block-bg': '#12110F',
+        '--md-code-block-border': 'rgba(255, 255, 255, 0.095)',
+        '--md-quote-border': '#7FA6D6',
+        '--md-quote-bg': 'rgba(127, 166, 214, 0.08)',
+        '--md-quote-color': '#C8C3B8'
       }
     })
 
@@ -219,8 +221,13 @@ export class ThemeManager {
     this.editor = editor;
   }
 
-  applyTheme(themeName) {
+  setThemeOverrides(overrides) {
+    this.themeOverrides = normalizeThemeOverrides(overrides)
+  }
+
+  applyTheme(themeName, themeOverrides = this.themeOverrides) {
     console.log(`[ThemeManager] applyTheme called with: "${themeName}"`)
+    this.setThemeOverrides(themeOverrides)
     const theme = this.themes.get(themeName)
     if (!theme) {
       console.warn(`[ThemeManager] Theme "${themeName}" not found, using default`)
@@ -234,12 +241,12 @@ export class ThemeManager {
       console.log(`[ThemeManager] Calling applyTokenTheme('light')`)
       applyTokenTheme('light')
       // Update Tauri window background for light theme
-      this.updateWindowBackground('#ffffff', 'light')
+      this.updateWindowBackground(getThemeOverrideColor(themeName, this.themeOverrides, 'background') || '#ffffff', 'light')
     } else if (themeName === 'dark') {
       console.log(`[ThemeManager] Calling applyTokenTheme('dark')`)
       applyTokenTheme('dark')
       // Update Tauri window background for dark theme
-      this.updateWindowBackground('#1C1C1E', 'dark')
+      this.updateWindowBackground(getThemeOverrideColor(themeName, this.themeOverrides, 'background') || '#12110F', 'dark')
     } else {
       console.log(`[ThemeManager] Theme "${themeName}" is not light/dark, skipping token system`)
     }
@@ -251,6 +258,7 @@ export class ThemeManager {
     Object.entries(theme.variables).forEach(([key, value]) => {
       root.style.setProperty(key, value)
     })
+    applyThemeOverrides(themeName, this.themeOverrides, root)
 
     // Update CodeMirror theme compartment if editor exists
     if (this.editor && this.editor.view) {

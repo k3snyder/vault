@@ -401,3 +401,130 @@ textarea.form-input {
 .botcky-provider-settings .provider-legacy-field {
     display: none;
 }
+
+/* Dark theme: keep AI settings inside the same soft charcoal system as the app shell. */
+[data-theme="dark"] .ai-settings-panel {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .ai-settings-panel h2 {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .quick-setup,
+[data-theme="dark"] .settings-form,
+[data-theme="dark"] .advanced-settings {
+    background: var(--bg-secondary);
+    border-color: var(--border-primary);
+}
+
+[data-theme="dark"] .quick-setup p,
+[data-theme="dark"] .quick-setup-info .info,
+[data-theme="dark"] .form-group small,
+[data-theme="dark"] .advanced-toggle {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .quick-setup-btn,
+[data-theme="dark"] .toggle-visibility-btn,
+[data-theme="dark"] .test-btn {
+    background: var(--bg-tertiary);
+    border-color: var(--border-input);
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .quick-setup-btn:hover,
+[data-theme="dark"] .toggle-visibility-btn:hover,
+[data-theme="dark"] .test-btn:hover:not(:disabled) {
+    background: var(--bg-elevated);
+    border-color: var(--border-input-focus);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .quick-setup-btn.selected {
+    background: var(--accent-bg);
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+}
+
+[data-theme="dark"] .quick-setup-btn.active {
+    border-color: var(--success-text);
+}
+
+[data-theme="dark"] .quick-setup-btn.active.selected,
+[data-theme="dark"] .save-btn {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: var(--text-inverse);
+}
+
+[data-theme="dark"] .save-btn:hover {
+    background: var(--accent-hover);
+    box-shadow: 0 2px 8px var(--shadow-md);
+}
+
+[data-theme="dark"] .form-group label {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .form-input {
+    background: var(--bg-tertiary);
+    border-color: var(--border-input);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .form-input:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px var(--accent-bg);
+}
+
+[data-theme="dark"] .advanced-section,
+[data-theme="dark"] .form-actions {
+    border-top-color: var(--border-secondary);
+}
+
+[data-theme="dark"] .test-status.success {
+    background: var(--success-bg);
+    border-color: var(--success-border);
+    color: var(--success-text);
+}
+
+[data-theme="dark"] .test-status.error {
+    background: var(--error-bg);
+    border-color: var(--error-border);
+    color: var(--error-text);
+}
+
+[data-theme="dark"] .notification {
+    background: var(--bg-elevated);
+    border-color: var(--border-primary);
+    color: var(--text-primary);
+    box-shadow: 0 8px 24px var(--shadow-lg);
+}
+
+[data-theme="dark"] .botcky-settings-note {
+    background: var(--accent-bg);
+    border-color: var(--border-input-focus);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .botcky-settings-note p {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .botcky-settings-note code {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .danger-btn {
+    background: rgba(248, 113, 113, 0.08);
+    border-color: rgba(248, 113, 113, 0.30);
+    color: var(--error-text);
+}
+
+[data-theme="dark"] .danger-btn:hover:not(:disabled),
+[data-theme="dark"] .danger-btn:focus-visible:not(:disabled) {
+    background: rgba(248, 113, 113, 0.14);
+    border-color: rgba(248, 113, 113, 0.45);
+}

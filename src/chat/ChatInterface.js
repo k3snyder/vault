@@ -18,6 +18,8 @@ export class ChatInterface {
     this.contextDialogOverlay = null;
     this.activeToolCards = new Map(); // Track tool cards by ID
     this.onMessagesChanged = null;
+    this.scrollRevealTimer = null;
+    this.handleMessagesScroll = this.handleMessagesScroll.bind(this);
 
     // Load saved messages
     this.loadMessages();
@@ -95,6 +97,7 @@ export class ChatInterface {
     // Messages container
     this.messagesContainer = document.createElement('div');
     this.messagesContainer.className = 'chat-messages';
+    this.messagesContainer.addEventListener('scroll', this.handleMessagesScroll, { passive: true });
     
     // Show welcome message or render saved messages
     if (this.messages.length === 0) {
@@ -1170,7 +1173,22 @@ export class ChatInterface {
   getMessages() {
     return this.messages;
   }
-  
+
+  handleMessagesScroll() {
+    if (!this.messagesContainer) return;
+
+    this.messagesContainer.classList.add('is-scrolling');
+    if (this.scrollRevealTimer) {
+      clearTimeout(this.scrollRevealTimer);
+    }
+    this.scrollRevealTimer = setTimeout(() => {
+      if (this.messagesContainer) {
+        this.messagesContainer.classList.remove('is-scrolling');
+      }
+      this.scrollRevealTimer = null;
+    }, 900);
+  }
+
   scrollToTop() {
     setTimeout(() => {
       if (this.messagesContainer) {

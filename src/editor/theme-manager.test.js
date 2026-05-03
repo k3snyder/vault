@@ -54,7 +54,7 @@ describe('ThemeManager', () => {
     manager.applyTheme('dark')
     await Promise.resolve()
 
-    expect(setBackgroundColor).toHaveBeenCalledWith('#1C1C1E')
+    expect(setBackgroundColor).toHaveBeenCalledWith('#12110F')
     expect(setTheme).toHaveBeenCalledWith('dark')
   })
 })

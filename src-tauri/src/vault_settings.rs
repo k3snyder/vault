@@ -24,9 +24,42 @@ pub struct EditorSettings {
     #[serde(default = "default_font_color")]
     pub font_color: String,
     pub theme: String,
+    #[serde(default)]
+    pub theme_overrides: ThemeOverrides,
     pub line_numbers: bool,
     pub line_wrapping: bool,
     pub show_status_bar: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+pub struct ThemeOverrides {
+    #[serde(default)]
+    pub enabled: bool,
+    #[serde(default)]
+    pub light: ThemeOverridePalette,
+    #[serde(default)]
+    pub dark: ThemeOverridePalette,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ThemeOverridePalette {
+    #[serde(default)]
+    pub background: String,
+    #[serde(default)]
+    pub surface: String,
+    #[serde(default)]
+    pub control: String,
+    #[serde(default)]
+    pub editor: String,
+    #[serde(default)]
+    pub text: String,
+    #[serde(default)]
+    pub muted_text: String,
+    #[serde(default)]
+    pub accent: String,
+    #[serde(default)]
+    pub active_line: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -63,6 +96,7 @@ impl Default for EditorSettings {
             font_family: "'SF Mono', Monaco, 'Cascadia Code', monospace".to_string(),
             font_color: default_font_color(),
             theme: "default".to_string(),
+            theme_overrides: ThemeOverrides::default(),
             line_numbers: false,
             line_wrapping: true,
             show_status_bar: true,
@@ -278,7 +312,8 @@ pub async fn validate_image_location(
 #[cfg(test)]
 mod tests {
     use super::{
-        normalize_image_location, normalize_image_reference, EditorSettings, VaultSettings,
+        normalize_image_location, normalize_image_reference, EditorSettings, ThemeOverridePalette,
+        ThemeOverrides, VaultSettings,
     };
 
     #[test]
@@ -320,6 +355,25 @@ mod tests {
         let defaults = VaultSettings::default();
         assert_eq!(defaults.editor.font_color, "#1f2937");
         assert!(!defaults.editor.line_numbers);
+    }
+
+    #[test]
+    fn theme_overrides_serialize_palette_keys_for_frontend() {
+        let overrides = ThemeOverrides {
+            enabled: true,
+            dark: ThemeOverridePalette {
+                muted_text: "#918B80".to_string(),
+                active_line: "#1B1A17".to_string(),
+                ..ThemeOverridePalette::default()
+            },
+            ..ThemeOverrides::default()
+        };
+
+        let value = serde_json::to_value(overrides).expect("theme overrides serialize");
+
+        assert_eq!(value["enabled"], true);
+        assert_eq!(value["dark"]["mutedText"], "#918B80");
+        assert_eq!(value["dark"]["activeLine"], "#1B1A17");
     }
 }
 

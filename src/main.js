@@ -10,6 +10,7 @@ import { open } from '@tauri-apps/plugin-dialog';
 import { ask } from '@tauri-apps/plugin-dialog';
 import { MarkdownEditor } from './editor/markdown-editor.js';
 import { ThemeManager } from './editor/theme-manager.js';
+import { normalizeThemeOverrides } from './tokens/theme-overrides.js';
 import { markdownExtensions, markdownStyles } from './editor/markdown-extensions.js';
 import { PaneManager } from './PaneManager.js';
 import { EnhancedChatPanel } from './chat/EnhancedChatPanel.js';
@@ -1891,6 +1892,9 @@ async function loadEditorPreferences(editor) {
       if (window.pendingEditorSettings.theme !== undefined) {
         vaultOverrides.theme = window.pendingEditorSettings.theme;
       }
+      if (window.pendingEditorSettings.themeOverrides !== undefined) {
+        vaultOverrides.theme_overrides = window.pendingEditorSettings.themeOverrides;
+      }
       if (window.pendingEditorSettings.fontColor !== undefined) {
         vaultOverrides.font_color = window.pendingEditorSettings.fontColor;
       }
@@ -1922,8 +1926,9 @@ async function loadEditorPreferences(editor) {
 
     // Apply theme (default to 'default' if not set)
     const themeToUse = effectivePrefs.theme || 'default';
+    const themeOverrides = normalizeThemeOverrides(effectivePrefs.theme_overrides || effectivePrefs.themeOverrides);
     console.log('[loadEditorPreferences] Applying theme:', themeToUse);
-    currentThemeManager.applyTheme(themeToUse);
+    currentThemeManager.applyTheme(themeToUse, themeOverrides);
 
     // Apply font color if provided and refresh editors to pick up CSS vars
     if (effectivePrefs.font_color) {
@@ -2978,11 +2983,13 @@ async function updateUIWithVault(vaultInfo) {
     // Apply editor settings
     if (vaultSettings && vaultSettings.editor) {
       // Store pending settings for new editors
+      const themeOverrides = normalizeThemeOverrides(vaultSettings.editor.theme_overrides || vaultSettings.editor.themeOverrides);
       window.pendingEditorSettings = {
         fontSize: vaultSettings.editor.font_size,
         fontFamily: vaultSettings.editor.font_family,
         fontColor: vaultSettings.editor.font_color,
         theme: vaultSettings.editor.theme,
+        themeOverrides,
         lineNumbers: vaultSettings.editor.line_numbers,
         lineWrapping: vaultSettings.editor.line_wrapping,
         showStatusBar: vaultSettings.editor.show_status_bar,
@@ -2995,6 +3002,7 @@ async function updateUIWithVault(vaultInfo) {
         fontFamily: vaultSettings.editor.font_family,
         fontColor: vaultSettings.editor.font_color,
         theme: vaultSettings.editor.theme,
+        themeOverrides,
         lineNumbers: vaultSettings.editor.line_numbers,
         lineWrapping: vaultSettings.editor.line_wrapping,
         showStatusBar: vaultSettings.editor.show_status_bar,
@@ -6103,6 +6111,7 @@ function applySettingsToAllEditors(editorSettings) {
     ...(editorSettings.fontFamily !== undefined ? { fontFamily: editorSettings.fontFamily } : {}),
     ...(editorSettings.fontColor !== undefined ? { fontColor: editorSettings.fontColor } : {}),
     ...(editorSettings.theme !== undefined ? { theme: editorSettings.theme } : {}),
+    ...(editorSettings.themeOverrides !== undefined ? { themeOverrides: normalizeThemeOverrides(editorSettings.themeOverrides) } : {}),
     ...(editorSettings.lineNumbers !== undefined ? { lineNumbers: editorSettings.lineNumbers } : {}),
     ...(editorSettings.lineWrapping !== undefined ? { lineWrapping: editorSettings.lineWrapping } : {}),
     ...(editorSettings.showStatusBar !== undefined ? { showStatusBar: editorSettings.showStatusBar } : {}),
@@ -6130,7 +6139,7 @@ function applySettingsToAllEditors(editorSettings) {
       currentThemeManager = new ThemeManager(null);
       window.themeManager = currentThemeManager;
     }
-    currentThemeManager.applyTheme(editorSettings.theme);
+    currentThemeManager.applyTheme(editorSettings.theme, normalizeThemeOverrides(editorSettings.themeOverrides));
   }
   
   // Apply to all editors in all panes

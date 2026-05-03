@@ -226,6 +226,11 @@ export const lightTheme = {
   borderPrimary: neutral[200],
   borderSecondary: neutral[100],
   borderFocus: primary[600],
+  borderHint: 'rgba(0, 0, 0, 0.04)',
+  borderSubtle: 'rgba(0, 0, 0, 0.06)',
+  borderCard: 'rgba(0, 0, 0, 0.08)',
+  borderInput: 'rgba(0, 0, 0, 0.12)',
+  borderInputFocus: 'rgba(0, 0, 0, 0.18)',
 
   // Accent colors
   accentPrimary: primary[600],
@@ -299,38 +304,39 @@ export const lightTheme = {
 
 /**
  * Dark theme semantic tokens
- * Inverted values from light theme for dark backgrounds
+ * Soft charcoal dark theme values for low-glare desktop reading/editing
  *
- * Apple Design Principles - Progressive Lightening in Dark Mode:
- * Each elevation level gets progressively lighter (#1C1C1E → #2C2C2E → #3A3A3C → #48484A)
- * Blue undertone (#1C1C1E vs pure #1C1C1C) creates more alive feeling
+ * Progressive Lightening in Dark Mode:
+ * Each elevation level gets progressively lighter
+ * (#12110F → #181816 → #20201D → #292823) to preserve hierarchy
+ * without the glare of pure black/white or the coolness of blue-steel chrome.
  */
 export const darkTheme = {
   // === LAYER 0: CONTENT ===
   // Content layer in dark mode - highest contrast for readability
-  contentBg: neutral[900],
-  contentText: '#F5F5F7',              // Apple label (dark) - 15.4:1 contrast
-  contentTextSecondary: '#A1A1A6',     // Apple secondaryLabel - 6.3:1 contrast
-  contentSelection: 'rgba(96, 165, 250, 0.3)', // primary-400 with opacity
-  contentCursor: '#60a5fa',            // Blue cursor for visibility
+  contentBg: '#141412',
+  contentText: '#EEECE6',
+  contentTextSecondary: '#C8C3B8',
+  contentSelection: 'rgba(127, 166, 214, 0.24)',
+  contentCursor: '#7FA6D6',
 
   // === LAYER 1: PRIMARY CHROME ===
-  // Sidebars, navigation - Apple's elevated surface pattern
-  chromePrimaryBg: '#2C2C2E',          // Apple secondarySystemBackground
-  chromePrimaryText: '#A1A1A6',        // Deferred text contrast
-  chromePrimaryTextMuted: '#6E6E73',   // Apple tertiaryLabel
-  chromePrimaryBorder: 'rgba(255, 255, 255, 0.08)', // Subtle border
+  // Sidebars, navigation - restrained elevated surface pattern
+  chromePrimaryBg: '#181816',
+  chromePrimaryText: '#C8C3B8',
+  chromePrimaryTextMuted: '#918B80',
+  chromePrimaryBorder: 'rgba(255, 255, 255, 0.095)',
 
   // === LAYER 2: SECONDARY CHROME ===
   // Further elevated surfaces - status bars, tabs
-  chromeSecondaryBg: '#3A3A3C',        // Apple tertiarySystemBackground
-  chromeSecondaryText: '#8E8E93',      // Reduced contrast
-  chromeSecondaryBorder: 'rgba(255, 255, 255, 0.06)', // Even more subtle
+  chromeSecondaryBg: '#20201D',
+  chromeSecondaryText: '#918B80',
+  chromeSecondaryBorder: 'rgba(255, 255, 255, 0.075)',
 
   // === LAYER 3: TERTIARY CHROME ===
   // Highest elevation - tooltips, overlays, subtle dividers
-  chromeTertiary: 'rgba(255, 255, 255, 0.08)',
-  chromeTertiarySubtle: 'rgba(255, 255, 255, 0.04)',
+  chromeTertiary: 'rgba(255, 255, 255, 0.10)',
+  chromeTertiarySubtle: 'rgba(255, 255, 255, 0.045)',
 
   // === FILL TOKENS (Interactive Backgrounds) ===
   // Apple's four-level fill hierarchy for dark mode
@@ -346,46 +352,51 @@ export const darkTheme = {
 
   // === CONTEXT-AWARE BACKGROUNDS ===
   /**
-   * Context backgrounds in dark mode all use Apple's systemBackground (#1C1C1E).
-   * The blue undertone creates a more alive feeling than pure neutral (#1C1C1C).
+   * Context backgrounds in dark mode use the same soft charcoal family.
+   * Distinction is subtle to avoid low-light visual noise.
    */
-  bgWriting: '#1C1C1E',    // Apple systemBackground with blue undertone
-  bgReading: '#1C1C1E',    // Same as writing - context distinction less relevant in dark mode
-  bgPreview: '#1C1C1E',    // Matches dark theme web output
+  bgWriting: '#141412',
+  bgReading: '#12110F',
+  bgPreview: '#141412',
 
   // === TRANSLUCENT BACKGROUNDS ===
   /**
    * Translucent backgrounds for dark mode use darker rgba values with white component.
    * These create vibrancy effects when backdrop-filter is supported.
    */
-  bgTranslucentDark: 'rgba(30, 30, 30, 0.85)',   // Translucent chrome surfaces
-  bgTranslucentOverlay: 'rgba(40, 40, 40, 0.92)', // Higher opacity for overlays
+  bgTranslucentDark: 'rgba(18, 17, 15, 0.88)',   // Translucent chrome surfaces
+  bgTranslucentOverlay: 'rgba(24, 24, 22, 0.94)', // Higher opacity for overlays
 
-  // Backgrounds (Legacy - inverted darker values)
-  bgPrimary: neutral[950],
-  bgSecondary: neutral[900],
-  bgTertiary: neutral[800],
-  bgElevated: neutral[900],
-  bgHover: neutral[800],
-  bgActive: neutral[700],
+  // Backgrounds (Legacy aliases backed by the soft charcoal scale)
+  bgPrimary: '#12110F',
+  bgSecondary: '#181816',
+  bgTertiary: '#20201D',
+  bgElevated: '#292823',
+  bgHover: 'rgba(255, 255, 255, 0.055)',
+  bgActive: 'rgba(127, 166, 214, 0.08)',
 
   // Text (inverted - lighter values)
-  textPrimary: neutral[50],
-  textSecondary: neutral[300],
-  textTertiary: neutral[400],
-  textDisabled: neutral[600],
-  textInverse: neutral[900],
+  textPrimary: '#EEECE6',
+  textSecondary: '#C8C3B8',
+  textTertiary: '#918B80',
+  textDisabled: '#5F5A52',
+  textInverse: '#11100E',
 
-  // Borders (darker in dark theme)
-  borderPrimary: neutral[800],
-  borderSecondary: neutral[900],
-  borderFocus: primary[500],
+  // Borders (opacity-based for subtle dark-mode separation)
+  borderPrimary: 'rgba(255, 255, 255, 0.095)',
+  borderSecondary: 'rgba(255, 255, 255, 0.075)',
+  borderFocus: '#7FA6D6',
+  borderHint: 'rgba(255, 255, 255, 0.045)',
+  borderSubtle: 'rgba(255, 255, 255, 0.075)',
+  borderCard: 'rgba(255, 255, 255, 0.095)',
+  borderInput: 'rgba(255, 255, 255, 0.13)',
+  borderInputFocus: 'rgba(127, 166, 214, 0.32)',
 
-  // Accent colors (slightly lighter for visibility on dark)
-  accentPrimary: primary[500],
-  accentHover: primary[400],
-  accentActive: primary[300],
-  accentBg: 'rgba(59, 130, 246, 0.1)', // primary-500 with low opacity
+  // Accent colors (softer for visibility without blue-steel cast)
+  accentPrimary: '#7FA6D6',
+  accentHover: '#9BBCE0',
+  accentActive: '#6790C2',
+  accentBg: 'rgba(127, 166, 214, 0.10)',
 
   // Status colors (adjusted for dark backgrounds)
   successText: success[400],
@@ -405,16 +416,16 @@ export const darkTheme = {
   infoBorder: info[800],
 
   // Editor-specific (dark theme)
-  editorBg: '#1a1a1a',
-  editorText: neutral[100],
-  editorSelection: 'rgba(96, 165, 250, 0.3)', // primary-400 with opacity
-  editorSelectionMatch: 'rgba(96, 165, 250, 0.15)',
-  editorCursor: neutral[100],
-  editorLineNumber: neutral[400],  // Updated from neutral[600] for WCAG AA compliance (6.90:1)
-  editorLineNumberActive: neutral[300],
-  editorActiveLine: 'rgba(255, 255, 255, 0.05)',
-  editorGutter: neutral[950],
-  editorMatchingBracket: 'rgba(59, 130, 246, 0.3)',
+  editorBg: '#141412',
+  editorText: '#E8E3DA',
+  editorSelection: 'rgba(127, 166, 214, 0.24)',
+  editorSelectionMatch: 'rgba(127, 166, 214, 0.14)',
+  editorCursor: '#7FA6D6',
+  editorLineNumber: '#847F75',
+  editorLineNumberActive: '#C8C3B8',
+  editorActiveLine: 'rgba(255, 255, 255, 0.045)',
+  editorGutter: '#12110F',
+  editorMatchingBracket: 'rgba(127, 166, 214, 0.28)',
 
   // Syntax highlighting (VS Code Dark+ inspired, NO purple)
   syntaxKeyword: '#569cd6',      // Blue
@@ -431,9 +442,9 @@ export const darkTheme = {
   syntaxBracket: '#808080',      // Gray
 
   // Links (lighter for dark backgrounds)
-  linkColor: primary[400],
-  linkHover: primary[300],
-  linkVisited: primary[500],
+  linkColor: '#7FA6D6',
+  linkHover: '#9BBCE0',
+  linkVisited: '#6790C2',
 
   // WikiLinks (dark theme)
   wikilinkValid: '#4fc3f7',      // Light blue
@@ -447,8 +458,8 @@ export const darkTheme = {
   shadowLg: 'rgba(0, 0, 0, 0.5)',
 
   // Focus ring (lighter for visibility)
-  focusRing: primary[500],
-  focusRingOffset: neutral[950]
+  focusRing: '#7FA6D6',
+  focusRingOffset: '#12110F'
 };
 
 /**

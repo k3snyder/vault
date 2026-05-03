@@ -421,29 +421,18 @@
   color-scheme: dark;
 
   /* ============================================================================
-     DARK MODE ELEVATION HIERARCHY (Apple Pattern)
+     DARK MODE ELEVATION HIERARCHY (Soft Charcoal Desktop Pattern)
 
-     Apple's dark mode uses progressive lightening for elevated surfaces, where
-     each layer becomes progressively lighter as it rises above the base level.
-     This creates clear spatial hierarchy and depth perception.
+     The dark theme uses a low-chroma charcoal scale inspired by Cursor:
+     warm near-black chrome, lifted content, and progressively brighter
+     controls/popovers. Avoid blue-steel surfaces and reserve blue for
+     precise affordances.
 
-     Elevation Pattern: Each step lightens by approximately 14-16 hex value
-     - Base (window background):     #1C1C1E (+0)
-     - Sidebars/cards/panels:        #2C2C2E (+16)
-     - Dropdowns/nested panels:      #3A3A3C (+14)
-     - Tooltips/overlays/popovers:   #48484A (+14)
-
-     Blue Undertone Rationale:
-     Apple uses #1C1C1E (with subtle blue undertone) instead of pure neutral
-     #1C1C1C. This blue undertone creates a more "alive" feeling and aligns
-     with Apple's systemBackground color on macOS/iOS dark mode.
-
-     Alternative Pure Neutral Scale (brand flexibility):
-     For brands that prefer pure neutral grays without blue undertone:
-     - Base:      #171717
-     - Secondary: #1F1F1F
-     - Tertiary:  #2A2A2A
-     - Elevated:  #333333
+     Elevation Pattern:
+     - Base/window background:       #12110F
+     - Sidebars/cards/panels:        #181816
+     - Inputs/dropdowns/nested UI:   #20201D
+     - Popovers/overlays/tooltips:   #292823
 
      Component Mapping:
      - Window background           → --bg-primary
@@ -452,20 +441,20 @@
      - Tooltips, overlays, popovers → --bg-elevated
      ============================================================================ */
 
-  /* Background colors - Apple elevation hierarchy with progressive lightening */
-  --bg-primary: #1C1C1E;      /* Apple systemBackground (window/base level) */
-  --bg-secondary: #2C2C2E;    /* Apple secondarySystemBackground (sidebars, cards) */
-  --bg-tertiary: #3A3A3C;     /* Apple tertiarySystemBackground (dropdowns, nested panels) */
-  --bg-elevated: #48484A;     /* Apple quaternarySystemBackground (tooltips, overlays) */
-  --bg-hover: var(--neutral-800);
-  --bg-active: var(--neutral-700);
+  /* Background colors - soft charcoal elevation hierarchy with progressive lightening */
+  --bg-primary: #12110F;      /* Window/base level */
+  --bg-secondary: #181816;    /* Sidebars, cards, panels */
+  --bg-tertiary: #20201D;     /* Inputs, dropdowns, nested panels */
+  --bg-elevated: #292823;     /* Tooltips, overlays, popovers */
+  --bg-hover: rgba(255, 255, 255, 0.055);
+  --bg-active: rgba(127, 166, 214, 0.08);
 
   /* Text colors (inverted - lighter values) */
-  --text-primary: var(--neutral-50);
-  --text-secondary: var(--neutral-300);
-  --text-tertiary: var(--neutral-400);
-  --text-disabled: var(--neutral-600);
-  --text-inverse: var(--neutral-900);
+  --text-primary: #EEECE6;
+  --text-secondary: #C8C3B8;
+  --text-tertiary: #918B80;
+  --text-disabled: #5F5A52;
+  --text-inverse: #11100E;
 
   /* Border colors - legacy tokens reference semantic borders for consistency */
   --border-primary: var(--border-card);
@@ -473,10 +462,10 @@
   --border-focus: var(--primary-500);
 
   /* Accent colors (slightly lighter for visibility on dark) */
-  --accent-primary: var(--primary-500);
-  --accent-hover: var(--primary-400);
-  --accent-active: var(--primary-300);
-  --accent-bg: rgba(59, 130, 246, 0.1);  /* primary-500 with low opacity */
+  --accent-primary: #7FA6D6;
+  --accent-hover: #9BBCE0;
+  --accent-active: #6790C2;
+  --accent-bg: rgba(127, 166, 214, 0.10);
 
   /* Status colors - Success (adjusted for dark backgrounds) */
   --success-text: var(--success-400);
@@ -499,16 +488,16 @@
   --info-border: var(--info-800);
 
   /* Editor-specific colors (dark theme) */
-  --editor-bg: #1a1a1a;
-  --editor-text: var(--neutral-100);
-  --editor-selection: rgba(96, 165, 250, 0.5);  /* primary-400 with opacity - increased for visibility */
-  --editor-selection-match: rgba(96, 165, 250, 0.25);
-  --editor-cursor: var(--neutral-100);
-  --editor-line-number: var(--neutral-400);  /* Updated from neutral-600 for WCAG AA compliance */
-  --editor-line-number-active: var(--neutral-300);
-  --editor-active-line: rgba(255, 255, 255, 0.05);
-  --editor-gutter: var(--neutral-950);
-  --editor-matching-bracket: rgba(59, 130, 246, 0.3);
+  --editor-bg: #141412;
+  --editor-text: #E8E3DA;
+  --editor-selection: rgba(127, 166, 214, 0.24);
+  --editor-selection-match: rgba(127, 166, 214, 0.14);
+  --editor-cursor: var(--accent-primary);
+  --editor-line-number: #847F75;
+  --editor-line-number-active: #C8C3B8;
+  --editor-active-line: rgba(255, 255, 255, 0.045);
+  --editor-gutter: #12110F;
+  --editor-matching-bracket: rgba(127, 166, 214, 0.28);
 
   /* Syntax highlighting - Dark theme (VS Code Dark+ inspired, NO purple) */
   --syntax-keyword: #569cd6;      /* Blue */
@@ -523,12 +512,12 @@
   --syntax-tag: #569cd6;          /* Blue */
   --syntax-attribute: #9cdcfe;    /* Light blue */
   --syntax-bracket: #808080;      /* Gray */
-  --syntax-marker: #60a5fa;       /* Light blue - markdown syntax markers (**, ~~, ==, #, >, `) */
+  --syntax-marker: #7FA6D6;       /* Soft blue - markdown syntax markers (**, ~~, ==, #, >, `) */
 
   /* Link colors (lighter for dark backgrounds) */
-  --link-color: var(--primary-400);
-  --link-hover: var(--primary-300);
-  --link-visited: var(--primary-500);
+  --link-color: var(--accent-primary);
+  --link-hover: var(--accent-hover);
+  --link-visited: var(--accent-active);
 
   /* WikiLink colors (dark theme) */
   --wikilink-valid: #4fc3f7;      /* Light blue */
@@ -576,24 +565,23 @@
      ============================================================================ */
 
   /* Base opacity-based border tokens - dark theme */
-  --border-hint: rgba(255, 255, 255, 0.04);
-  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-hint: rgba(255, 255, 255, 0.045);
+  --border-subtle: rgba(255, 255, 255, 0.075);
 
   /* Semantic border assignments - dark theme overrides */
-  --border-card: rgba(255, 255, 255, 0.08);
-  --border-input: rgba(255, 255, 255, 0.12);
-  --border-input-focus: rgba(255, 255, 255, 0.18);
+  --border-card: rgba(255, 255, 255, 0.095);
+  --border-input: rgba(255, 255, 255, 0.13);
+  --border-input-focus: rgba(127, 166, 214, 0.32);
 
   /* ============================================================================
      CONTEXT-AWARE BACKGROUNDS - Dark Theme
-     Context backgrounds in dark mode all use Apple's systemBackground (#1C1C1E).
-     The blue undertone creates a more alive feeling than pure neutral (#1C1C1C).
-     Context distinction (writing vs reading) is less relevant in dark mode.
+     Context backgrounds in dark mode use the same soft charcoal family. Context
+     distinction is intentionally subtle to reduce low-light visual noise.
      ============================================================================ */
 
-  --bg-writing: #1C1C1E;    /* Apple systemBackground with blue undertone */
-  --bg-reading: #1C1C1E;    /* Same as writing - context distinction less relevant in dark mode */
-  --bg-preview: #1C1C1E;    /* Matches dark theme web output */
+  --bg-writing: #141412;
+  --bg-reading: #12110F;
+  --bg-preview: #141412;
 
   /* ============================================================================
      TRANSLUCENT BACKGROUNDS - Dark Theme
@@ -601,21 +589,21 @@
      These create vibrancy effects when backdrop-filter is supported.
      ============================================================================ */
 
-  --bg-translucent: rgba(30, 30, 30, 0.85);       /* Translucent chrome surfaces */
-  --bg-translucent-overlay: rgba(40, 40, 40, 0.92); /* Higher opacity for overlays */
+  --bg-translucent: rgba(18, 17, 15, 0.88);       /* Translucent chrome surfaces */
+  --bg-translucent-overlay: rgba(24, 24, 22, 0.94); /* Higher opacity for overlays */
 
   /* Focus ring (lighter for visibility) */
-  --focus-ring: var(--primary-500);
-  --focus-ring-offset: var(--neutral-950);
+  --focus-ring: var(--accent-primary);
+  --focus-ring-offset: #12110F;
 
   /* Markdown extension colors - Dark theme */
-  --md-link-color: var(--primary-400);
-  --md-link-hover-color: var(--primary-300);
-  --md-wikilink-bg: rgba(96, 165, 250, 0.15);  /* primary-400 with opacity */
-  --md-wikilink-hover-bg: rgba(96, 165, 250, 0.25);
+  --md-link-color: var(--accent-primary);
+  --md-link-hover-color: var(--accent-hover);
+  --md-wikilink-bg: rgba(127, 166, 214, 0.12);
+  --md-wikilink-hover-bg: rgba(127, 166, 214, 0.20);
 
-  --md-blockref-color: var(--primary-400);  /* Blue instead of purple */
-  --md-blockref-bg: rgba(96, 165, 250, 0.15);
+  --md-blockref-color: var(--accent-primary);
+  --md-blockref-bg: rgba(127, 166, 214, 0.12);
 
   --md-tag-color: var(--success-400);
   --md-tag-bg: rgba(34, 197, 94, 0.15);  /* success-500 with opacity */

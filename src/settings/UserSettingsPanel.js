@@ -3,6 +3,13 @@ import { invoke } from '@tauri-apps/api/core';
 import pluginSettingsPanel from './PluginSettingsPanel.js';
 import EntitlementManager from '../services/entitlement-manager.js';
 import { normalizeImageLocation } from '../utils/image-paths.js';
+import {
+    THEME_OVERRIDE_DEFAULTS,
+    THEME_OVERRIDE_FIELDS,
+    getThemeOverrideMode,
+    normalizeHexColor,
+    normalizeThemeOverrides
+} from '../tokens/theme-overrides.js';
 
 /**
  * Font color presets from the design token system
@@ -17,11 +24,11 @@ const FONT_COLOR_PRESETS = {
         { name: 'Neutral', value: '#171717', description: 'Primary text (neutral-900)' }
     ],
     dark: [
-        { name: 'Default', value: '#fafafa', description: 'Primary text (neutral-50)' },
-        { name: 'Soft', value: '#d4d4d4', description: 'Secondary text (neutral-300)' },
-        { name: 'Muted', value: '#a3a3a3', description: 'Tertiary text (neutral-400)' },
-        { name: 'Warm', value: '#e5e5e5', description: 'Warm neutral' },
-        { name: 'Cool', value: '#e2e8f0', description: 'Cool gray' }
+        { name: 'Default', value: '#eeece6', description: 'Soft charcoal primary text' },
+        { name: 'Soft', value: '#c8c3b8', description: 'Warm secondary text' },
+        { name: 'Muted', value: '#918b80', description: 'Muted warm neutral' },
+        { name: 'Warm', value: '#e8e3da', description: 'Editor text default' },
+        { name: 'Cool', value: '#d8dee8', description: 'Cool gray alternative' }
     ]
 };
 
@@ -38,7 +45,8 @@ export class UserSettingsPanel {
                 lineNumbers: false,
                 lineWrapping: true,
                 showStatusBar: true,
-                wysiwygMode: true
+                wysiwygMode: true,
+                themeOverrides: normalizeThemeOverrides()
             },
             files: {
                 imageLocation: 'Files/',
@@ -123,7 +131,8 @@ export class UserSettingsPanel {
                 lineNumbers: settings.editor.line_numbers !== undefined ? settings.editor.line_numbers : this.state.editor.lineNumbers,
                 lineWrapping: settings.editor.line_wrapping !== undefined ? settings.editor.line_wrapping : this.state.editor.lineWrapping,
                 showStatusBar: settings.editor.show_status_bar !== undefined ? settings.editor.show_status_bar : this.state.editor.showStatusBar,
-                wysiwygMode: settings.editor.wysiwyg_mode !== undefined ? settings.editor.wysiwyg_mode : this.state.editor.wysiwygMode
+                wysiwygMode: settings.editor.wysiwyg_mode !== undefined ? settings.editor.wysiwyg_mode : this.state.editor.wysiwygMode,
+                themeOverrides: normalizeThemeOverrides(settings.editor.theme_overrides || settings.editor.themeOverrides)
             };
             this.state.files = {
                 ...this.state.files,
@@ -158,7 +167,8 @@ export class UserSettingsPanel {
                     line_numbers: this.state.editor.lineNumbers,
                     line_wrapping: this.state.editor.lineWrapping,
                     show_status_bar: this.state.editor.showStatusBar,
-                    wysiwyg_mode: this.state.editor.wysiwygMode
+                    wysiwyg_mode: this.state.editor.wysiwygMode,
+                    theme_overrides: normalizeThemeOverrides(this.state.editor.themeOverrides)
                 },
                 files: {
                     image_location: this.state.files.imageLocation,
@@ -209,7 +219,8 @@ export class UserSettingsPanel {
                 lineNumbers: settings.editor.line_numbers !== undefined ? settings.editor.line_numbers : this.state.editor.lineNumbers,
                 lineWrapping: settings.editor.line_wrapping !== undefined ? settings.editor.line_wrapping : this.state.editor.lineWrapping,
                 showStatusBar: settings.editor.show_status_bar !== undefined ? settings.editor.show_status_bar : this.state.editor.showStatusBar,
-                wysiwygMode: settings.editor.wysiwyg_mode !== undefined ? settings.editor.wysiwyg_mode : this.state.editor.wysiwygMode
+                wysiwygMode: settings.editor.wysiwyg_mode !== undefined ? settings.editor.wysiwyg_mode : this.state.editor.wysiwygMode,
+                themeOverrides: normalizeThemeOverrides(settings.editor.theme_overrides || settings.editor.themeOverrides)
             };
             this.state.files = {
                 ...this.state.files,
@@ -237,11 +248,42 @@ export class UserSettingsPanel {
         if (key === 'theme') {
             const isDarkTheme = value === 'dark';
             const defaultColor = isDarkTheme
-                ? FONT_COLOR_PRESETS.dark[0].value   // '#fafafa'
+                ? FONT_COLOR_PRESETS.dark[0].value   // '#eeece6'
                 : FONT_COLOR_PRESETS.light[0].value; // '#1f2937'
             this.state.editor.fontColor = defaultColor;
         }
 
+        this.state.isDirty = true;
+        this.render();
+        this.previewChanges();
+    }
+
+    updateThemeOverrideEnabled(enabled) {
+        this.state.editor.themeOverrides = normalizeThemeOverrides({
+            ...this.state.editor.themeOverrides,
+            enabled
+        });
+        this.state.isDirty = true;
+        this.render();
+        this.previewChanges();
+    }
+
+    updateThemeOverrideColor(themeMode, key, value) {
+        const mode = themeMode === 'dark' ? 'dark' : 'light';
+        const defaults = THEME_OVERRIDE_DEFAULTS[mode];
+        const current = normalizeThemeOverrides(this.state.editor.themeOverrides);
+        current[mode][key] = normalizeHexColor(value, current[mode][key] || defaults[key]);
+        this.state.editor.themeOverrides = current;
+        this.state.isDirty = true;
+        this.render();
+        this.previewChanges();
+    }
+
+    resetThemeOverrides(themeMode = this.getThemeOverrideMode()) {
+        const mode = themeMode === 'dark' ? 'dark' : 'light';
+        const current = normalizeThemeOverrides(this.state.editor.themeOverrides);
+        current[mode] = { ...THEME_OVERRIDE_DEFAULTS[mode] };
+        this.state.editor.themeOverrides = current;
         this.state.isDirty = true;
         this.render();
         this.previewChanges();
@@ -268,7 +310,8 @@ export class UserSettingsPanel {
                 // IMPORTANT: Apply theme FIRST, then font color
                 // applyTheme sets --editor-text-color from theme defaults,
                 // so setFontColor must come AFTER to override with user's selection
-                window.themeManager.applyTheme(this.state.editor.theme);
+                window.themeManager.setThemeOverrides?.(this.state.editor.themeOverrides);
+                window.themeManager.applyTheme(this.state.editor.theme, this.state.editor.themeOverrides);
                 window.themeManager.setFontSize(this.state.editor.fontSize);
                 window.themeManager.setFontFamily(this.state.editor.fontFamily);
                 window.themeManager.setFontColor(this.state.editor.fontColor);
@@ -411,6 +454,9 @@ export class UserSettingsPanel {
             case 'set-editor-setting':
                 this.updateEditorSetting(target.dataset.setting, target.dataset.value);
                 break;
+            case 'reset-theme-overrides':
+                this.resetThemeOverrides(target.dataset.themeMode);
+                break;
             case 'save-settings':
                 this.saveSettings();
                 break;
@@ -433,6 +479,16 @@ export class UserSettingsPanel {
                         : target.type === 'checkbox'
                             ? target.checked
                             : target.value
+                );
+                break;
+            case 'toggle-theme-overrides':
+                this.updateThemeOverrideEnabled(target.checked);
+                break;
+            case 'update-theme-override':
+                this.updateThemeOverrideColor(
+                    target.dataset.themeMode,
+                    target.dataset.overrideKey,
+                    target.value
                 );
                 break;
             case 'update-file-setting':
@@ -494,6 +550,60 @@ export class UserSettingsPanel {
         }).join('');
     }
 
+    getThemeOverrideMode() {
+        return getThemeOverrideMode(this.state.editor.theme);
+    }
+
+    renderThemeOverrideControls() {
+        const mode = this.getThemeOverrideMode();
+        const overrides = normalizeThemeOverrides(this.state.editor.themeOverrides);
+        const palette = overrides[mode];
+        const themeLabel = mode === 'dark' ? 'Dark' : 'Light';
+
+        return `
+            <div class="theme-override-summary">
+                <div>
+                    <strong>${themeLabel} theme tuning</strong>
+                    <p class="form-help">Override a small set of semantic colors after the default ${themeLabel.toLowerCase()} theme is applied.</p>
+                </div>
+                <button type="button"
+                        class="secondary-button compact-button"
+                        data-action="reset-theme-overrides"
+                        data-theme-mode="${mode}">
+                    Reset ${themeLabel}
+                </button>
+            </div>
+            <div class="theme-override-grid">
+                ${THEME_OVERRIDE_FIELDS.map(field => `
+                    <div class="theme-override-row">
+                        <label for="theme-override-${mode}-${field.key}">
+                            <span>${field.label}</span>
+                            <small>${field.description}</small>
+                        </label>
+                        <div class="theme-override-color-control">
+                            <input type="color"
+                                   id="theme-override-${mode}-${field.key}"
+                                   value="${palette[field.key]}"
+                                   data-action="update-theme-override"
+                                   data-theme-mode="${mode}"
+                                   data-override-key="${field.key}"
+                                   class="color-input"
+                                   ${overrides.enabled ? '' : 'disabled'}>
+                            <input type="text"
+                                   value="${palette[field.key]}"
+                                   data-action="update-theme-override"
+                                   data-theme-mode="${mode}"
+                                   data-override-key="${field.key}"
+                                   class="color-text-input"
+                                   placeholder="${THEME_OVERRIDE_DEFAULTS[mode][field.key]}"
+                                   ${overrides.enabled ? '' : 'disabled'}>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
     switchTab(tab) {
         console.log('Switching to tab:', tab);
 
@@ -543,6 +653,7 @@ export class UserSettingsPanel {
             { value: 'default', label: 'Light' },
             { value: 'dark', label: 'Dark' }
         ];
+        const themeOverrides = normalizeThemeOverrides(this.state.editor.themeOverrides);
         
         this.container.innerHTML = `
             <div class="user-settings-panel">
@@ -669,6 +780,22 @@ export class UserSettingsPanel {
                                 </label>
                                 <p class="form-help">Hide markdown syntax and show rendered formatting</p>
                             </div>
+
+                            <details class="advanced-theme-overrides" ${themeOverrides.enabled ? 'open' : ''}>
+                                <summary>Advanced theme tuning</summary>
+                                <div class="advanced-theme-overrides-body">
+                                    <div class="form-group checkbox-group theme-override-toggle">
+                                        <label>
+                                            <input type="checkbox"
+                                                   ${themeOverrides.enabled ? 'checked' : ''}
+                                                   data-action="toggle-theme-overrides">
+                                            Override default Light/Dark theme colors
+                                        </label>
+                                        <p class="form-help">Use this for subtle personal adjustments. The current theme’s colors are shown below and preview live before saving.</p>
+                                    </div>
+                                    ${this.renderThemeOverrideControls()}
+                                </div>
+                            </details>
                         </div>
                     </div>
                     

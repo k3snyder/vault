@@ -71,6 +71,7 @@ export function BotckyChatApp({
   const transcriptRef = React.useRef(null);
   const pendingStreamEventsRef = React.useRef([]);
   const streamFlushTimerRef = React.useRef(null);
+  const scrollbarRevealTimerRef = React.useRef(null);
 
   React.useEffect(() => {
     stateRef.current = state;
@@ -98,6 +99,32 @@ export function BotckyChatApp({
       transcript.scrollTop = transcript.scrollHeight;
     }, 0);
   }, [state.messages.length, state.toolCalls.length, state.tasks.length, state.approvals.length, state.error]);
+
+  React.useEffect(() => {
+    const transcript = transcriptRef.current;
+    if (!transcript) return undefined;
+
+    const revealScrollbar = () => {
+      transcript.classList.add('is-scrolling');
+      if (scrollbarRevealTimerRef.current) {
+        window.clearTimeout(scrollbarRevealTimerRef.current);
+      }
+      scrollbarRevealTimerRef.current = window.setTimeout(() => {
+        transcript.classList.remove('is-scrolling');
+        scrollbarRevealTimerRef.current = null;
+      }, 900);
+    };
+
+    transcript.addEventListener('scroll', revealScrollbar, { passive: true });
+    return () => {
+      transcript.removeEventListener('scroll', revealScrollbar);
+      if (scrollbarRevealTimerRef.current) {
+        window.clearTimeout(scrollbarRevealTimerRef.current);
+        scrollbarRevealTimerRef.current = null;
+      }
+      transcript.classList.remove('is-scrolling');
+    };
+  }, []);
 
   React.useEffect(() => {
     let disposed = false;

@@ -372,6 +372,108 @@
 }
 
 /* ============================================================================
+   Advanced Theme Overrides
+   ============================================================================ */
+
+.advanced-theme-overrides {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-secondary);
+}
+
+.advanced-theme-overrides summary {
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 600;
+    list-style-position: outside;
+}
+
+.advanced-theme-overrides summary:hover {
+    color: var(--accent-primary);
+}
+
+.advanced-theme-overrides-body {
+    margin-top: 14px;
+}
+
+.theme-override-toggle {
+    padding: 12px;
+    border-radius: 8px;
+    background: var(--bg-tertiary);
+}
+
+.theme-override-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 16px 0 12px;
+}
+
+.theme-override-summary strong {
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.compact-button {
+    padding: 6px 10px;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.theme-override-grid {
+    display: grid;
+    gap: 10px;
+}
+
+.theme-override-row {
+    display: grid;
+    grid-template-columns: minmax(140px, 0.9fr) minmax(220px, 1.1fr);
+    gap: 12px;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid var(--border-secondary);
+    border-radius: 8px;
+    background: var(--bg-primary);
+}
+
+.theme-override-row label {
+    margin: 0;
+}
+
+.theme-override-row label span {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.theme-override-row label small {
+    display: block;
+    margin-top: 2px;
+    color: var(--text-tertiary);
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.35;
+}
+
+.theme-override-color-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.theme-override-color-control .color-text-input {
+    min-width: 0;
+}
+
+.theme-override-color-control input:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* ============================================================================
    Footer & Buttons
    ============================================================================ */
 
@@ -617,6 +719,67 @@
 
 [data-theme="dark"] .activation-dialog-modal {
     background: rgba(0, 0, 0, 0.7);
+}
+
+/* Dark theme polish for the main settings modal. */
+[data-theme="dark"] .user-settings-panel {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.62);
+}
+
+[data-theme="dark"] .settings-header,
+[data-theme="dark"] .settings-tabs,
+[data-theme="dark"] .settings-footer {
+    border-color: var(--border-secondary);
+}
+
+[data-theme="dark"] .settings-group {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+}
+
+[data-theme="dark"] .settings-footer {
+    background: var(--bg-secondary);
+}
+
+[data-theme="dark"] .form-group select,
+[data-theme="dark"] .settings-input,
+[data-theme="dark"] .color-input,
+[data-theme="dark"] .color-text-input,
+[data-theme="dark"] .theme-override-row {
+    background: var(--bg-tertiary);
+    border-color: var(--border-input);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .form-group select:hover,
+[data-theme="dark"] .settings-input:hover,
+[data-theme="dark"] .color-input:hover,
+[data-theme="dark"] .color-text-input:hover,
+[data-theme="dark"] .theme-override-row:hover {
+    border-color: var(--border-input-focus);
+}
+
+[data-theme="dark"] .theme-override-toggle {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-secondary);
+}
+
+[data-theme="dark"] .form-group select:focus,
+[data-theme="dark"] .settings-input:focus,
+[data-theme="dark"] .color-text-input:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px var(--accent-bg);
+}
+
+[data-theme="dark"] .user-settings-panel .primary-button {
+    background: var(--accent-primary);
+    color: var(--text-inverse);
+}
+
+[data-theme="dark"] .user-settings-panel .primary-button:hover:not(:disabled) {
+    background: var(--accent-hover);
 }
 
 @keyframes fadeIn {
