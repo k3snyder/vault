@@ -734,7 +734,7 @@ html body .cm-content .cm-selectionBackground {
 /* This overrides CodeMirror's defaultHighlightStyle for uniform editing */
 .cm-activeLine,
 .cm-activeLine * {
-  color: var(--editor-text-color, var(--editor-text, #1f2937)) !important;
+  color: var(--editor-text-color, var(--editor-text, #32302c)) !important;
 }
 
 /* Preserve highlight background on active lines (light mode) */

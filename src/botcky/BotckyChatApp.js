@@ -311,8 +311,14 @@ export function BotckyChatApp({
       await Promise.all(targetSessionIds.map(targetSessionId => client.archiveSession(targetSessionId)));
       const allSessionsResponse = await client.listSessions({ status: null });
       const allSessions = sessionsFromResponse(allSessionsResponse);
-      setSessions(displaySessions(allSessions, sessionId));
-      await createFreshSession(nextSessionTitle(allSessions));
+      const remainingSessions = displaySessions(allSessions, sessionId);
+      setSessions(remainingSessions);
+      const nextSessionId = lastRemainingSessionId(allSessions, sessionId);
+      if (nextSessionId) {
+        selectSession(nextSessionId);
+      } else {
+        await createFreshSession('Session 1');
+      }
     } finally {
       setBusy(false);
     }
@@ -770,6 +776,11 @@ export function archiveTargetSessionIds(sessions = [], currentSessionId = '') {
   return matchingIds.length > 0 ? matchingIds : [currentSessionId];
 }
 
+export function lastRemainingSessionId(sessions = [], currentSessionId = '') {
+  const visible = displaySessions(sessions, currentSessionId);
+  const newest = visible[visible.length - 1];
+  return sessionIdentifier(newest);
+}
 
 export function nextSessionTitle(sessionsOrOptions = []) {
   const sessionNumbers = sessionsOrOptions

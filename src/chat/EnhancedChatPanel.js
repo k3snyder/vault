@@ -1160,10 +1160,13 @@ export class EnhancedChatPanel {
     
     async handleModeToggle(mode) {
         console.log(`🔄 Toggling mode to: ${mode}`);
+        const nextMode = mode === 'chat' && this.isBotckyProviderKey(this.currentProvider)
+            ? 'botcky'
+            : mode;
         
         // Save current mode
-        this.currentMode = mode;
-        localStorage.setItem('gaimplan-chat-mode', mode);
+        this.currentMode = nextMode;
+        localStorage.setItem('gaimplan-chat-mode', nextMode);
         
         // Clean up previous mode
         if (mode === 'cli' && this.interface) {

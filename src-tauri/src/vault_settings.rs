@@ -75,7 +75,7 @@ fn default_daily_notes_folder() -> String {
 }
 
 fn default_font_color() -> String {
-    "#1f2937".to_string() // slate-800 default editor text
+    "#32302c".to_string() // warm neutral default editor text
 }
 
 impl Default for VaultSettings {
@@ -346,14 +346,14 @@ mod tests {
     #[test]
     fn editor_defaults_match_expected_fresh_vault_defaults() {
         let defaults = EditorSettings::default();
-        assert_eq!(defaults.font_color, "#1f2937");
+        assert_eq!(defaults.font_color, "#32302c");
         assert!(!defaults.line_numbers);
     }
 
     #[test]
     fn vault_defaults_embed_editor_defaults() {
         let defaults = VaultSettings::default();
-        assert_eq!(defaults.editor.font_color, "#1f2937");
+        assert_eq!(defaults.editor.font_color, "#32302c");
         assert!(!defaults.editor.line_numbers);
     }
 

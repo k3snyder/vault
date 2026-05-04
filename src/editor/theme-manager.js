@@ -19,7 +19,7 @@ export class ThemeManager {
       name: 'Gaimplan Light',
       type: 'default',
       variables: {
-        '--editor-text-color': '#1f2937',
+        '--editor-text-color': '#32302c',
         '--editor-bg-color': '#ffffff',
         '--editor-selection-bg': '#b3d4fc',
         '--editor-caret-color': '#5b47e0',
@@ -54,7 +54,7 @@ export class ThemeManager {
       name: 'Gaimplan Light',
       type: 'light',
       variables: {
-        '--editor-text-color': '#1f2937',
+        '--editor-text-color': '#32302c',
         '--editor-bg-color': '#ffffff',
         '--editor-selection-bg': '#b3d4fc',
         '--editor-caret-color': '#5b47e0',

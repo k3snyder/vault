@@ -7,6 +7,7 @@ import {
   buildBotckyTranscriptItems,
   displaySessions,
   ensureBotckyStartupSession,
+  lastRemainingSessionId,
   nextSessionTitle,
   resetBotckyStartupSessionLocksForTests,
   sessionSelectWidth,
@@ -115,6 +116,25 @@ describe('BotckyChatApp session startup', () => {
     ];
 
     expect(archiveTargetSessionIds(sessions, 'alpha-b')).toEqual(['alpha-b']);
+  });
+
+  test('chooses the newest remaining active session after archiving the current session', () => {
+    const sessions = [
+      { session_id: 'session-4', name: 'Session 4', status: 'active', platform: 'vault', created_at: '2026-05-02T16:17:13+00:00' },
+      { session_id: 'session-7', name: 'Session 7', status: 'archived', platform: 'vault', created_at: '2026-05-02T16:22:00+00:00' },
+      { session_id: 'session-5', name: 'Session 5', status: 'active', platform: 'vault', created_at: '2026-05-02T16:19:00+00:00' },
+      { session_id: 'session-6', name: 'Session 6', status: 'active', platform: 'vault', created_at: '2026-05-02T16:20:00+00:00' },
+    ];
+
+    expect(lastRemainingSessionId(sessions, 'session-7')).toBe('session-6');
+  });
+
+  test('returns no replacement id after archiving the only active session', () => {
+    const sessions = [
+      { session_id: 'session-1', name: 'Session 1', status: 'archived', platform: 'vault', created_at: '2026-05-02T16:17:13+00:00' },
+    ];
+
+    expect(lastRemainingSessionId(sessions, 'session-1')).toBe('');
   });
 
   test('chooses the next generated session title from the maximum existing session number', () => {

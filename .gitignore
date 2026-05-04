@@ -48,11 +48,9 @@ coverage/
 CLAUDE.md
 AGENTS.md
 .claude
-release
 .docs
 
 vault.code-workspace
-release/
 test
 tests
 pacas-config.json

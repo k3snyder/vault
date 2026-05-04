@@ -579,7 +579,7 @@ const floatingToolbarPlugin = ViewPlugin.fromClass(
           border: 'none',
           borderRadius: '6px',
           backgroundColor: 'transparent',
-          color: isDarkMode ? '#e0e0e0' : '#1f2937',
+          color: isDarkMode ? '#e0e0e0' : '#32302c',
           cursor: 'pointer',
           transition: 'background-color 0.1s ease, color 0.1s ease'
         })
@@ -652,7 +652,7 @@ const floatingToolbarPlugin = ViewPlugin.fromClass(
           btn.dataset.active = 'true'
         } else {
           btn.style.backgroundColor = buttonConfig.id === 'highlight' ? 'rgba(255, 235, 59, 0.3)' : 'transparent'
-          btn.style.color = isDarkMode ? '#e0e0e0' : '#1f2937'
+          btn.style.color = isDarkMode ? '#e0e0e0' : '#32302c'
           btn.dataset.active = 'false'
         }
       })
@@ -774,7 +774,7 @@ const floatingToolbarStyles = EditorView.theme({
     border: 'none',
     borderRadius: '6px',
     backgroundColor: 'transparent',
-    color: 'var(--editor-text-color, #1f2937)',
+    color: 'var(--editor-text-color, #32302c)',
     cursor: 'pointer',
     fontSize: '14px',
     fontWeight: '500',

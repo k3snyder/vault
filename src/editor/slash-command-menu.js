@@ -342,7 +342,7 @@ class SlashMenuWidget {
         padding: '8px 12px',
         borderRadius: '6px',
         cursor: 'pointer',
-        color: 'var(--editor-text-color, #1f2937)',
+        color: 'var(--editor-text-color, #32302c)',
         transition: 'background-color 0.1s ease',
         backgroundColor: index === state.selectedIndex
           ? 'var(--bg-selected, #e8f0fe)'
@@ -757,7 +757,7 @@ const slashMenuStyles = EditorView.theme({
     padding: '8px 12px',
     borderRadius: '6px',
     cursor: 'pointer',
-    color: 'var(--editor-text-color, #1f2937)',
+    color: 'var(--editor-text-color, #32302c)',
     transition: 'background-color 0.1s ease'
   },
 

@@ -17,10 +17,10 @@ import {
  */
 const FONT_COLOR_PRESETS = {
     light: [
-        { name: 'Default', value: '#1f2937', description: 'Slate text default' },
+        { name: 'Default', value: '#32302c', description: 'Warm neutral default' },
         { name: 'Soft', value: '#404040', description: 'Secondary text (neutral-700)' },
         { name: 'Muted', value: '#525252', description: 'Tertiary text (neutral-600)' },
-        { name: 'Warm', value: '#32302c', description: 'Warm neutral' },
+        { name: 'Slate', value: '#1f2937', description: 'Slate alternative' },
         { name: 'Neutral', value: '#171717', description: 'Primary text (neutral-900)' }
     ],
     dark: [
@@ -40,7 +40,7 @@ export class UserSettingsPanel {
             editor: {
                 fontSize: 16,
                 fontFamily: "'SF Mono', Monaco, 'Cascadia Code', monospace",
-                fontColor: '#1f2937',
+                fontColor: '#32302c',
                 theme: 'default',
                 lineNumbers: false,
                 lineWrapping: true,
@@ -65,6 +65,7 @@ export class UserSettingsPanel {
             onClose: null
         };
         this.previewTimeout = null;
+        this.committedEditorState = null;
         this.pluginSettingsPanel = null;
         this.listenersAttached = false;
         this.listenerContainer = null;
@@ -134,6 +135,7 @@ export class UserSettingsPanel {
                 wysiwygMode: settings.editor.wysiwyg_mode !== undefined ? settings.editor.wysiwyg_mode : this.state.editor.wysiwygMode,
                 themeOverrides: normalizeThemeOverrides(settings.editor.theme_overrides || settings.editor.themeOverrides)
             };
+            this.committedEditorState = this.cloneEditorState(this.state.editor);
             this.state.files = {
                 ...this.state.files,
                 imageLocation: normalizeImageLocation(settings.files.image_location || this.state.files.imageLocation),
@@ -151,6 +153,7 @@ export class UserSettingsPanel {
     
     async saveSettings() {
         if (!this.state.isDirty || this.state.isSaving) return;
+        let didSave = false;
         
         try {
             this.state.isSaving = true;
@@ -185,18 +188,25 @@ export class UserSettingsPanel {
             
             // Call callback if provided with camelCase properties
             if (this.callbacks.onSave) {
-                this.callbacks.onSave({
+                await this.callbacks.onSave({
                     editor: this.state.editor,
                     files: this.state.files,
                     vault_path: this.state.vaultPath
                 });
             }
+
+            this.committedEditorState = this.cloneEditorState(this.state.editor);
+            didSave = true;
         } catch (error) {
             console.error('Failed to save settings:', error);
             this.showNotification('Failed to save settings: ' + error, 'error');
         } finally {
             this.state.isSaving = false;
-            this.render();
+            if (didSave) {
+                this.close({ revertPreview: false });
+            } else {
+                this.render();
+            }
         }
     }
     
@@ -222,6 +232,7 @@ export class UserSettingsPanel {
                 wysiwygMode: settings.editor.wysiwyg_mode !== undefined ? settings.editor.wysiwyg_mode : this.state.editor.wysiwygMode,
                 themeOverrides: normalizeThemeOverrides(settings.editor.theme_overrides || settings.editor.themeOverrides)
             };
+            this.committedEditorState = this.cloneEditorState(this.state.editor);
             this.state.files = {
                 ...this.state.files,
                 imageLocation: normalizeImageLocation(settings.files.image_location || this.state.files.imageLocation),
@@ -249,7 +260,7 @@ export class UserSettingsPanel {
             const isDarkTheme = value === 'dark';
             const defaultColor = isDarkTheme
                 ? FONT_COLOR_PRESETS.dark[0].value   // '#eeece6'
-                : FONT_COLOR_PRESETS.light[0].value; // '#1f2937'
+                : FONT_COLOR_PRESETS.light[0].value; // '#32302c'
             this.state.editor.fontColor = defaultColor;
         }
 
@@ -509,10 +520,104 @@ export class UserSettingsPanel {
         `;
     }
     
-    close() {
+    cloneEditorState(editor) {
+        return {
+            ...editor,
+            themeOverrides: normalizeThemeOverrides(editor?.themeOverrides)
+        };
+    }
+
+    getSettingsScrollTop() {
+        const content = this.container?.querySelector('.settings-content');
+        return content ? content.scrollTop : null;
+    }
+
+    restoreSettingsScrollTop(scrollTop) {
+        if (typeof scrollTop !== 'number') {
+            return;
+        }
+
+        const content = this.container?.querySelector('.settings-content');
+        if (!content) {
+            return;
+        }
+
+        content.scrollTop = scrollTop;
+        const restore = () => {
+            if (content.isConnected) {
+                content.scrollTop = scrollTop;
+            }
+        };
+        if (window.requestAnimationFrame) {
+            window.requestAnimationFrame(restore);
+        } else {
+            window.setTimeout(restore, 0);
+        }
+    }
+
+    refreshMarkdownEditorThemes() {
+        if (!window.paneManager?.panes) {
+            return;
+        }
+
+        for (const pane of window.paneManager.panes.values()) {
+            const tabManager = pane.tabManager;
+            if (!tabManager?.tabs) continue;
+            for (const tab of tabManager.tabs.values()) {
+                if (tab.editor && tab.type === 'markdown' && tab.editor.refreshTheme) {
+                    tab.editor.refreshTheme();
+                }
+            }
+        }
+    }
+
+    applyEditorPreview(editorState) {
+        if (!editorState || !window.themeManager) {
+            return;
+        }
+
+        window.themeManager.setThemeOverrides?.(editorState.themeOverrides);
+        window.themeManager.applyTheme(editorState.theme, editorState.themeOverrides);
+        window.themeManager.setFontSize(editorState.fontSize);
+        window.themeManager.setFontFamily(editorState.fontFamily);
+        window.themeManager.setFontColor(editorState.fontColor);
+
+        const activeTabManager = window.paneManager?.getActiveTabManager?.();
+        const activeTab = activeTabManager?.getActiveTab?.();
+        if (activeTab?.editor?.setLineNumbers) {
+            activeTab.editor.setLineNumbers(editorState.lineNumbers);
+        }
+        if (activeTab?.editor?.setLineWrapping) {
+            activeTab.editor.setLineWrapping(editorState.lineWrapping);
+        }
+
+        const statusBar = document.getElementById('status-bar');
+        if (statusBar) {
+            statusBar.style.display = editorState.showStatusBar ? 'flex' : 'none';
+        }
+
+        if (window.currentEditor && typeof window.currentEditor.setWysiwygMode === 'function') {
+            window.currentEditor.setWysiwygMode(editorState.wysiwygMode);
+        }
+
+        this.refreshMarkdownEditorThemes();
+    }
+
+    revertPreviewChanges() {
+        if (!this.state.isDirty || !this.committedEditorState) {
+            return;
+        }
+
+        this.applyEditorPreview(this.committedEditorState);
+    }
+
+    close({ revertPreview = true } = {}) {
         if (this.previewTimeout) {
             clearTimeout(this.previewTimeout);
             this.previewTimeout = null;
+        }
+        if (revertPreview) {
+            this.revertPreviewChanges();
         }
         this.detachEventListeners();
         if (this.callbacks.onClose) {
@@ -635,6 +740,8 @@ export class UserSettingsPanel {
     render() {
         if (!this.container) return;
 
+        const scrollTop = this.getSettingsScrollTop();
+
         // Make this instance available globally for event handlers
         window.userSettingsPanel = this;
         this.attachEventListeners();
@@ -720,7 +827,7 @@ export class UserSettingsPanel {
                                            data-action="update-editor-setting"
                                            data-setting="fontColor"
                                            class="color-text-input"
-                                           placeholder="#1f2937">
+                                           placeholder="#32302c">
                                 </div>
                                 <div class="color-presets">
                                     ${this.renderColorPresets()}
@@ -782,7 +889,7 @@ export class UserSettingsPanel {
                             </div>
 
                             <details class="advanced-theme-overrides" ${themeOverrides.enabled ? 'open' : ''}>
-                                <summary>Advanced theme tuning</summary>
+                                <summary>Custom theme settings</summary>
                                 <div class="advanced-theme-overrides-body">
                                     <div class="form-group checkbox-group theme-override-toggle">
                                         <label>
@@ -791,7 +898,7 @@ export class UserSettingsPanel {
                                                    data-action="toggle-theme-overrides">
                                             Override default Light/Dark theme colors
                                         </label>
-                                        <p class="form-help">Use this for subtle personal adjustments. The current theme’s colors are shown below and preview live before saving.</p>
+                                        <p class="form-help">Use this for custom adjustments.</p>
                                     </div>
                                     ${this.renderThemeOverrideControls()}
                                 </div>
@@ -843,6 +950,7 @@ export class UserSettingsPanel {
                 ${this.state.isDirty ? '<div class="unsaved-indicator">Unsaved changes</div>' : ''}
             </div>
         `;
+        this.restoreSettingsScrollTop(scrollTop);
     }
 }
 

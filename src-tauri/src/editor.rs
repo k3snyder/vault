@@ -10,7 +10,7 @@ use tauri::State;
 use tokio::sync::Mutex;
 
 fn default_font_color() -> String {
-    "#1f2937".to_string()
+    "#32302c".to_string()
 }
 
 fn default_wysiwyg_mode() -> bool {
@@ -160,7 +160,7 @@ mod tests {
     #[test]
     fn editor_preferences_defaults_match_expected_app_defaults() {
         let defaults = EditorPreferences::default();
-        assert_eq!(defaults.font_color, "#1f2937");
+        assert_eq!(defaults.font_color, "#32302c");
         assert!(!defaults.show_line_numbers);
     }
 }

@@ -382,11 +382,34 @@
 }
 
 .advanced-theme-overrides summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     cursor: pointer;
     color: var(--text-primary);
     font-size: 14px;
     font-weight: 600;
-    list-style-position: outside;
+    list-style: none;
+}
+
+.advanced-theme-overrides summary::-webkit-details-marker {
+    display: none;
+}
+
+.advanced-theme-overrides summary::before {
+    content: '▸';
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 10px;
+    color: currentColor;
+    font-size: 12px;
+    line-height: 1;
+    transform: translateY(1px);
+}
+
+.advanced-theme-overrides[open] summary::before {
+    content: '▾';
 }
 
 .advanced-theme-overrides summary:hover {

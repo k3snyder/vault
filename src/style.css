@@ -1737,13 +1737,13 @@ body.resizing-sidebar {
   font-size: 1.5rem;
   font-weight: 600;
   line-height: 1;
-  color: #525252;
+  color: var(--text-secondary, #525252);
   transition: color 0.2s ease;
 }
 
 .welcome-vault-picker .dropdown-arrow {
   font-size: 16px;
-  color: #525252;
+  color: var(--text-secondary, #525252);
   opacity: 1;
 }
 
@@ -1753,7 +1753,7 @@ body.resizing-sidebar {
 .welcome-vault-picker .vault-picker-button:hover .dropdown-arrow,
 .welcome-vault-picker .vault-picker-button:focus-visible .dropdown-arrow,
 .welcome-vault-picker .vault-picker-button[aria-expanded="true"] .dropdown-arrow {
-  color: #171717;
+  color: var(--text-primary, #171717);
 }
 
 .welcome-vault-picker .vault-picker-menu {

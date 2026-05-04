@@ -16,7 +16,7 @@ function makeVaultSettings(wysiwygMode = true) {
     editor: {
       font_size: 16,
       font_family: "'SF Mono', Monaco, 'Cascadia Code', monospace",
-      font_color: '#1f2937',
+      font_color: '#32302c',
       theme: 'default',
       line_numbers: false,
       line_wrapping: true,
@@ -132,5 +132,63 @@ describe('UserSettingsPanel lifecycle', () => {
     expect(savedPayloads).toHaveLength(1)
     expect(savedPayloads[0].editor.theme_overrides.enabled).toBe(true)
     expect(savedPayloads[0].editor.theme_overrides.dark.accent).toBe('#88AADD')
+  })
+
+  test('preserves settings scroll position when theme override controls rerender', async () => {
+    invoke.mockImplementation(async (command) => {
+      if (command === 'get_vault_settings') {
+        return makeVaultSettings(true)
+      }
+      throw new Error(`Unexpected invoke command: ${command}`)
+    })
+
+    const panel = new UserSettingsPanel()
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+    await panel.mount(container)
+
+    const content = container.querySelector('.settings-content')
+    content.scrollTop = 180
+
+    const toggle = container.querySelector('[data-action="toggle-theme-overrides"]')
+    toggle.checked = true
+    toggle.dispatchEvent(new Event('change', { bubbles: true }))
+
+    expect(container.querySelector('.settings-content').scrollTop).toBe(180)
+  })
+
+  test('cancelling reverts unsaved live preview settings', async () => {
+    invoke.mockImplementation(async (command) => {
+      if (command === 'get_vault_settings') {
+        return makeVaultSettings(true)
+      }
+      throw new Error(`Unexpected invoke command: ${command}`)
+    })
+
+    window.themeManager = {
+      setThemeOverrides: jest.fn(),
+      applyTheme: jest.fn(),
+      setFontSize: jest.fn(),
+      setFontFamily: jest.fn(),
+      setFontColor: jest.fn()
+    }
+
+    const panel = new UserSettingsPanel()
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+    await panel.mount(container)
+
+    const themeSelect = container.querySelector('[data-setting="theme"]')
+    themeSelect.value = 'dark'
+    themeSelect.dispatchEvent(new Event('change', { bubbles: true }))
+
+    panel.close()
+
+    expect(window.themeManager.applyTheme).toHaveBeenCalledWith(
+      'default',
+      expect.objectContaining({ enabled: false })
+    )
+    expect(window.themeManager.setFontColor).toHaveBeenCalledWith('#32302c')
+    expect(panel.container).toBeNull()
   })
 })

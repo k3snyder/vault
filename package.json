@@ -13,8 +13,7 @@
     "build:excalidraw": "cd public/excalidraw-bundle && npm run build",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build",
-    "test:botcky-static": "node scripts/check-botcky-native-gates.js"
+    "tauri:build": "tauri build"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",

@@ -258,6 +258,23 @@ describe('EnhancedChatPanel native Botcky provider routing', () => {
     expect(localStorage.getItem('gaimplan-chat-mode')).toBe('botcky');
   });
 
+  test('mode toggle returns from CLI to native Botcky mode when Botcky is the active provider', async () => {
+    const panel = new EnhancedChatPanel();
+    panel.currentProvider = 'botckyGateway';
+    panel.currentMode = 'cli';
+    panel.providers.botckyGateway.configured = true;
+    panel.providers.botckyGateway.status = 'ready';
+    panel.cliContainer = { stop: jest.fn(async () => {}) };
+    panel.updateUI = jest.fn();
+
+    await panel.handleModeToggle('chat');
+
+    expect(panel.currentMode).toBe('botcky');
+    expect(localStorage.getItem('gaimplan-chat-mode')).toBe('botcky');
+    expect(panel.cliContainer.stop).toHaveBeenCalledTimes(1);
+    expect(panel.updateUI).toHaveBeenCalledTimes(1);
+  });
+
   test('handleSendMessage switches to native Botcky UI without using legacy SDK chat', async () => {
     const panel = new EnhancedChatPanel();
     const addMessage = jest.fn();

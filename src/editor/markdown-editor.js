@@ -1335,7 +1335,7 @@ export class MarkdownEditor {
       
       .link-dialog h3 {
         margin: 0 0 20px 0;
-        color: var(--editor-text-color, #1f2937);
+        color: var(--editor-text-color, #32302c);
         font-size: 18px;
         font-weight: 600;
       }
@@ -1358,7 +1358,7 @@ export class MarkdownEditor {
         border: 1px solid var(--border-color, #e9e9e7);
         border-radius: 6px;
         font-size: 14px;
-        color: var(--editor-text-color, #1f2937);
+        color: var(--editor-text-color, #32302c);
         background: var(--bg-primary, #ffffff);
         box-sizing: border-box;
       }
@@ -1383,7 +1383,7 @@ export class MarkdownEditor {
         font-size: 14px;
         cursor: pointer;
         background: var(--bg-primary, #ffffff);
-        color: var(--editor-text-color, #1f2937);
+        color: var(--editor-text-color, #32302c);
       }
       
       .link-dialog-buttons button.primary {
