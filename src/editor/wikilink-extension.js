@@ -1,4 +1,5 @@
-import { Decoration, ViewPlugin, EditorView, MatchDecorator, WidgetType } from '@codemirror/view'
+import { RangeSetBuilder } from '@codemirror/state'
+import { Decoration, ViewPlugin, EditorView, WidgetType } from '@codemirror/view'
 import { wikiLinkCache } from './wikilink-cache.js'
 
 // WikiLink pattern: [[Page Name]] - but NOT ![[...]] (which are images)
@@ -101,7 +102,7 @@ function computeDisplayLabelFromNoteName(noteName) {
   return noteName
 }
 
-function createWikiLinkDecoration(match, view, pos) {
+function getWikiLinkDecorationInfo(match, view, pos) {
   const noteName = match[1]
   // Base name used for resolution/existence checks (left side of pipe)
   const baseName = noteName.split('|', 2)[0].trim()
@@ -139,39 +140,17 @@ function createWikiLinkDecoration(match, view, pos) {
   const to = pos + match[0].length
   const isActive = cursor >= from && cursor <= to
 
-  if (isActive) {
-    // Edit mode: show raw markdown but keep clickable styling
-    // MatchDecorator expects a Decoration, not a Range<Decoration>
-    return Decoration.mark({
-      class: isTid ? `${cssClass} cm-tid-link` : cssClass,
-      attributes: {
-        'data-wikilink': baseName,
-        'data-exists': exists.toString(),
-        'data-cache-key': cacheKey,
-        'data-wikilink-from': from.toString(),
-        'data-wikilink-to': to.toString(),
-        title: exists
-          ? `Navigate to "${baseName}"\nClick to open`
-          : cssClass === 'cm-wikilink-checking'
-            ? `Checking "${baseName}"...`
-            : `"${baseName}" doesn't exist\nClick to create`
-      }
-    })
-  }
-
-  // Preview mode: replace with a compact label
-  // MatchDecorator expects a Decoration, not a Range<Decoration>
-  const label = computeDisplayLabelFromNoteName(noteName)
-  const widget = new InlineWikiLinkWidget({
-    label,
-    noteName: baseName,
+  return {
+    noteName,
+    baseName,
+    label: computeDisplayLabelFromNoteName(noteName),
     cssClass: isTid ? `${cssClass} cm-tid-link` : cssClass,
     exists,
     cacheKey,
     from,
-    to
-  })
-  return Decoration.replace({ widget })
+    to,
+    isActive
+  }
 }
 
 function hideWikiLinkContextMenu() {
@@ -309,21 +288,85 @@ async function checkNoteExistsAsync(noteName, view) {
   }
 }
 
-// MatchDecorator for WikiLinks
-const wikiLinkMatcher = new MatchDecorator({
-  regexp: wikiLinkPattern,
-  decoration: (match, view, pos) => {
-    console.log('Creating decoration for WikiLink:', match[0])
-    return createWikiLinkDecoration(match, view, pos)
-  }
-})
+function createWikiLinkMark(info) {
+  return Decoration.mark({
+    class: info.cssClass,
+    attributes: {
+      'data-wikilink': info.baseName,
+      'data-exists': info.exists.toString(),
+      'data-cache-key': info.cacheKey,
+      'data-wikilink-from': info.from.toString(),
+      'data-wikilink-to': info.to.toString(),
+      title: info.exists
+        ? `Navigate to "${info.baseName}"\nClick to open`
+        : info.cssClass.includes('cm-wikilink-checking')
+          ? `Checking "${info.baseName}"...`
+          : `"${info.baseName}" doesn't exist\nClick to create`
+    }
+  })
+}
 
-// Create decorations for WikiLinks using the MatchDecorator approach
-// FIXED: MatchDecorator.createDeco() only takes (view) and returns a DecorationSet
-function createWikiLinkDecorations(view) {
-  // MatchDecorator.createDeco() properly handles viewport-only matching
-  // It returns a DecorationSet directly - no need for manual iteration
-  return wikiLinkMatcher.createDeco(view)
+function createWikiLinkWidget(info) {
+  return Decoration.replace({
+    widget: new InlineWikiLinkWidget({
+      label: info.label,
+      noteName: info.baseName,
+      cssClass: info.cssClass,
+      exists: info.exists,
+      cacheKey: info.cacheKey,
+      from: info.from,
+      to: info.to
+    })
+  })
+}
+
+function addWikiLinkDecoration(builders, match, view, pos) {
+  console.log('Creating decoration for WikiLink:', match[0])
+
+  const info = getWikiLinkDecorationInfo(match, view, pos)
+  const contentFrom = info.from + 2
+  const contentTo = info.to - 2
+  const openingMarker = Decoration.replace({})
+  const closingMarker = Decoration.replace({})
+
+  builders.decorations.add(info.from, contentFrom, openingMarker)
+  builders.atomicDecorations.add(info.from, contentFrom, openingMarker)
+
+  const shouldRenderDisplayLabel = !info.isActive && info.label !== info.noteName
+  builders.decorations.add(
+    contentFrom,
+    contentTo,
+    shouldRenderDisplayLabel ? createWikiLinkWidget(info) : createWikiLinkMark(info)
+  )
+
+  builders.decorations.add(contentTo, info.to, closingMarker)
+  builders.atomicDecorations.add(contentTo, info.to, closingMarker)
+}
+
+function createWikiLinkDecorationSets(view) {
+  const builders = {
+    decorations: new RangeSetBuilder(),
+    atomicDecorations: new RangeSetBuilder()
+  }
+
+  for (const { from, to } of view.visibleRanges) {
+    for (let pos = from; pos <= to;) {
+      const line = view.state.doc.lineAt(pos)
+      const regexp = new RegExp(wikiLinkPattern.source, 'g')
+      let match
+
+      while ((match = regexp.exec(line.text)) !== null) {
+        addWikiLinkDecoration(builders, match, view, line.from + match.index)
+      }
+
+      pos = line.to + 1
+    }
+  }
+
+  return {
+    decorations: builders.decorations.finish(),
+    atomicDecorations: builders.atomicDecorations.finish()
+  }
 }
 
 // WikiLink ViewPlugin
@@ -331,7 +374,9 @@ export const wikiLinkPlugin = ViewPlugin.fromClass(
   class {
     constructor(view) {
       this.view = view
-      this.decorations = createWikiLinkDecorations(view)
+      const sets = createWikiLinkDecorationSets(view)
+      this.decorations = sets.decorations
+      this.atomicDecorations = sets.atomicDecorations
       this.setupClickHandler(view)
     }
 
@@ -343,10 +388,9 @@ export const wikiLinkPlugin = ViewPlugin.fromClass(
         update.transactions.length > 0
 
       if (shouldFullyRefresh) {
-        this.decorations = createWikiLinkDecorations(update.view)
-      } else {
-        // Use MatchDecorator.updateDeco() for efficient incremental updates
-        this.decorations = wikiLinkMatcher.updateDeco(update, this.decorations)
+        const sets = createWikiLinkDecorationSets(update.view)
+        this.decorations = sets.decorations
+        this.atomicDecorations = sets.atomicDecorations
       }
 
       // Re-setup click handlers only when document changes
@@ -791,7 +835,12 @@ export const wikiLinkPlugin = ViewPlugin.fromClass(
     }
   },
   {
-    decorations: v => v.decorations
+    decorations: v => v.decorations,
+
+    provide: plugin => EditorView.atomicRanges.of(view => {
+      const p = view.plugin(plugin)
+      return p ? p.atomicDecorations : Decoration.none
+    })
   }
 )
 

@@ -886,8 +886,8 @@ export const inlineFormattingExtension = Prec.highest(ViewPlugin.fromClass(
       // Process strikethrough formatting: ~~text~~
       this.processStrikethroughFormatting(inlineDecorations, inlineAtomicDecorations, processingText, lineStart + processingOffset)
 
-      // Process WikiLink formatting: [[text]]
-      this.processWikiLinkFormatting(inlineDecorations, inlineAtomicDecorations, processingText, lineStart + processingOffset)
+      // Process inline code formatting: `text`
+      this.processInlineCodeFormatting(inlineDecorations, inlineAtomicDecorations, processingText, lineStart + processingOffset)
 
       // Sort inline decorations by start position to ensure proper order
       inlineDecorations.sort((a, b) => {
@@ -1282,47 +1282,53 @@ export const inlineFormattingExtension = Prec.highest(ViewPlugin.fromClass(
       }
     }
 
-    processWikiLinkFormatting(decorations, atomicDecorations, text, lineStart) {
-      // Match [[text]] for WikiLinks
-      const wikiLinkRegex = /\[\[([^\]]+)\]\]/g
+    processInlineCodeFormatting(decorations, atomicDecorations, text, lineStart) {
+      // Match inline code spans, hiding the backtick markers and styling only
+      // the code text. Keep the match single-line to avoid colliding with
+      // fenced code blocks or partially typed multiline content.
+      const inlineCodeRegex = /`([^`\n]+)`/g
       let match
 
-      while ((match = wikiLinkRegex.exec(text)) !== null) {
+      while ((match = inlineCodeRegex.exec(text)) !== null) {
         const fullMatch = match[0]
-        const content = match[1]
         const startPos = lineStart + match.index
         const endPos = startPos + fullMatch.length
 
-        // Hide the opening [[
+        // Hide the opening backtick.
         const openReplace = Decoration.replace({})
         decorations.push({
           from: startPos,
-          to: startPos + 2,
+          to: startPos + 1,
           decoration: openReplace
         })
         atomicDecorations.push({
           from: startPos,
-          to: startPos + 2,
+          to: startPos + 1,
           decoration: openReplace
         })
 
-        // The content itself is already styled by the WikiLink extension
-        // We just need to hide the brackets
+        // Style the code content itself (NOT atomic).
+        decorations.push({
+          from: startPos + 1,
+          to: endPos - 1,
+          decoration: Decoration.mark({ class: 'cm-code-formatted' })
+        })
 
-        // Hide the closing ]]
+        // Hide the closing backtick.
         const closeReplace = Decoration.replace({})
         decorations.push({
-          from: endPos - 2,
+          from: endPos - 1,
           to: endPos,
           decoration: closeReplace
         })
         atomicDecorations.push({
-          from: endPos - 2,
+          from: endPos - 1,
           to: endPos,
           decoration: closeReplace
         })
       }
     }
+
   },
   {
     decorations: v => v.decorations,
@@ -1417,6 +1423,16 @@ export const inlineFormattingStyles = EditorView.theme({
     textDecorationColor: 'currentColor !important',
     textUnderlineOffset: '2px !important',
     fontStyle: 'normal !important'  // Override any italic styling
+  },
+
+  '.cm-code-formatted': {
+    color: 'var(--md-code-color, #03bbbb) !important',
+    backgroundColor: 'var(--md-code-bg, var(--bg-secondary, #f8f9fa)) !important',
+    border: '1px solid var(--border-card, var(--border-primary, #e5e7eb)) !important',
+    borderRadius: '4px !important',
+    padding: '0.125em 0.375em !important',
+    fontFamily: 'var(--mono-font-stack, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace) !important',
+    fontSize: '0.9em !important'
   },
   
   // Highlight formatting yellow background
@@ -1519,7 +1535,7 @@ export const inlineFormattingStyles = EditorView.theme({
   
   '.cm-table-formatted code': {
     backgroundColor: 'var(--bg-secondary, #f8f9fa) !important',
-    color: 'var(--editor-text-color, #32302c) !important',
+    color: 'var(--md-code-color, #03bbbb) !important',
     padding: '2px 4px !important',
     borderRadius: '3px !important',
     fontSize: '13px !important',

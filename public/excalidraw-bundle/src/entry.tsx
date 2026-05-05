@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Excalidraw, exportToBlob, MainMenu } from '@excalidraw/excalidraw';
 import '@excalidraw/excalidraw/index.css';
+import './host.css';
 
 declare global {
   interface Window {
@@ -16,12 +17,7 @@ declare global {
   }
 }
 
-window.EXCALIDRAW_ASSET_PATH = './';
-
-// Hide Library button
-const style = document.createElement('style');
-style.textContent = '.excalidraw .sidebar-trigger { display: none !important; }';
-document.head.appendChild(style);
+window.EXCALIDRAW_ASSET_PATH = window.EXCALIDRAW_ASSET_PATH || new URL('./', window.location.href).toString();
 
 let excalidrawAPI: any = null;
 let pendingInitialData: any = null;

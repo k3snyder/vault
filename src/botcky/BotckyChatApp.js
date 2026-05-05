@@ -9,6 +9,7 @@ const ACTIVE_RUN_LIVENESS_INTERVAL_MS = 1500;
 const IDLE_LIVENESS_INTERVAL_MS = 10000;
 const CONTEXT_UI_REFRESH_INTERVAL_MS = 1000;
 const STREAM_FLUSH_INTERVAL_MS = 80;
+export const BOTCKY_RECONNECT_DELAYS_MS = Object.freeze([500, 1000, 2000, 5000, 10000]);
 const EMPTY_CONTEXT_UI = Object.freeze({
   activeNote: null,
   activeNoteIncluded: false,
@@ -72,6 +73,8 @@ export function BotckyChatApp({
   const pendingStreamEventsRef = React.useRef([]);
   const streamFlushTimerRef = React.useRef(null);
   const scrollbarRevealTimerRef = React.useRef(null);
+  const reconnectTimerRef = React.useRef(null);
+  const reconnectAttemptRef = React.useRef(0);
 
   React.useEffect(() => {
     stateRef.current = state;
@@ -130,16 +133,47 @@ export function BotckyChatApp({
     let disposed = false;
     const nativeClient = new BotckyGatewayNativeClient({ endpoint, apiKey, sessionId });
     const unsubscribe = nativeClient.onEvent(async event => {
+      if (event?.type === 'socket.error') {
+        scheduleReconnect(nativeClient);
+        return;
+      }
+
       if (isStreamingDeltaEvent(event)) {
         queueStreamingEvent(event);
       } else {
         flushStreamingEvents();
         applyBotckyEvent(event);
       }
+      if (event?.type === 'socket.open') {
+        reconnectAttemptRef.current = 0;
+      }
+      if (event?.type === 'socket.close' && !isExpectedSocketClose(event)) {
+        scheduleReconnect(nativeClient);
+      }
       if (isToolCallEvent(event)) {
         await handleToolCall(nativeClient, event, contextProvider, sessionId);
       }
     });
+
+    function scheduleReconnect(clientToReconnect) {
+      if (disposed || reconnectTimerRef.current) return;
+
+      const delay = botckyReconnectDelay(reconnectAttemptRef.current);
+      reconnectAttemptRef.current += 1;
+      reconnectTimerRef.current = window.setTimeout(() => {
+        reconnectTimerRef.current = null;
+        if (disposed) return;
+        try {
+          clientToReconnect.reconnectFromState(stateRef.current);
+          reconcileHistory(clientToReconnect, stateRef, setState, () => disposed).catch(() => {
+            if (!disposed) scheduleReconnect(clientToReconnect);
+          });
+          if (!disposed) setClient(clientToReconnect);
+        } catch {
+          if (!disposed) scheduleReconnect(clientToReconnect);
+        }
+      }, delay);
+    }
 
     async function startSession() {
       try {
@@ -178,6 +212,11 @@ export function BotckyChatApp({
         window.clearTimeout(streamFlushTimerRef.current);
         streamFlushTimerRef.current = null;
       }
+      if (reconnectTimerRef.current) {
+        window.clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
+      reconnectAttemptRef.current = 0;
       nativeClient.close(1000, 'botcky-host-unmount');
       setClient(null);
     };
@@ -619,6 +658,15 @@ export function BotckyChatApp({
       )
     )
   );
+}
+
+export function botckyReconnectDelay(attempt = 0) {
+  const index = Math.min(Math.max(Number(attempt) || 0, 0), BOTCKY_RECONNECT_DELAYS_MS.length - 1);
+  return BOTCKY_RECONNECT_DELAYS_MS[index];
+}
+
+function isExpectedSocketClose(event = {}) {
+  return event.code === 1000 || event.reason === 'reconnect' || event.reason === 'botcky-host-unmount';
 }
 
 function normalizeContextUi(contextUi = {}) {

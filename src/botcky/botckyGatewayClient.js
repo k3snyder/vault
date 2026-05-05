@@ -73,7 +73,7 @@ export class BotckyGatewayNativeClient {
     this.socket = new this.WebSocketCtor(gatewayWsUrl(this.endpoint, this.sessionId, afterSeq, this.apiKey));
     this.socket.addEventListener?.('open', () => this.emit({ type: 'socket.open', session_id: this.sessionId }));
     this.socket.addEventListener?.('message', event => this.handleMessage(event.data));
-    this.socket.addEventListener?.('error', event => this.emit({ type: 'error', error: event?.message || 'WebSocket error' }));
+    this.socket.addEventListener?.('error', event => this.emit({ type: 'socket.error', error: event?.message || 'WebSocket error' }));
     this.socket.addEventListener?.('close', event => this.emit({ type: 'socket.close', code: event?.code, reason: event?.reason }));
     return this.socket;
   }

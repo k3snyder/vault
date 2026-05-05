@@ -57,4 +57,18 @@ describe('ThemeManager', () => {
     expect(setBackgroundColor).toHaveBeenCalledWith('#12110F')
     expect(setTheme).toHaveBeenCalledWith('dark')
   })
+
+  test('keeps inline markdown code color distinct from markdown link color', () => {
+    const manager = new ThemeManager(null)
+
+    manager.applyTheme('dark', {
+      enabled: true,
+      dark: {
+        accent: '#88aadd'
+      }
+    })
+
+    expect(document.documentElement.style.getPropertyValue('--md-link-color')).toBe('#88AADD')
+    expect(document.documentElement.style.getPropertyValue('--md-code-color')).toBe('#03bbbb')
+  })
 })

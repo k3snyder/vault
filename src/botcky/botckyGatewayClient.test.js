@@ -168,6 +168,31 @@ describe('BotckyGatewayNativeClient', () => {
     expect(typeof sent[0].ts).toBe('number');
   });
 
+  test('emits socket.error instead of user-visible chat errors for websocket failures', () => {
+    let errorListener;
+    const socket = {
+      readyState: 1,
+      close: jest.fn(),
+      addEventListener: jest.fn((type, listener) => {
+        if (type === 'error') errorListener = listener;
+      }),
+    };
+    const client = new BotckyGatewayNativeClient({
+      endpoint: 'http://127.0.0.1:7110',
+      sessionId: 'session-1',
+      WebSocketCtor: jest.fn(() => socket),
+      fetchImpl: jest.fn(),
+    });
+    const events = [];
+    client.onEvent(event => events.push(event));
+
+    client.connect();
+    errorListener({ message: 'network lost' });
+
+    expect(events).toContainEqual({ type: 'socket.error', error: 'network lost' });
+    expect(events.some(event => event.type === 'error')).toBe(false);
+  });
+
   test('normalizes durable history into replayable events after the last seen seq', () => {
     const history = {
       messages: [

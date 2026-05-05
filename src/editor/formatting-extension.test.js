@@ -151,4 +151,23 @@ describe('formatting-extension heading inline formatting', () => {
     expect(container.textContent).not.toContain('**')
     expect(boldEl.textContent).toBe('Important Heading')
   })
+
+  test('formats inline code spans with the code color class and hides backticks', () => {
+    const doc = 'Use `Slipbox/RAW/` as the raw source folder.'
+    const state = EditorState.create({
+      doc,
+      extensions: [inlineFormattingExtension, inlineFormattingStyles]
+    })
+
+    view = new EditorView({
+      state,
+      parent: container
+    })
+
+    const codeEl = container.querySelector('.cm-code-formatted')
+
+    expect(codeEl).toBeTruthy()
+    expect(codeEl.textContent).toBe('Slipbox/RAW/')
+    expect(container.textContent).not.toContain('`')
+  })
 })

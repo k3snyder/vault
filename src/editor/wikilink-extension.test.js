@@ -1,13 +1,12 @@
+/**
+ * @jest-environment jsdom
+ */
+
 import { describe, test, expect, beforeEach, afterEach } from '@jest/globals'
 import { EditorState } from '@codemirror/state'
 import { EditorView } from '@codemirror/view'
 import { wikiLinkPlugin, wikiLinkStyles } from './wikilink-extension.js'
-
-// Mock JSDOM environment for CodeMirror
-import { JSDOM } from 'jsdom'
-const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>')
-global.window = dom.window
-global.document = dom.window.document
+import { inlineFormattingExtension, inlineFormattingStyles } from './formatting-extension.js'
 
 describe('WikiLink Extension - Pattern Recognition', () => {
   let container, view
@@ -27,7 +26,7 @@ describe('WikiLink Extension - Pattern Recognition', () => {
   })
 
   describe('WikiLink Regex Pattern Matching', () => {
-    const wikiLinkPattern = /\[\[([^\]]+)\]\]/g
+    const wikiLinkPattern = /(?<!\[)(?<!!)\[\[([^\]]+)\]\](?!\])/g
 
     test('should match basic WikiLink syntax', () => {
       const testCases = [
@@ -134,7 +133,7 @@ describe('WikiLink Extension - Pattern Recognition', () => {
       expect(matches[0][1]).toBe('First Note')
       
       // Second match
-      expect(matches[1].index).toBe(27) // Position of second [[
+      expect(matches[1].index).toBe(28) // Position of second [[
       expect(matches[1][0]).toBe('[[Second Note]]')
       expect(matches[1][1]).toBe('Second Note')
     })
@@ -176,6 +175,36 @@ describe('WikiLink Extension - Pattern Recognition', () => {
 
       // The extension should process the document without errors
       expect(view.state.doc.toString()).toBe(testContent)
+    })
+
+    test('should render WikiLink text on initial paint when combined with inline formatting', () => {
+      const testContent = "Part of the [[Import Wiki Skill]]'s edit-to-reingest loop."
+
+      const state = EditorState.create({
+        doc: testContent,
+        selection: { anchor: 0 },
+        extensions: [
+          inlineFormattingExtension,
+          inlineFormattingStyles,
+          wikiLinkPlugin,
+          wikiLinkStyles
+        ]
+      })
+
+      view = new EditorView({
+        state,
+        parent: container
+      })
+
+      const editorContent = container.querySelector('.cm-content')
+      const wikiLink = editorContent.querySelector(
+        '.cm-wikilink-exists, .cm-wikilink-missing, .cm-wikilink-checking'
+      )
+
+      expect(wikiLink).toBeTruthy()
+      expect(wikiLink.textContent).toBe('Import Wiki Skill')
+      expect(editorContent.textContent).toContain("Part of the Import Wiki Skill's edit-to-reingest loop.")
+      expect(editorContent.textContent).not.toContain('[[Import Wiki Skill]]')
     })
 
     test('should handle document changes with WikiLinks', () => {

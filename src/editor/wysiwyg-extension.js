@@ -392,6 +392,7 @@ const wysiwygStyles = EditorView.theme({
   '.cm-wysiwyg-code': {
     fontFamily: 'var(--font-mono, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace) !important',
     backgroundColor: 'var(--code-bg, rgba(0, 0, 0, 0.05)) !important',
+    color: 'var(--md-code-color, #03bbbb) !important',
     padding: '0.1em 0.3em !important',
     borderRadius: '3px !important',
     fontSize: '0.9em !important',

@@ -40,7 +40,7 @@ export class ThemeManager {
         '--md-link-color': '#2563eb',
         '--md-link-hover-color': '#1d4ed8',
         '--md-code-bg': '#f6f8fa',
-        '--md-code-color': '#d73a49',
+        '--md-code-color': '#03bbbb',
         '--md-code-block-bg': '#f8f9fa',
         '--md-code-block-border': '#e1e4e8',
         '--md-quote-border': '#2563eb',
@@ -75,7 +75,7 @@ export class ThemeManager {
         '--md-link-color': '#2563eb',
         '--md-link-hover-color': '#1d4ed8',
         '--md-code-bg': '#f6f8fa',
-        '--md-code-color': '#d73a49',
+        '--md-code-color': '#03bbbb',
         '--md-code-block-bg': '#f8f9fa',
         '--md-code-block-border': '#e1e4e8',
         '--md-quote-border': '#2563eb',
@@ -109,7 +109,7 @@ export class ThemeManager {
         '--md-link-color': '#7FA6D6',
         '--md-link-hover-color': '#9BBCE0',
         '--md-code-bg': '#20201D',
-        '--md-code-color': '#fca5a5',
+        '--md-code-color': '#03bbbb',
         '--md-code-block-bg': '#12110F',
         '--md-code-block-border': 'rgba(255, 255, 255, 0.095)',
         '--md-quote-border': '#7FA6D6',
@@ -126,7 +126,7 @@ export class ThemeManager {
         '--editor-text-color': '#657b83',
         '--editor-bg-color': '#fdf6e3',
         '--editor-selection-bg': '#eee8d5',
-        '--editor-caret-color': '#2aa198',
+        '--editor-caret-color': '#03bbbb',
         '--editor-gutter-bg': '#eee8d5',
         '--editor-gutter-color': '#93a1a1',
         '--editor-gutter-border': '#eee8d5',
@@ -140,7 +140,7 @@ export class ThemeManager {
         '--md-heading-color': '#b58900',
         '--md-link-color': '#268bd2',
         '--md-code-bg': '#eee8d5',
-        '--md-code-color': '#2aa198',
+        '--md-code-color': '#03bbbb',
         '--md-quote-border': '#93a1a1',
         '--md-quote-bg': '#eee8d5'
       }
@@ -154,7 +154,7 @@ export class ThemeManager {
         '--editor-text-color': '#839496',
         '--editor-bg-color': '#002b36',
         '--editor-selection-bg': '#073642',
-        '--editor-caret-color': '#2aa198',
+        '--editor-caret-color': '#03bbbb',
         '--editor-gutter-bg': '#073642',
         '--editor-gutter-color': '#586e75',
         '--editor-gutter-border': '#073642',
@@ -168,7 +168,7 @@ export class ThemeManager {
         '--md-heading-color': '#b58900',
         '--md-link-color': '#268bd2',
         '--md-code-bg': '#073642',
-        '--md-code-color': '#2aa198',
+        '--md-code-color': '#03bbbb',
         '--md-quote-border': '#586e75',
         '--md-quote-bg': '#073642'
       }
@@ -196,7 +196,7 @@ export class ThemeManager {
         '--md-heading-color': '#bd93f9',
         '--md-link-color': '#8be9fd',
         '--md-code-bg': '#44475a',
-        '--md-code-color': '#50fa7b',
+        '--md-code-color': '#03bbbb',
         '--md-quote-border': '#6272a4',
         '--md-quote-bg': '#44475a'
       }

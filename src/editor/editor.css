@@ -307,7 +307,7 @@
   --md-link-color: var(--link-color);
   --md-link-hover-color: var(--link-hover);
   --md-code-bg: var(--bg-secondary);
-  --md-code-color: var(--syntax-keyword);
+  --md-code-color: #03bbbb;
   --md-code-block-bg: var(--bg-secondary);
   --md-code-block-border: var(--border-primary);
   --md-quote-border: var(--accent-primary);
@@ -735,6 +735,12 @@ html body .cm-content .cm-selectionBackground {
 .cm-activeLine,
 .cm-activeLine * {
   color: var(--editor-text-color, var(--editor-text, #32302c)) !important;
+}
+
+/* Preserve semantic inline-code coloring even on the active editor line. */
+.cm-activeLine .cm-code-formatted,
+.cm-activeLine .cm-wysiwyg-code {
+  color: var(--md-code-color, #03bbbb) !important;
 }
 
 /* Preserve highlight background on active lines (light mode) */

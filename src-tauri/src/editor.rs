@@ -107,8 +107,7 @@ impl EditorManager {
 
     /// Load preferences from the config file synchronously (used during initialization)
     fn load_preferences_from_file() -> Result<EditorPreferences, Box<dyn std::error::Error>> {
-        let config_dir = std::env::current_dir()?.join(".vault");
-        let config_path = config_dir.join("editor_preferences.json");
+        let config_path = Self::editor_preferences_path_for_read()?;
 
         if !config_path.exists() {
             return Err("Config file does not exist".into());
@@ -139,17 +138,40 @@ impl EditorManager {
     }
 
     fn get_config_path(&self) -> Result<PathBuf, Box<dyn std::error::Error>> {
-        // For now, use a simple local path - in production this should use proper app data directory
-        let config_dir = std::env::current_dir()?.join(".vault");
+        let config_dir = Self::config_dir()?;
         std::fs::create_dir_all(&config_dir)?;
         Ok(config_dir.join("editor_preferences.json"))
     }
 
     fn get_themes_dir(&self) -> Result<PathBuf, Box<dyn std::error::Error>> {
-        // For now, use a simple local path - in production this should use proper app data directory
-        let config_dir = std::env::current_dir()?.join(".vault");
+        let config_dir = Self::config_dir()?;
         std::fs::create_dir_all(&config_dir)?;
         Ok(config_dir.join("themes"))
+    }
+
+    fn config_dir() -> Result<PathBuf, Box<dyn std::error::Error>> {
+        Ok(dirs::config_dir()
+            .ok_or("Failed to get config directory")?
+            .join("com.vault.app")
+            .join(".vault"))
+    }
+
+    fn legacy_cwd_config_dir() -> Result<PathBuf, Box<dyn std::error::Error>> {
+        Ok(std::env::current_dir()?.join(".vault"))
+    }
+
+    fn editor_preferences_path_for_read() -> Result<PathBuf, Box<dyn std::error::Error>> {
+        let config_path = Self::config_dir()?.join("editor_preferences.json");
+        if config_path.exists() {
+            return Ok(config_path);
+        }
+
+        let legacy_path = Self::legacy_cwd_config_dir()?.join("editor_preferences.json");
+        if legacy_path.exists() {
+            return Ok(legacy_path);
+        }
+
+        Ok(config_path)
     }
 }
 

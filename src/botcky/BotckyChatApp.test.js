@@ -4,6 +4,8 @@
 import { describe, expect, jest, test, beforeEach } from '@jest/globals';
 import {
   archiveTargetSessionIds,
+  botckyReconnectDelay,
+  BOTCKY_RECONNECT_DELAYS_MS,
   buildBotckyTranscriptItems,
   displaySessions,
   ensureBotckyStartupSession,
@@ -73,6 +75,12 @@ describe('BotckyChatApp session startup', () => {
     expect(first).toBe('created-1');
     expect(second).toBe('created-1');
     expect(nativeClient.createSession).toHaveBeenCalledTimes(1);
+  });
+
+  test('caps websocket reconnect backoff at the final delay', () => {
+    expect(botckyReconnectDelay(0)).toBe(BOTCKY_RECONNECT_DELAYS_MS[0]);
+    expect(botckyReconnectDelay(2)).toBe(BOTCKY_RECONNECT_DELAYS_MS[2]);
+    expect(botckyReconnectDelay(999)).toBe(BOTCKY_RECONNECT_DELAYS_MS[BOTCKY_RECONNECT_DELAYS_MS.length - 1]);
   });
 
   test('collapses duplicate race-created Session 1 entries in the dropdown while keeping the current one', () => {
