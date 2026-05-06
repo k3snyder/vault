@@ -5,7 +5,7 @@ A local-first notes app that brings together everything you've saved, highlighte
 ## Features
 
 - **Progressive Context** — Every note, highlight, and document compounds into deeper AI context, building a continuously evolving knowledge engine. You control what to share with local or cloud AI, nothing is sent automatically.
-- **Local app performance** - Native desktop performance that keeps pace with how you think. A knowledge engine that responds the moment you do. Built for professionals who refuse to wait.
+- **Local app performance** - Native desktop performance that keeps pace with how you think. A knowledge engine that responds the moment you do. 
 - **Local-First Storage** — Plain Markdown files. No lock-in. No tracking. 
 - **Multi-Model AI** — OpenAI, Claude, Gemini, Ollama, LM Studio
 - **CLI AI Agents** — Integrated Claude Code, Codex, Gemini CLI AI Agents with full vault context

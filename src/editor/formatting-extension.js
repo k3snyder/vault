@@ -17,11 +17,69 @@ function escapeAttribute(value = '') {
   return escapeHtml(value)
 }
 
+const TABLE_MIN_COLUMN_WIDTH = 48
+const TABLE_COLUMN_WIDTH_CACHE_LIMIT = 100
+const TABLE_COLUMN_WIDTH_STORAGE_KEY = 'vault-table-column-widths-v1'
+const tableColumnWidthCache = new Map()
+
+function tableColumnWidthCacheKey(tableRows) {
+  return tableRows.slice(0, 2).join('\n')
+}
+
+function loadStoredTableColumnWidths() {
+  if (typeof localStorage === 'undefined') {
+    return {}
+  }
+
+  try {
+    const stored = localStorage.getItem(TABLE_COLUMN_WIDTH_STORAGE_KEY)
+    return stored ? JSON.parse(stored) : {}
+  } catch {
+    return {}
+  }
+}
+
+function getRememberedTableColumnWidths(cacheKey) {
+  if (tableColumnWidthCache.has(cacheKey)) {
+    return tableColumnWidthCache.get(cacheKey)
+  }
+
+  const storedWidths = loadStoredTableColumnWidths()[cacheKey]
+  if (Array.isArray(storedWidths)) {
+    const normalizedWidths = storedWidths.map(width => Math.max(TABLE_MIN_COLUMN_WIDTH, Math.round(width)))
+    tableColumnWidthCache.set(cacheKey, normalizedWidths)
+    return normalizedWidths
+  }
+
+  return null
+}
+
+function rememberTableColumnWidths(cacheKey, widths) {
+  const normalizedWidths = widths.map(width => Math.max(TABLE_MIN_COLUMN_WIDTH, Math.round(width)))
+  tableColumnWidthCache.set(cacheKey, normalizedWidths)
+
+  if (tableColumnWidthCache.size > TABLE_COLUMN_WIDTH_CACHE_LIMIT) {
+    const oldestKey = tableColumnWidthCache.keys().next().value
+    tableColumnWidthCache.delete(oldestKey)
+  }
+
+  if (typeof localStorage !== 'undefined') {
+    try {
+      const storedWidths = loadStoredTableColumnWidths()
+      storedWidths[cacheKey] = normalizedWidths
+      localStorage.setItem(TABLE_COLUMN_WIDTH_STORAGE_KEY, JSON.stringify(storedWidths))
+    } catch {
+      // Resizing should remain usable even when WebView storage is unavailable.
+    }
+  }
+}
+
 // Table widget for rendering markdown tables as HTML tables
 class TableWidget extends WidgetType {
   constructor(tableRows) {
     super()
     this.tableRows = tableRows
+    this.columnWidthCacheKey = tableColumnWidthCacheKey(tableRows)
   }
 
   // Allow mouse events to pass through for text selection within the table
@@ -72,6 +130,14 @@ class TableWidget extends WidgetType {
       }
     })
 
+    const clearSelectionOnOutsideClick = (event) => {
+      if (!table.contains(event.target)) {
+        this.clearColumnSelection(table)
+      }
+    }
+    table._clearSelectionOnOutsideClick = clearSelectionOnOutsideClick
+    document.addEventListener('mousedown', clearSelectionOnOutsideClick, true)
+
     // Parse table structure
     const headerRow = this.tableRows[0]
     const separatorRow = this.tableRows[1]
@@ -89,14 +155,18 @@ class TableWidget extends WidgetType {
 
     // Ensure we have at least as many header cells as alignment columns
     const maxColumns = Math.max(headerCells.length, alignments.length)
+    const colgroup = this.createColumnGroup(maxColumns)
+    table.appendChild(colgroup)
 
     for (let i = 0; i < maxColumns; i++) {
       const th = document.createElement('th')
       const cellContent = headerCells[i] || ''
+      th.dataset.columnIndex = String(i)
       th.innerHTML = this.parseInlineFormatting(cellContent.trim()) || '&nbsp;'
       if (alignments[i]) {
         th.style.textAlign = alignments[i]
       }
+      th.appendChild(this.createColumnResizeHandle(table, colgroup, i))
       headerTr.appendChild(th)
     }
     thead.appendChild(headerTr)
@@ -113,6 +183,7 @@ class TableWidget extends WidgetType {
         for (let i = 0; i < maxColumns; i++) {
           const td = document.createElement('td')
           const cellContent = cells[i] || ''
+          td.dataset.columnIndex = String(i)
           td.innerHTML = this.parseInlineFormatting(cellContent.trim()) || '&nbsp;'
           if (alignments[i]) {
             td.style.textAlign = alignments[i]
@@ -124,7 +195,134 @@ class TableWidget extends WidgetType {
       table.appendChild(tbody)
     }
 
+    const cachedWidths = getRememberedTableColumnWidths(this.columnWidthCacheKey)
+    if (cachedWidths?.length) {
+      this.applyColumnWidths(table, colgroup, cachedWidths)
+    }
+
     return table
+  }
+
+  createColumnGroup(columnCount) {
+    const colgroup = document.createElement('colgroup')
+    for (let i = 0; i < columnCount; i++) {
+      const col = document.createElement('col')
+      col.dataset.columnIndex = String(i)
+      colgroup.appendChild(col)
+    }
+    return colgroup
+  }
+
+  createColumnResizeHandle(table, colgroup, columnIndex) {
+    const handle = document.createElement('span')
+    handle.className = 'cm-table-column-resize-handle'
+    handle.setAttribute('role', 'separator')
+    handle.setAttribute('aria-orientation', 'vertical')
+    handle.setAttribute('aria-label', `Resize column ${columnIndex + 1}`)
+    handle.dataset.columnIndex = String(columnIndex)
+
+    handle.addEventListener('mousedown', (event) => {
+      this.startColumnResize(event, table, colgroup, columnIndex)
+    })
+
+    return handle
+  }
+
+  startColumnResize(event, table, colgroup, columnIndex) {
+    if (event.button !== undefined && event.button !== 0) {
+      return
+    }
+
+    event.preventDefault()
+    event.stopPropagation()
+    table.focus()
+
+    const widths = this.captureColumnWidths(table, colgroup)
+    const startX = event.clientX || 0
+    const startWidth = widths[columnIndex] || TABLE_MIN_COLUMN_WIDTH
+    const handle = event.currentTarget
+
+    this.applyColumnWidths(table, colgroup, widths)
+    this.selectColumn(table, columnIndex)
+    table.classList.add('cm-table-column-resizing')
+    handle?.classList?.add('is-active')
+
+    const onMouseMove = (moveEvent) => {
+      moveEvent.preventDefault()
+      moveEvent.stopPropagation()
+
+      const delta = (moveEvent.clientX || startX) - startX
+      widths[columnIndex] = Math.max(TABLE_MIN_COLUMN_WIDTH, startWidth + delta)
+      this.applyColumnWidths(table, colgroup, widths)
+      rememberTableColumnWidths(this.columnWidthCacheKey, widths)
+    }
+
+    const stopResize = (upEvent) => {
+      upEvent?.preventDefault?.()
+      upEvent?.stopPropagation?.()
+
+      table.classList.remove('cm-table-column-resizing')
+      handle?.classList?.remove('is-active')
+      rememberTableColumnWidths(this.columnWidthCacheKey, widths)
+      document.removeEventListener('mousemove', onMouseMove, true)
+      document.removeEventListener('mouseup', stopResize, true)
+    }
+
+    document.addEventListener('mousemove', onMouseMove, true)
+    document.addEventListener('mouseup', stopResize, true)
+  }
+
+  captureColumnWidths(table, colgroup) {
+    return Array.from(colgroup.children).map((col, columnIndex) => {
+      const explicitWidth = parseFloat(col.style.width)
+      if (Number.isFinite(explicitWidth) && explicitWidth > 0) {
+        return Math.max(TABLE_MIN_COLUMN_WIDTH, explicitWidth)
+      }
+
+      const cell = Array.from(table.rows)
+        .map(row => row.cells[columnIndex])
+        .find(Boolean)
+      const rectWidth = cell?.getBoundingClientRect?.().width
+      const measuredWidth = rectWidth || cell?.offsetWidth || cell?.scrollWidth || TABLE_MIN_COLUMN_WIDTH
+      return Math.max(TABLE_MIN_COLUMN_WIDTH, Math.round(measuredWidth))
+    })
+  }
+
+  applyColumnWidths(table, colgroup, widths) {
+    const normalizedWidths = widths.map(width => Math.max(TABLE_MIN_COLUMN_WIDTH, Math.round(width)))
+    const totalWidth = normalizedWidths.reduce((sum, width) => sum + width, 0)
+
+    normalizedWidths.forEach((width, columnIndex) => {
+      const col = colgroup.children[columnIndex]
+      if (col) {
+        col.style.width = `${width}px`
+        col.style.minWidth = `${TABLE_MIN_COLUMN_WIDTH}px`
+      }
+    })
+
+    table.style.setProperty('table-layout', 'fixed', 'important')
+    table.style.setProperty('width', `${totalWidth}px`, 'important')
+    table.style.setProperty('max-width', 'none', 'important')
+  }
+
+  selectColumn(table, columnIndex) {
+    this.clearColumnSelection(table)
+
+    table
+      .querySelectorAll(`th[data-column-index="${columnIndex}"], td[data-column-index="${columnIndex}"]`)
+      .forEach(cell => cell.classList.add('cm-table-column-selected'))
+  }
+
+  clearColumnSelection(table) {
+    table
+      .querySelectorAll('.cm-table-column-selected')
+      .forEach(cell => cell.classList.remove('cm-table-column-selected'))
+  }
+
+  destroy(table) {
+    if (table?._clearSelectionOnOutsideClick) {
+      document.removeEventListener('mousedown', table._clearSelectionOnOutsideClick, true)
+    }
   }
   
   parseTableRow(row) {
@@ -1482,6 +1680,7 @@ export const inlineFormattingStyles = EditorView.theme({
     backgroundColor: 'var(--bg-secondary, #f8f9fa) !important',
     color: 'var(--editor-text-color, #32302c) !important',
     fontWeight: '600 !important',
+    position: 'relative !important',
     padding: '12px 16px !important',
     borderBottom: '2px solid var(--border-color, #e9e9e7) !important',
     borderRight: '1px solid var(--border-color, #e9e9e7) !important',
@@ -1510,6 +1709,52 @@ export const inlineFormattingStyles = EditorView.theme({
     userSelect: 'text !important',
     WebkitUserSelect: 'text !important',
     cursor: 'text !important'
+  },
+
+  '.cm-table-formatted th.cm-table-column-selected, .cm-table-formatted td.cm-table-column-selected': {
+    backgroundColor: 'rgba(59, 130, 246, 0.08) !important',
+    boxShadow: 'inset 2px 0 rgba(59, 130, 246, 0.35), inset -2px 0 rgba(59, 130, 246, 0.35) !important'
+  },
+
+  '.cm-table-formatted.cm-table-column-resizing': {
+    cursor: 'col-resize !important',
+    userSelect: 'none !important',
+    WebkitUserSelect: 'none !important'
+  },
+
+  '.cm-table-formatted.cm-table-column-resizing th, .cm-table-formatted.cm-table-column-resizing td': {
+    userSelect: 'none !important',
+    WebkitUserSelect: 'none !important'
+  },
+
+  '.cm-table-column-resize-handle': {
+    position: 'absolute !important',
+    top: '0 !important',
+    right: '-4px !important',
+    width: '8px !important',
+    height: '100% !important',
+    cursor: 'col-resize !important',
+    zIndex: '3 !important',
+    userSelect: 'none !important',
+    WebkitUserSelect: 'none !important',
+    touchAction: 'none !important'
+  },
+
+  '.cm-table-column-resize-handle::after': {
+    content: '""',
+    position: 'absolute !important',
+    top: '8px !important',
+    bottom: '8px !important',
+    left: '3px !important',
+    width: '2px !important',
+    borderRadius: '999px !important',
+    backgroundColor: 'transparent !important',
+    transition: 'background-color 120ms ease, box-shadow 120ms ease !important'
+  },
+
+  '.cm-table-formatted:hover .cm-table-column-resize-handle::after, .cm-table-column-resize-handle:hover::after, .cm-table-column-resize-handle.is-active::after': {
+    backgroundColor: 'var(--link-color, #2563eb) !important',
+    boxShadow: '0 0 0 2px rgba(37, 99, 235, 0.14) !important'
   },
   
   '.cm-table-formatted td:last-child': {
