@@ -1,0 +1,541 @@
+/* AI Settings Panel Styles */
+.ai-settings-panel {
+  padding: 20px;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  max-width: 600px;
+  margin: 0 auto;
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.ai-settings-panel h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  color: #1a1a1a;
+}
+
+/* Quick Setup Section */
+.quick-setup {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.quick-setup p {
+  margin: 0 0 12px 0;
+  font-weight: 500;
+  color: #666;
+}
+
+.quick-setup-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.quick-setup-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.quick-setup-btn:hover {
+  background: #0066cc;
+  color: white;
+  border-color: #0066cc;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.quick-setup-btn.selected {
+  background: #e6f2ff;
+  border-color: #0066cc;
+  color: #0066cc;
+}
+
+.quick-setup-btn.active {
+  border-color: #28a745;
+  border-width: 2px;
+}
+
+.quick-setup-btn.active.selected {
+  background: #0066cc;
+  color: white;
+  border-color: #0066cc;
+}
+
+.active-badge {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  line-height: 16px;
+  text-align: center;
+  background: #28a745;
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+.quick-setup-info {
+  margin-top: 12px;
+  margin-bottom: 0;
+  font-size: 13px;
+}
+
+.quick-setup-info .warning {
+  color: #ff6b35;
+  font-weight: 500;
+}
+
+.quick-setup-info .info {
+  color: #666;
+}
+
+.provider-icon {
+  font-size: 18px;
+}
+
+/* Form Styles */
+.settings-form {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+  background: white;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+.form-input[type='textarea'],
+textarea.form-input {
+  min-height: 100px;
+  resize: vertical;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  line-height: 1.5;
+}
+
+.form-group small {
+  display: block;
+  margin-top: 4px;
+  color: #666;
+  font-size: 12px;
+}
+
+/* API Key Input */
+.api-key-input {
+  display: flex;
+  gap: 8px;
+}
+
+.api-key-input input {
+  flex: 1;
+}
+
+.toggle-visibility-btn {
+  padding: 8px 12px;
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.toggle-visibility-btn:hover {
+  background: #f5f5f5;
+}
+
+/* Advanced Settings */
+.advanced-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.advanced-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-weight: 500;
+  color: #666;
+  transition: color 0.2s;
+}
+
+.advanced-toggle:hover {
+  color: #0066cc;
+}
+
+.advanced-settings {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f9f9f9;
+  border-radius: 6px;
+}
+
+.form-slider {
+  width: 100%;
+  margin-top: 8px;
+}
+
+/* Action Buttons */
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.test-btn,
+.save-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.test-btn {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.test-btn:hover:not(:disabled) {
+  background: #e0e0e0;
+}
+
+.test-btn.testing {
+  background: #e0e0e0;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.save-btn {
+  background: #0066cc;
+  color: white;
+}
+
+.save-btn:hover {
+  background: #0052a3;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Test Status */
+.test-status {
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 6px;
+  border: 1px solid;
+}
+
+.test-status.success {
+  background: #f0fdf4;
+  border-color: #86efac;
+  color: #166534;
+}
+
+.test-status.error {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
+.test-result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.status-icon {
+  font-size: 18px;
+}
+
+.test-detail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 26px;
+  margin-bottom: 4px;
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.detail-icon {
+  font-size: 14px;
+}
+
+/* Notifications */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: 6px;
+  background: #fbfbfa; /* Light grey background */
+  border: 1px solid #e9e9e7;
+  color: #1a1a1a; /* Dark text */
+  font-size: 14px;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    0 2px 4px rgba(0, 0, 0, 0.04);
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s;
+  z-index: 10000000; /* Higher than modals (9999999) to ensure absolute top layer */
+}
+
+.notification.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.notification-success {
+  background: #fbfbfa;
+  border-left: 3px solid #10b981;
+}
+
+.notification-error {
+  background: #fbfbfa;
+  border-left: 3px solid #ef4444;
+}
+
+.notification-info {
+  background: #fbfbfa;
+  border-left: 3px solid #3b82f6;
+}
+.botcky-settings-note {
+  margin: 0 0 20px 0;
+  padding: 14px 16px;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #1f2937;
+}
+
+.botcky-settings-note strong {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.botcky-settings-note p {
+  margin: 0 0 12px 0;
+  color: #4b5563;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.botcky-settings-note code {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.7);
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  font-size: 12px;
+}
+
+.danger-btn {
+  padding: 8px 12px;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  background: #fff;
+  color: #b91c1c;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.danger-btn:hover:not(:disabled),
+.danger-btn:focus-visible:not(:disabled) {
+  background: #fef2f2;
+  border-color: #ef4444;
+  outline: none;
+}
+
+.danger-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.botcky-provider-settings .provider-legacy-field {
+  display: none;
+}
+
+/* Dark theme: keep AI settings inside the same soft charcoal system as the app shell. */
+[data-theme='dark'] .ai-settings-panel {
+  color: var(--text-primary);
+}
+
+[data-theme='dark'] .ai-settings-panel h2 {
+  color: var(--text-primary);
+}
+
+[data-theme='dark'] .quick-setup,
+[data-theme='dark'] .settings-form,
+[data-theme='dark'] .advanced-settings {
+  background: var(--bg-secondary);
+  border-color: var(--border-primary);
+}
+
+[data-theme='dark'] .quick-setup p,
+[data-theme='dark'] .quick-setup-info .info,
+[data-theme='dark'] .form-group small,
+[data-theme='dark'] .advanced-toggle {
+  color: var(--text-secondary);
+}
+
+[data-theme='dark'] .quick-setup-btn,
+[data-theme='dark'] .toggle-visibility-btn,
+[data-theme='dark'] .test-btn {
+  background: var(--bg-tertiary);
+  border-color: var(--border-input);
+  color: var(--text-secondary);
+}
+
+[data-theme='dark'] .quick-setup-btn:hover,
+[data-theme='dark'] .toggle-visibility-btn:hover,
+[data-theme='dark'] .test-btn:hover:not(:disabled) {
+  background: var(--bg-elevated);
+  border-color: var(--border-input-focus);
+  color: var(--text-primary);
+}
+
+[data-theme='dark'] .quick-setup-btn.selected {
+  background: var(--accent-bg);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+[data-theme='dark'] .quick-setup-btn.active {
+  border-color: var(--success-text);
+}
+
+[data-theme='dark'] .quick-setup-btn.active.selected,
+[data-theme='dark'] .save-btn {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: var(--text-inverse);
+}
+
+[data-theme='dark'] .save-btn:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 2px 8px var(--shadow-md);
+}
+
+[data-theme='dark'] .form-group label {
+  color: var(--text-secondary);
+}
+
+[data-theme='dark'] .form-input {
+  background: var(--bg-tertiary);
+  border-color: var(--border-input);
+  color: var(--text-primary);
+}
+
+[data-theme='dark'] .form-input:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-bg);
+}
+
+[data-theme='dark'] .advanced-section,
+[data-theme='dark'] .form-actions {
+  border-top-color: var(--border-secondary);
+}
+
+[data-theme='dark'] .test-status.success {
+  background: var(--success-bg);
+  border-color: var(--success-border);
+  color: var(--success-text);
+}
+
+[data-theme='dark'] .test-status.error {
+  background: var(--error-bg);
+  border-color: var(--error-border);
+  color: var(--error-text);
+}
+
+[data-theme='dark'] .notification {
+  background: var(--bg-elevated);
+  border-color: var(--border-primary);
+  color: var(--text-primary);
+  box-shadow: 0 8px 24px var(--shadow-lg);
+}
+
+[data-theme='dark'] .botcky-settings-note {
+  background: var(--accent-bg);
+  border-color: var(--border-input-focus);
+  color: var(--text-primary);
+}
+
+[data-theme='dark'] .botcky-settings-note p {
+  color: var(--text-secondary);
+}
+
+[data-theme='dark'] .botcky-settings-note code {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+[data-theme='dark'] .danger-btn {
+  background: rgba(248, 113, 113, 0.08);
+  border-color: rgba(248, 113, 113, 0.3);
+  color: var(--error-text);
+}
+
+[data-theme='dark'] .danger-btn:hover:not(:disabled),
+[data-theme='dark'] .danger-btn:focus-visible:not(:disabled) {
+  background: rgba(248, 113, 113, 0.14);
+  border-color: rgba(248, 113, 113, 0.45);
+}

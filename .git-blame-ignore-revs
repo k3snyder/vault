@@ -1,0 +1,5 @@
+# One-time JS lint/format baseline.
+2892bb419da7a556e7b9fd5a2610ff7b9a518346
+
+# Rust clippy cleanup for warnings-as-errors.
+cfd199f6e9b0f9232a7adbb06ec78cb8e648b61e

@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+*.local
+*.tsbuildinfo
+
+# Rust / Tauri build output
+src-tauri/target/
+src-tauri/gen/
+src-tauri/WixTools/
+
+# Release artifacts (attach to GitHub Releases, not the git tree)
+release/
+*.dmg
+*.app
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.log
+
+# Local secrets & config (should never exist here, but just in case)
+.env
+.env.local
+.env.*.local

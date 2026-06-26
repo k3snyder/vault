@@ -1,0 +1,88 @@
+{
+  "id": "readwise",
+  "name": "Readwise Sync",
+  "version": "1.0.0",
+  "author": "Vault",
+  "description": "Sync your Readwise highlights, notes, and articles to your Vault",
+  "entry_point": "dist/plugin.js",
+  "permissions": [
+    "vault.read",
+    "vault.write",
+    "vault.append",
+    "vault.delete",
+    "vault.list",
+    "vault.metadata",
+    "workspace.commands",
+    "workspace.statusbar",
+    "workspace.settings",
+    "workspace.notices",
+    "workspace.progress",
+    "settings.store",
+    "network.fetch"
+  ],
+  "dependencies": {},
+  "icon": null,
+  "homepage": "https://readwise.io",
+  "repository": "https://github.com/vault-app/readwise-plugin",
+  "category": "integration",
+  "tags": ["readwise", "highlights", "sync", "books", "articles", "notes"],
+  "min_app_version": "1.0.0",
+  "max_app_version": null,
+  "settings_schema": {
+    "apiToken": {
+      "type": "string",
+      "secret": true,
+      "description": "Your Readwise API token",
+      "placeholder": "Get from readwise.io/access_token"
+    },
+    "syncFrequency": {
+      "type": "number",
+      "default": 60,
+      "min": 5,
+      "max": 1440,
+      "description": "Sync frequency in minutes"
+    },
+    "autoSync": {
+      "type": "boolean",
+      "default": false,
+      "description": "Automatically sync highlights"
+    },
+    "syncOnStartup": {
+      "type": "boolean",
+      "default": false,
+      "description": "Sync when Vault starts"
+    },
+    "highlightsFolder": {
+      "type": "string",
+      "default": "Readwise",
+      "description": "Folder for synced highlights"
+    },
+    "dateFormat": {
+      "type": "string",
+      "default": "YYYY-MM-DD",
+      "description": "Date format for notes"
+    },
+    "groupBy": {
+      "type": "select",
+      "default": "book",
+      "options": ["book", "article", "category", "date"],
+      "description": "How to organize highlights"
+    },
+    "appendToExisting": {
+      "type": "boolean",
+      "default": true,
+      "description": "Append new highlights to existing files"
+    },
+    "includeSupplementals": {
+      "type": "boolean",
+      "default": true,
+      "description": "Include supplemental highlights"
+    },
+    "customTemplate": {
+      "type": "text",
+      "default": "",
+      "description": "Custom template for highlights (Mustache syntax)",
+      "placeholder": "Leave empty for default template"
+    }
+  }
+}
