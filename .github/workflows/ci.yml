@@ -22,7 +22,10 @@ jobs:
           cache-dependency-path: |
             package-lock.json
             public/excalidraw-bundle/package-lock.json
-      - uses: dtolnay/rust-toolchain@stable
+      # Pinned to a fixed Rust version: a floating @stable can introduce new
+      # clippy lints on a toolchain bump and redden the badge with no code change.
+      # Bump deliberately when you want the newer toolchain.
+      - uses: dtolnay/rust-toolchain@1.96.0
         with:
           components: clippy,rustfmt
       - uses: Swatinem/rust-cache@v2
