@@ -366,6 +366,7 @@ pub struct RelationshipAiContext {
 /// File change event for external modifications
 #[derive(Debug, Clone, Serialize, Type)]
 #[serde(rename_all = "camelCase")]
+#[allow(dead_code)]
 pub struct FileChangeEvent {
     /// Path to the changed file
     pub path: String,
@@ -391,6 +392,7 @@ pub enum FileChangeType {
 /// Progress event for large file loading
 #[derive(Debug, Clone, Serialize, Type)]
 #[serde(rename_all = "camelCase")]
+#[allow(dead_code)]
 pub struct CsvLoadProgress {
     /// Number of rows parsed so far
     pub rows_parsed: usize,
