@@ -417,11 +417,10 @@ impl PermissionManager {
                     }
                 }
                 Capability::VaultDelete { paths }
-                    if matches!(permission_type, VaultPermission::Delete) =>
+                    if matches!(permission_type, VaultPermission::Delete)
+                        && self.path_matches_patterns(path, paths) =>
                 {
-                    if self.path_matches_patterns(path, paths) {
-                        return Ok(());
-                    }
+                    return Ok(());
                 }
                 _ => {}
             }

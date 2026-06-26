@@ -109,7 +109,7 @@ pub async fn get_vault_notes(
     }
 
     // Sort notes by name for consistent ordering
-    notes.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+    notes.sort_by_key(|note| note.name.to_lowercase());
 
     Ok(notes)
 }

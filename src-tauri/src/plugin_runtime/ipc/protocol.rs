@@ -195,15 +195,14 @@ impl MessageValidator {
                     ));
                 }
             }
-            "vault.write" => {
+            "vault.write"
                 if !params.is_object()
                     || params.get("path").is_none()
-                    || params.get("content").is_none()
-                {
-                    return Err(IpcBridgeError::InvalidMessage(
-                        "vault.write requires 'path' and 'content' parameters".to_string(),
-                    ));
-                }
+                    || params.get("content").is_none() =>
+            {
+                return Err(IpcBridgeError::InvalidMessage(
+                    "vault.write requires 'path' and 'content' parameters".to_string(),
+                ));
             }
             _ => {
                 // No specific validation for other methods
